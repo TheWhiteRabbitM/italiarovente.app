@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline · Italia Rovente</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #1a120f;
+        color: #f1dfd8;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      .stripes {
+        width: 220px;
+        max-width: 70vw;
+        height: 14px;
+        border-radius: 999px;
+        background: linear-gradient(90deg,#2166ac,#4393c3,#92c5de,#f7f7f7,#fddbc7,#f4a582,#d6604d,#b2182b);
+      }
+      h1 { font-size: 1.6rem; margin: 6px 0 0; }
+      p { color: #d6c3ba; max-width: 360px; line-height: 1.5; margin: 0; }
+      button {
+        margin-top: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: #b5290b;
+        color: #fff;
+        font-weight: 700;
+        padding: 12px 22px;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="font-size: 3rem">🔥</div>
+    <div class="stripes"></div>
+    <h1>Sei offline</h1>
+    <p>
+      Italia Rovente ha bisogno della connessione per i dati meteo in tempo
+      reale. Le pagine già visitate restano disponibili.
+    </p>
+    <button onclick="location.reload()">Riprova</button>
+  </body>
+</html>
