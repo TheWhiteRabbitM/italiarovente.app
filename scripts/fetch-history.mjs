@@ -6,7 +6,7 @@
 // nel file, così i build locali (rate-limited) riusano i dati committati.
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,7 @@ function recordCutoffISO() {
   return d.toISOString().slice(0, 10);
 }
 
-function linreg(pts) {
+export function linreg(pts) {
   const n = pts.length;
   if (n < 2) return { slope: 0, r2: 0 };
   let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
@@ -81,7 +81,7 @@ async function fetchDaily(city, end) {
   throw new Error("rate-limited");
 }
 
-function aggregate(j) {
+export function aggregate(j) {
   const time = j.daily.time;
   const mean = j.daily.temperature_2m_mean;
   const tmax = j.daily.temperature_2m_max ?? [];
@@ -269,4 +269,7 @@ async function main() {
   await generateCaptions();
 }
 
-main();
+// Solo se eseguito direttamente (non quando importato, es. dai test).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

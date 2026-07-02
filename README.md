@@ -93,6 +93,53 @@ GET https://archive-api.open-meteo.com/v1/archive
   layer is outside this project's code and not something we can independently verify beyond
   what they publish.
 
+### Regression formula
+
+`trend.perDecade` and `trend.r2` (shown throughout the site) come from an ordinary least squares
+fit on `(year, annual mean)` pairs — the same textbook formulas, computed independently in both
+[`scripts/fetch-history.mjs`](scripts/fetch-history.mjs) (build time) and
+[`src/lib/weather.ts`](src/lib/weather.ts) (live fallback):
+
+```
+slope     = (n·Σxy − Σx·Σy) / (n·Σx² − (Σx)²)
+intercept = (Σy − slope·Σx) / n
+r         = (n·Σxy − Σx·Σy) / √[(n·Σx² − (Σx)²)(n·Σy² − (Σy)²)]
+R²        = r²
+```
+
+No smoothing, no outlier removal, no weighting — every complete year (≥360 valid days) counts
+equally.
+
+### How a city's coordinates are chosen
+
+Each city in [`src/data/cities.json`](src/data/cities.json) has a fixed `lat`/`lon` — generally
+close to the city's best-known central landmark (e.g. Milan's point matches Piazza del Duomo).
+These were curated once, by hand, when the city list was built; there's no automated geocoding
+step in this repo, and no single documented source. In practice this matters little: ERA5's grid
+is ~25–31 km wide, so any reasonable point within a city almost always resolves to the same grid
+cell — the choice of exact landmark doesn't change the result.
+
+### ERA5 data revisions
+
+Open-Meteo doesn't expose an ERA5 version number to API consumers, and this project doesn't pin
+one: every fetch simply gets whatever Open-Meteo currently serves. ECMWF publishes a preliminary
+"ERA5T" version within ~5 days, then a slightly revised final reanalysis a few months later. This
+is exactly why absolute daily records (🔥/❄️) exclude the last ~4 months of data — see
+`RECORD_CUTOFF_DAYS` in [`src/lib/weather.ts`](src/lib/weather.ts) — while yearly/monthly
+aggregates, which are far less sensitive to small revisions, use the full series.
+
+### Automated tests
+
+```bash
+npm test
+```
+
+[`scripts/test-aggregation.mjs`](scripts/test-aggregation.mjs) feeds the same `aggregate()`
+function used to build `history.json` a synthetic daily series with a known, noise-free linear
+trend, then checks its output against values computed independently by closed-form arithmetic
+(not derived from the code under test) — climate normals, warming, decade means, regression
+slope/R², leap-year day counts, and record detection.
+
 ## 🛠️ Tech stack
 
 - **Next.js 16** (App Router, React 19, Turbopack)
@@ -162,7 +209,8 @@ src/
    └─ redis.ts, stats.ts, botstats.ts
 scripts/
 ├─ fetch-history.mjs               # Pre-computes src/data/history.json at build time
-└─ fetch-europe.mjs                # One-time fetch for the 14 European capitals dataset
+├─ fetch-europe.mjs                # One-time fetch for the 14 European capitals dataset
+└─ test-aggregation.mjs            # Aggregation math tested against independent expected values
 vercel.json                        # Daily cron configuration
 ```
 
