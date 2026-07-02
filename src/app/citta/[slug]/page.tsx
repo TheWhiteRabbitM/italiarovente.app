@@ -110,7 +110,7 @@ const STR = {
     summerRecordShareClose: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `Con ${curT}, ${name} oggi è vicinissima al record assoluto di sempre: ${hotT} del ${date} (${years} anni fa).`,
     ggShare: (name: string, ggVal: string, zone: string) =>
-      `${name}: ${ggVal} gradi giorno (zona ${zone}) — l'indicatore ufficiale italiano (DPR 412/93) del fabbisogno di riscaldamento degli edifici.`,
+      `${name}: stima di ${ggVal} gradi giorno (zona ${zone}) — basata sull'indicatore ufficiale italiano (DPR 412/93) del fabbisogno di riscaldamento degli edifici.`,
     stripesTitle: "Le strisce del riscaldamento",
     stripesSubtitle: (startYear: number) => (
       <>
@@ -144,9 +144,10 @@ const STR = {
     ggTitle: "🏠 Gradi giorno (riscaldamento)",
     ggSubtitle: (zone: string) => (
       <>
-        Indicatore ufficiale italiano (DPR 412/93) del fabbisogno di
-        riscaldamento degli edifici: zona climatica <strong>{zone}</strong>{" "}
-        secondo la climatologia di questa città.
+        <strong>Stima</strong> basata sulla climatologia mensile (non sul
+        calcolo ufficiale giorno per giorno del DPR 412/93): zona climatica
+        indicativa <strong>{zone}</strong>. Può differire dal valore ufficiale
+        del comune, specialmente nei mesi di transizione.
       </>
     ),
     ggEli5: "Più alto = inverni più freddi/lunghi, più bisogno di riscaldare casa.",
@@ -297,7 +298,7 @@ const STR = {
     summerRecordShareClose: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `With ${curT}, ${name} today is very close to the all-time record: ${hotT} on ${date} (${years} years ago).`,
     ggShare: (name: string, ggVal: string, zone: string) =>
-      `${name}: ${ggVal} heating degree days (zone ${zone}) — Italy's official indicator (DPR 412/93) of a building's heating demand.`,
+      `${name}: an estimated ${ggVal} heating degree days (zone ${zone}) — based on Italy's official DPR 412/93 indicator of a building's heating demand.`,
     stripesTitle: "The warming stripes",
     stripesSubtitle: (startYear: number) => (
       <>
@@ -331,9 +332,10 @@ const STR = {
     ggTitle: "🏠 Heating degree days",
     ggSubtitle: (zone: string) => (
       <>
-        Italy&apos;s official indicator (DPR 412/93) of a building&apos;s
-        heating demand: climate zone <strong>{zone}</strong>{" "}
-        based on this city&apos;s climatology.
+        <strong>Estimate</strong> based on monthly climatology (not the
+        official day-by-day DPR 412/93 calculation): indicative climate zone{" "}
+        <strong>{zone}</strong>. May differ from the municipality&apos;s
+        official value, especially in shoulder-season months.
       </>
     ),
     ggEli5: "Higher = colder/longer winters, more heating needed at home.",

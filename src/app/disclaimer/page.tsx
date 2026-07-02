@@ -124,6 +124,17 @@ const STR = {
         validi su circa 365; altrimenti resta visibile nei grafici ma escluso
         dalle statistiche aggregate.
       </>,
+      <>
+        <strong>Gradi giorno</strong>: è una <strong>stima</strong>, non il
+        calcolo ufficiale del DPR 412/93 (che somma giorno per giorno gli
+        scarti dai 20°C). Qui si usa la climatologia mensile già disponibile:
+        giorni del mese × scarto dalla media mensile. Questo può{" "}
+        <strong>sottostimare</strong> il valore reale nei mesi di transizione
+        (marzo-aprile, ottobre-novembre), dove alcuni giorni superano i 20°C e
+        altri no, mentre la media mensile li appiattisce. Il valore ufficiale
+        di un comune (fisso, da tabella normativa) può quindi differire da
+        quello mostrato qui.
+      </>,
     ],
     licenseTitle: "📄 Licenza open source",
     licenseCode: (
@@ -302,6 +313,18 @@ const STR = {
         trend, decade and record calculations only if it has at least 360
         valid days out of roughly 365; otherwise it still appears in the
         charts but is excluded from the aggregate statistics.
+      </>,
+      <>
+        <strong>Heating degree days</strong>: this is an{" "}
+        <strong>estimate</strong>, not the official DPR 412/93 calculation
+        (which sums the daily gap from 20°C, day by day). We use the monthly
+        climatology already available instead: days in the month × gap from
+        the monthly mean. This can <strong>underestimate</strong> the real
+        value in shoulder-season months (March-April, October-November),
+        where some days exceed 20°C and others don't, while the monthly
+        average flattens them out. A municipality's official value (fixed,
+        from a regulatory table) can therefore differ from the one shown
+        here.
       </>,
     ],
     licenseTitle: "📄 Open source license",

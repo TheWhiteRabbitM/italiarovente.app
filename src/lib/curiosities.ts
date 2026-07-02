@@ -103,15 +103,18 @@ async function gradiGiornoCuriosity(city: City, name: string, lang: "it" | "en")
   const ggStr = gg.toLocaleString(lang === "it" ? "it-IT" : "en-US", { useGrouping: true });
   const text =
     lang === "en"
-      ? `${name}: ${ggStr} heating degree days (zone ${zone}) — Italy's official indicator (DPR 412/93) of a building's heating demand.`
-      : `${name}: ${ggStr} gradi giorno (zona ${zone}) — l'indicatore ufficiale italiano (DPR 412/93) del fabbisogno di riscaldamento degli edifici.`;
+      ? `${name}: an estimated ${ggStr} heating degree days (zone ${zone}) — based on Italy's official DPR 412/93 indicator of a building's heating demand.`
+      : `${name}: stima di ${ggStr} gradi giorno (zona ${zone}) — basata sull'indicatore ufficiale italiano (DPR 412/93) del fabbisogno di riscaldamento degli edifici.`;
 
   return {
     eyebrow: lang === "en" ? "🏠 Heating degree days" : "🏠 Gradi giorno",
     pageTitle: lang === "en" ? `${name}'s heating degree days` : `I gradi giorno di ${name}`,
     bigText: `${ggStr} GG`,
     bigColor: "#b3c5ff",
-    subLine: lang === "en" ? `Climate zone ${zone} (DPR 412/93)` : `Zona climatica ${zone} (DPR 412/93)`,
+    subLine:
+      lang === "en"
+        ? `Estimated · zone ${zone} (DPR 412/93)`
+        : `Stima · zona ${zone} (DPR 412/93)`,
     shareText: text,
     metaTitle: lang === "en" ? `${name}: ${ggStr} heating degree days (zone ${zone})` : `${name}: ${ggStr} gradi giorno (zona ${zone})`,
     metaDescription: text,
