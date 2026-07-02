@@ -6,6 +6,7 @@
 **Just the data, no opinions.**
 
 [![Live site](https://img.shields.io/badge/live-italiarovente.app-ef4444?style=flat-square)](https://italiarovente.app)
+[![tests](https://github.com/TheWhiteRabbitM/italiarovente.app/actions/workflows/test.yml/badge.svg)](https://github.com/TheWhiteRabbitM/italiarovente.app/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Data source](https://img.shields.io/badge/data-ERA5%20%2F%20ECMWF-0891b2?style=flat-square)](https://open-meteo.com/)
@@ -60,7 +61,7 @@ key required. Current weather and forecasts come from Open-Meteo's IFS/ICON mode
 
 | | |
 |---|---|
-| **Warming** | 1991–2020 climate normal minus the 1961–1990 one (WMO reference period) — the difference between two 30-year averages, never a recent year against the past. Used identically on every page. |
+| **Warming** | 1991–2020 climate normal minus the 1961–1990 one — the difference between two 30-year averages, never a recent year against the past. **Why 1961–1990**: it's the World Meteorological Organization's long-standing reference climate normal, the most widely used baseline in climate science for comparability across studies and decades (WMO has since also published a 1991–2020 normal, which is what "recent" means here). Used identically on every page. |
 | **Trend** | Linear regression on annual means; R² indicates how well the line fits. |
 | **Grid resolution** | Each city is a single ERA5 grid point (~25–31 km across) — indicative of the area, not one weather station; doesn't capture urban heat islands. |
 | **Missing data** | Excluded from averages, never treated as zero; a year needs ≥360 valid days to enter trend/decade/record calculations. |
@@ -83,6 +84,11 @@ GET https://archive-api.open-meteo.com/v1/archive
 
 - **Variables**: `temperature_2m_mean`/`_max`/`_min` for the main cities; `temperature_2m_mean`
   only for the rest, to fit within Open-Meteo's rate limits across 107 cities.
+  `temperature_2m_mean` is Open-Meteo's **daily mean of air temperature at 2 m**, aggregated
+  from the underlying sub-daily ERA5 data — **not** a `(max + min) / 2` estimate. This project
+  doesn't recompute it; it's used exactly as returned. See
+  [Open-Meteo's Historical Weather API docs](https://open-meteo.com/en/docs/historical-weather-api)
+  for how they define it.
 - **Units**: no `temperature_unit` parameter is passed, so Open-Meteo returns °C directly — no
   conversion is applied on our side.
 - **No interpolation, no correction**: the values returned by this endpoint are used as-is; the
@@ -92,6 +98,15 @@ GET https://archive-api.open-meteo.com/v1/archive
   [Open-Meteo's own documentation](https://open-meteo.com/en/docs/historical-weather-api) — that
   layer is outside this project's code and not something we can independently verify beyond
   what they publish.
+- **Other Open-Meteo endpoints used elsewhere on the site**: the
+  [Forecast API](https://open-meteo.com/en/docs) (`api.open-meteo.com/v1/forecast`) for current
+  conditions and the 7-day forecast, and the
+  [Air Quality API](https://open-meteo.com/en/docs/air-quality-api) (`air-quality-api.open-meteo.com/v1/air-quality`)
+  for the UV/AQI/pollen chips. Historical warming figures only ever come from the Archive API
+  above.
+- **Data freshness**: each city's precomputed snapshot in `history.json` carries a `lastDate`
+  field — the most recent day actually covered by that snapshot. The site doesn't stamp a global
+  "fetched on" date, but this per-city field is an honest, always-accurate substitute.
 
 ### Regression formula
 
@@ -106,6 +121,21 @@ intercept = (Σy − slope·Σx) / n
 r         = (n·Σxy − Σx·Σy) / √[(n·Σx² − (Σx)²)(n·Σy² − (Σy)²)]
 R²        = r²
 ```
+
+### Worked example: Rome
+
+Real numbers pulled live from [`/api/export/citta.csv`](https://italiarovente.app/api/export/citta.csv):
+
+```
+baseline (1961–1990 normal) = 14.83 °C   (average of all valid daily means in those 30 years)
+recent   (1991–2020 normal) = 15.70 °C   (same calculation, next 30-year window)
+
+warming  = recent − baseline = 15.70 − 14.83 = +0.87 °C
+```
+
+An individual year's **anomaly** (used for warming stripes and the anomaly chart) is that year's
+mean minus the 1961–1990 baseline — e.g. a year averaging 15.90 °C in Rome has an anomaly of
+`15.90 − 14.83 = +1.07 °C` (shown in red on the stripes; a year below 14.83 °C would be blue).
 
 No smoothing, no outlier removal, no weighting — every complete year (≥360 valid days) counts
 equally.
