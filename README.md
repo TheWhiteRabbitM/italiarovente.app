@@ -68,6 +68,31 @@ key required. Current weather and forecasts come from Open-Meteo's IFS/ICON mode
 
 Full methodology, caveats and FAQ: [`/disclaimer`](https://italiarovente.app/disclaimer).
 
+### The exact API call
+
+For full transparency, this is precisely what's requested from Open-Meteo (see
+[`scripts/fetch-history.mjs`](scripts/fetch-history.mjs) and [`src/lib/weather.ts`](src/lib/weather.ts)):
+
+```
+GET https://archive-api.open-meteo.com/v1/archive
+    ?latitude={lat}&longitude={lon}
+    &start_date=1940-01-01&end_date={today}
+    &daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min
+    &timezone=Europe/Rome
+```
+
+- **Variables**: `temperature_2m_mean`/`_max`/`_min` for the main cities; `temperature_2m_mean`
+  only for the rest, to fit within Open-Meteo's rate limits across 107 cities.
+- **Units**: no `temperature_unit` parameter is passed, so Open-Meteo returns °C directly — no
+  conversion is applied on our side.
+- **No interpolation, no correction**: the values returned by this endpoint are used as-is; the
+  only transformation this project applies is aggregation (daily → yearly/monthly/decadal means,
+  anomalies, linear regression).
+- For how Open-Meteo itself sources and processes ERA5, see
+  [Open-Meteo's own documentation](https://open-meteo.com/en/docs/historical-weather-api) — that
+  layer is outside this project's code and not something we can independently verify beyond
+  what they publish.
+
 ## 🛠️ Tech stack
 
 - **Next.js 16** (App Router, React 19, Turbopack)
