@@ -1,0 +1,367 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   MATERIAL 3 EXPRESSIVE — Design tokens
+   Palette allineata al logo (Claude Design): rosso rovente + gradiente calore
+   su neutri charcoal/cream. Secondary blu (freddo) e tertiary viola invariati.
+   Forme molto arrotondate, surface tonali, motion elastica.
+   ========================================================================= */
+
+:root {
+  /* Primary (rosso rovente del logo) */
+  --primary: #d23a22;
+  --on-primary: #ffffff;
+  --primary-container: #ffdbcf;
+  --on-primary-container: #3c0800;
+  --primary-fixed: #ef6a2a;
+
+  /* Secondary (freddo) */
+  --secondary: #1d4ed8;
+  --on-secondary: #ffffff;
+  --secondary-container: #dbe4ff;
+  --on-secondary-container: #00174b;
+
+  /* Tertiary */
+  --tertiary: #7c3aed;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #ecdcff;
+  --on-tertiary-container: #28005a;
+
+  /* Neutri (charcoal/cream del logo) */
+  --background: #f6efe6;
+  --on-background: #29241f;
+  --surface: #f6efe6;
+  --surface-dim: #e6d9c8;
+  --surface-bright: #f6efe6;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #efe6d8;
+  --surface-container: #e9ded0;
+  --surface-container-high: #e2d5c4;
+  --surface-container-highest: #dccdb9;
+  --on-surface: #29241f;
+  --on-surface-variant: #6f6459;
+  --outline: #a89a8a;
+  --outline-variant: #e0d3c2;
+  --error: #ba1a1a;
+
+  --shadow-key: 0 1px 2px rgba(41, 36, 31, 0.16), 0 2px 8px rgba(41, 36, 31, 0.08);
+  --shadow-lift: 0 6px 20px rgba(41, 36, 31, 0.18), 0 2px 6px rgba(41, 36, 31, 0.1);
+}
+
+:root[data-theme="dark"] {
+    --primary: #ffab98;
+    --on-primary: #5e1600;
+    --primary-container: #8a2008;
+    --on-primary-container: #ffdbcf;
+    --primary-fixed: #ffab7a;
+
+    --secondary: #b3c5ff;
+    --on-secondary: #00277a;
+    --secondary-container: #1f3da8;
+    --on-secondary-container: #dbe4ff;
+
+    --tertiary: #d7baff;
+    --on-tertiary: #41008c;
+    --tertiary-container: #5b22a3;
+    --on-tertiary-container: #ecdcff;
+
+    --background: #29241f;
+    --on-background: #f6efe6;
+    --surface: #29241f;
+    --surface-dim: #29241f;
+    --surface-bright: #544937;
+    --surface-container-lowest: #1f1a16;
+    --surface-container-low: #332c25;
+    --surface-container: #3a322a;
+    --surface-container-high: #443b31;
+    --surface-container-highest: #4e4438;
+    --on-surface: #f6efe6;
+    --on-surface-variant: #d8c9b8;
+    --outline: #9f8b82;
+    --outline-variant: #544a3f;
+    --error: #ffb4ab;
+
+    --shadow-key: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lift: 0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-error: var(--error);
+
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+
+  /* Shape scale espressiva */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
+  --radius-2xl: 44px;
+  --radius-3xl: 56px;
+}
+
+* {
+  border-color: var(--outline-variant);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--on-background);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Sfondo "aurora" espressivo */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.16;
+}
+.aurora::before {
+  background: radial-gradient(circle, var(--primary-fixed), transparent 65%);
+  top: -18vw;
+  right: -10vw;
+  animation: float1 18s ease-in-out infinite;
+}
+.aurora::after {
+  background: radial-gradient(circle, var(--secondary), transparent 65%);
+  bottom: -20vw;
+  left: -12vw;
+  animation: float2 22s ease-in-out infinite;
+}
+:root[data-theme="dark"] .aurora::before,
+:root[data-theme="dark"] .aurora::after {
+  opacity: 0.28;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4vw, 4vw) scale(1.12); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4vw, -3vw) scale(1.1); }
+}
+
+/* Card MD3 */
+.m3-card {
+  background: var(--surface-container);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-key);
+  border: 1px solid var(--outline-variant);
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.2),
+    box-shadow 0.35s ease,
+    background 0.3s ease;
+}
+.m3-card-interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+  background: var(--surface-container-high);
+}
+
+/* Chip / pill */
+.m3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+
+/* Entrata espressiva */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.rise {
+  animation: riseIn 0.6s cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+}
+
+/* Bolle fluttuanti (fatti secondari della hero): galleggiano dolcemente,
+   sfasate tra loro perché sembrino organiche e non un rimbalzo sincronizzato. */
+@keyframes floatBubble {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-1deg); }
+}
+.hero-bubble {
+  animation: floatBubble 5s ease-in-out infinite;
+  will-change: transform;
+  transition: box-shadow 0.3s ease;
+}
+.hero-bubble:hover {
+  animation-play-state: paused;
+  box-shadow: var(--shadow-lift);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-bubble {
+    animation: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,90,40,0)); }
+  50% { transform: scale(1.18); filter: drop-shadow(0 0 14px rgba(255,90,40,0.6)); }
+}
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmerMove 1.25s linear infinite;
+}
+@keyframes shimmerMove {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes popupIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.popup-in {
+  animation: popupIn 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(110%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.install-prompt {
+  animation: slideUp 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.1) both;
+}
+
+/* ===== Modalità APP installata (PWA standalone) ===== */
+.bottom-nav {
+  display: none;
+}
+
+@media (display-mode: standalone) {
+  /* Spazio per la bottom-nav + safe area del telefono */
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+  /* In app non servono footer "marketing" né il pulsante installa */
+  .app-hide-standalone {
+    display: none !important;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 2px;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: var(--surface-container);
+    border-top: 1px solid var(--outline-variant);
+    backdrop-filter: blur(12px);
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 0;
+    border-radius: 16px;
+    color: var(--on-surface-variant);
+    font-size: 0.66rem;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s;
+  }
+  .bottom-nav-item[data-active="true"] {
+    color: var(--on-primary-container);
+    background: var(--primary-container);
+  }
+  .bottom-nav-icon {
+    width: 24px;
+    height: 24px;
+  }
+  /* Alza il pulsante flottante sopra la bottom-nav */
+  .vote-fab {
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+::selection {
+  background: var(--primary-fixed);
+  color: #fff;
+}
+
+/* Riga scorrevole senza scrollbar visibile (chip della hero città su mobile) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--outline); }
