@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "fetch-history": "node scripts/fetch-history.mjs",
+    "fetch-cds": "node scripts/fetch-cds.mjs",
     "generate-captions": "node scripts/generate-captions.mjs",
     "build": "node scripts/fetch-history.mjs && next build",
     "start": "next start",
@@ -19,6 +20,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.9",
     "d3-geo": "^3.1.1",
+    "h5wasm": "^0.10.3",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",

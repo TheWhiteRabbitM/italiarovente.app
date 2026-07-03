@@ -217,6 +217,37 @@ surfaced on [`/dati`](https://italiarovente.app/dati) and in
 [`/api/export/citta.json`](https://italiarovente.app/api/export/citta.json)
 (`dataset_generated_at`/`dataset_source`/`dataset_build`).
 
+### Planned: E-OBS cross-check (not yet live)
+
+The site's historical numbers all come from **ERA5**, a *reanalysis* (a physical model constrained
+by observations, not raw station data). To sanity-check ERA5 independently, we're scaffolding an
+optional second data source: **E-OBS**, the station-based gridded dataset from the
+[Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) (CDS), built by
+[ECA&D](https://www.ecad.eu/) from actual European weather-station records. Being station-based
+rather than model-based, E-OBS is a genuinely independent check on ERA5, not just another view of
+the same underlying model.
+
+**Current status: blocked, not live.** Most Copernicus/CDS data is CC-BY 4.0, but E-OBS carries its
+own, stricter license clause restricting use to *"non-commercial research and non-commercial
+education projects only."* We've asked ECA&D (eca@knmi.nl) whether italiarovente.app — free,
+ad-free, MIT-licensed, no revenue — qualifies, and are waiting to hear back. Until that's resolved,
+no real E-OBS data is fetched or published:
+
+- `scripts/fetch-cds.mjs` contains a small reusable CDS client (async job submit/poll/download over
+  the `retrieve/v1` REST API) plus a NetCDF-parsing helper, but the actual E-OBS request parameters
+  are marked with an `UNVERIFIED` sentinel and the script **refuses to run** against the real CDS
+  API until that sentinel is deliberately removed.
+- `src/data/eobs.json` is currently a placeholder (every city `null`) with a
+  `_meta.status: "pending-license-clarification"` flag, so nothing downstream mistakes it for
+  production data.
+- `src/lib/eobs.ts` defines the intended shape and a `getEobsComparison()` stub that returns `null`
+  — it isn't wired into any page yet.
+
+If/when this goes live, it will run on its own schedule: a separate, **monthly**
+`.github/workflows/eobs-refresh.yml` GitHub Actions workflow (E-OBS versions are released
+periodically, not daily, and CDS job latency can range from minutes to 20+ hours under congestion —
+incompatible with the daily Vercel build cron).
+
 ### Automated tests
 
 ```bash
@@ -310,6 +341,7 @@ src/
 scripts/
 ├─ fetch-history.mjs               # Pre-computes src/data/history.json at build time
 ├─ fetch-europe.mjs                # One-time fetch for the 14 European capitals dataset
+├─ fetch-cds.mjs                   # E-OBS cross-check via Copernicus CDS (scaffolding, not yet live)
 └─ test-aggregation.mjs            # Aggregation math tested against independent expected values
 vercel.json                        # Daily cron configuration
 ```

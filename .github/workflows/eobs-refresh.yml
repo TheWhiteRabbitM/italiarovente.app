@@ -1,0 +1,55 @@
+name: eobs-refresh
+
+# Aggiorna src/data/eobs.json (cross-check E-OBS da Copernicus CDS, indipendente
+# dall'ERA5 usato dalla build principale). Girato separatamente dalla build
+# Vercel perché:
+#  - E-OBS non ha bisogno di freschezza giornaliera (nuove versioni escono
+#    periodicamente, non ogni giorno) -> schedulazione mensile, non daily cron;
+#  - la latenza dei job CDS è imprevedibile (minuti fino a oltre 20 ore in caso
+#    di congestione), incompatibile con una build live su Vercel.
+#
+# NOTA: scripts/fetch-cds.mjs si rifiuta di chiamare l'API CDS reale finché i
+# parametri della richiesta E-OBS restano marcati "UNVERIFIED" (in attesa sia
+# della verifica dei parametri via "Show API request code" sul sito CDS, sia
+# del chiarimento sulla licenza da parte di ECA&D). Finché quel blocco resta,
+# questo workflow gira ma non produce nessuna chiamata CDS reale né nessuna
+# modifica a src/data/eobs.json.
+
+on:
+  schedule:
+    - cron: "0 4 1 * *" # 04:00 UTC, il 1° di ogni mese
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-eobs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch E-OBS from Copernicus CDS
+        env:
+          CDS_API_KEY: ${{ secrets.CDS_API_KEY }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/fetch-cds.mjs
+
+      - name: Commit updated eobs.json if changed
+        run: |
+          if git diff --quiet -- src/data/eobs.json; then
+            echo "Nessuna modifica a src/data/eobs.json — niente da committare."
+            exit 0
+          fi
+          git config user.name "italiarovente-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/data/eobs.json
+          git commit -m "chore(eobs): refresh E-OBS cross-check snapshot [skip ci]"
+          git push
