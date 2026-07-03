@@ -41,6 +41,7 @@ const STR = {
       ["normale_1961_1990, normale_1991_2020", "medie climatiche trentennali, °C"],
       ["riscaldamento_c", "differenza tra le due normali, °C"],
       ["gradi_decennio", "pendenza della regressione lineare, °C/decennio"],
+      ["gradi_decennio_ic95", "margine ± dell'intervallo di confidenza al 95% sulla pendenza"],
       ["r2", "bontà di adattamento della retta (0–1)"],
       ["anno_inizio_serie", "primo anno con dati completi"],
     ],
@@ -59,9 +60,14 @@ const STR = {
     ),
     methodTitle: "🧪 Metodo, in breve",
     methodBody:
-      "Riscaldamento = normale 1991–2020 meno normale 1961–1990 (differenza tra due medie trentennali, non un anno recente contro il passato). Tendenza = regressione lineare sulle medie annue dell'intera serie.",
+      "Riscaldamento = normale 1991–2020 meno normale 1961–1990 (differenza tra due medie trentennali, non un anno recente contro il passato). Tendenza = regressione lineare (minimi quadrati) sulle medie annue dell'intera serie, con intervallo di confidenza al 95% sulla pendenza (errore standard × valore critico della t di Student).",
     provenanceTitle: "🔖 Provenienza di questo snapshot",
-    provenanceBody: (generatedAt: string, source: string, build: string | null) => (
+    provenanceBody: (
+      generatedAt: string,
+      source: string,
+      build: string | null,
+      sha256: string | null,
+    ) => (
       <>
         Snapshot generato il <strong>{generatedAt}</strong>, fonte <strong>{source}</strong>
         {build ? (
@@ -72,6 +78,12 @@ const STR = {
         . Riprendendo lo stesso metodo su questo stesso snapshot (il file{" "}
         <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">history.json</code>{" "}
         nel repository) si ottengono esattamente gli stessi numeri.
+        {sha256 ? (
+          <>
+            {" "}Fingerprint di integrità (SHA-256 degli aggregati per-città):{" "}
+            <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded break-all">{sha256}</code>.
+          </>
+        ) : null}
       </>
     ),
     provenanceUnavailable:
@@ -101,6 +113,7 @@ const STR = {
       ["normale_1961_1990, normale_1991_2020", "30-year climate averages, °C"],
       ["riscaldamento_c", "difference between the two normals, °C"],
       ["gradi_decennio", "linear-regression slope, °C/decade"],
+      ["gradi_decennio_ic95", "± margin of the 95% confidence interval on the slope"],
       ["r2", "goodness of fit of the line (0–1)"],
       ["anno_inizio_serie", "first year with complete data"],
     ],
@@ -120,9 +133,14 @@ const STR = {
     ),
     methodTitle: "🧪 Method, briefly",
     methodBody:
-      "Warming = 1991–2020 normal minus 1961–1990 normal (the difference between two 30-year averages, not a recent year against the past). Trend = linear regression on the annual means of the whole series.",
+      "Warming = 1991–2020 normal minus 1961–1990 normal (the difference between two 30-year averages, not a recent year against the past). Trend = ordinary least squares regression on the annual means of the whole series, with a 95% confidence interval on the slope (standard error × Student's t critical value).",
     provenanceTitle: "🔖 Provenance of this snapshot",
-    provenanceBody: (generatedAt: string, source: string, build: string | null) => (
+    provenanceBody: (
+      generatedAt: string,
+      source: string,
+      build: string | null,
+      sha256: string | null,
+    ) => (
       <>
         Snapshot generated on <strong>{generatedAt}</strong>, source <strong>{source}</strong>
         {build ? (
@@ -133,6 +151,12 @@ const STR = {
         . Re-running the same method on this exact snapshot (the{" "}
         <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">history.json</code>{" "}
         file in the repository) reproduces exactly the same numbers.
+        {sha256 ? (
+          <>
+            {" "}Integrity fingerprint (SHA-256 of the per-city aggregates):{" "}
+            <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded break-all">{sha256}</code>.
+          </>
+        ) : null}
       </>
     ),
     provenanceUnavailable: "Generation date not available in this environment (normal in local dev).",
@@ -234,7 +258,7 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
         <Card title={t.provenanceTitle}>
           <p>
             {meta?.generatedAt
-              ? t.provenanceBody(meta.generatedAt, meta.source, meta.commit)
+              ? t.provenanceBody(meta.generatedAt, meta.source, meta.commit, meta.sha256 ?? null)
               : t.provenanceUnavailable}
           </p>
         </Card>

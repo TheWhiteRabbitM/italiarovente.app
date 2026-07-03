@@ -34,16 +34,53 @@ function buildFixture() {
 
 const EPS = 0.02; // tolleranza: l'output è arrotondato a 2 decimali
 
-test("linreg: retta perfetta senza rumore -> slope esatto, R²=1", () => {
+test("linreg: retta perfetta senza rumore -> slope esatto, R²=1, IC95 nullo (nessun residuo)", () => {
   const pts = [[0, 10], [1, 11], [2, 12], [3, 13]]; // slope=1, intercetta=10
-  const { slope, r2 } = linreg(pts);
+  const { slope, r2, ciMargin } = linreg(pts);
   assert.ok(Math.abs(slope - 1) < 1e-9, `slope atteso 1, ottenuto ${slope}`);
   assert.ok(Math.abs(r2 - 1) < 1e-9, `R² atteso 1, ottenuto ${r2}`);
+  // Punti perfettamente allineati -> nessun residuo -> varianza residua 0 ->
+  // errore standard 0 -> margine dell'IC 0 (nessuna incertezza da stimare).
+  assert.ok(Math.abs(ciMargin) < 1e-9, `ciMargin atteso ~0, ottenuto ${ciMargin}`);
 });
 
-test("linreg: punto singolo o serie vuota -> nessun crash, slope 0", () => {
-  assert.deepEqual(linreg([]), { slope: 0, r2: 0 });
-  assert.deepEqual(linreg([[2020, 15]]), { slope: 0, r2: 0 });
+test("linreg: punto singolo o serie vuota -> nessun crash, slope 0, IC non calcolabile", () => {
+  const empty = linreg([]);
+  assert.equal(empty.slope, 0);
+  assert.equal(empty.r2, 0);
+  assert.ok(Number.isNaN(empty.ciMargin), "IC non calcolabile con 0 punti -> NaN");
+
+  const single = linreg([[2020, 15]]);
+  assert.equal(single.slope, 0);
+  assert.equal(single.r2, 0);
+  assert.ok(Number.isNaN(single.ciMargin), "IC non calcolabile con 1 solo punto -> NaN");
+});
+
+test("linreg: IC95 su un esempio con rumore noto -> formula chiusa indipendente", () => {
+  // Punti scelti a mano: x = 0..4, y con uno scarto noto dalla retta esatta
+  // y = 2x + 1, per poter calcolare SSE/SE/IC a mano senza dipendere dal
+  // codice sotto test.
+  const pts = [[0, 1.2], [1, 2.8], [2, 5.3], [3, 6.7], [4, 9.1]];
+  const n = pts.length;
+  const sx = pts.reduce((s, [x]) => s + x, 0);
+  const sy = pts.reduce((s, [, y]) => s + y, 0);
+  const sxx = pts.reduce((s, [x]) => s + x * x, 0);
+  const sxy = pts.reduce((s, [x, y]) => s + x * y, 0);
+  const slopeExp = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  const interceptExp = (sy - slopeExp * sx) / n;
+  const sseExp = pts.reduce((s, [x, y]) => s + (y - (interceptExp + slopeExp * x)) ** 2, 0);
+  const df = n - 2;
+  const sxxDevExp = sxx - (sx * sx) / n;
+  const seExp = Math.sqrt(sseExp / df / sxxDevExp);
+  // df=3 -> valore critico t tabulato esatto per un IC al 95% (due code) = 3.182.
+  const ciExp = 3.182 * seExp;
+
+  const { slope, ciMargin } = linreg(pts);
+  assert.ok(Math.abs(slope - slopeExp) < 1e-9, `slope atteso ${slopeExp}, ottenuto ${slope}`);
+  assert.ok(
+    Math.abs(ciMargin - ciExp) < 1e-6,
+    `ciMargin atteso ${ciExp} (formula chiusa, df=3, t=3.182), ottenuto ${ciMargin}`,
+  );
 });
 
 test("aggregate: gli anni bisestili contano 366 giorni, non 365 fissi", () => {
@@ -78,6 +115,11 @@ test("aggregate: tendenza lineare -> pendenza e R² coerenti con la retta sintet
   assert.ok(Math.abs(r.trend.perYear - 0.1) < 1e-3, `perYear atteso 0.1, ottenuto ${r.trend.perYear}`);
   assert.ok(Math.abs(r.trend.perDecade - 1.0) < 1e-2, `perDecade atteso 1.0, ottenuto ${r.trend.perDecade}`);
   assert.ok(r.trend.r2 > 0.999, `R² atteso ~1 (retta perfetta), ottenuto ${r.trend.r2}`);
+  // Fixture senza rumore -> nessun residuo -> IC95 sulla pendenza ~0.
+  assert.ok(
+    Math.abs(r.trend.perDecadeCi95) < 1e-2,
+    `perDecadeCi95 atteso ~0 (retta perfetta), ottenuto ${r.trend.perDecadeCi95}`,
+  );
 });
 
 test("aggregate: anomalia di un anno = media dell'anno meno la normale 1961-1990", () => {

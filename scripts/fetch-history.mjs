@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { createHash } from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..", "src", "data", "history.json");
@@ -47,20 +48,58 @@ function daysBetween(a, b) {
   return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 }
 
+// Valori critici della t di Student per un intervallo di confidenza al 95%
+// (due code), interpolati linearmente tra i gradi di libertà tabulati. Per
+// df >= 120 si usa l'approssimazione alla normale standard (1.96) — con le
+// serie di questo sito (n ~ 80-85 anni, df ~ 78-83) lo scarto rispetto a un
+// valore tabulato esatto è nell'ordine del millesimo. Duplicata (non importata)
+// da src/lib/weather.ts di proposito: build-time e live restano calcoli
+// indipendenti, vedi il commento sopra aggregate().
+const T_TABLE = [
+  [1, 12.706], [2, 4.303], [3, 3.182], [4, 2.776], [5, 2.571],
+  [6, 2.447], [7, 2.365], [8, 2.306], [9, 2.262], [10, 2.228],
+  [15, 2.131], [20, 2.086], [25, 2.060], [30, 2.042], [40, 2.021],
+  [50, 2.009], [60, 2.000], [80, 1.990], [100, 1.984], [120, 1.980],
+];
+function tCrit95(df) {
+  if (df <= 0) return NaN;
+  if (df >= 120) return 1.96;
+  for (let i = 0; i < T_TABLE.length - 1; i++) {
+    const [df1, t1] = T_TABLE[i];
+    const [df2, t2] = T_TABLE[i + 1];
+    if (df >= df1 && df <= df2) return t1 + ((df - df1) / (df2 - df1)) * (t2 - t1);
+  }
+  return 1.96;
+}
+
 export function linreg(pts) {
   const n = pts.length;
-  if (n < 2) return { slope: 0, r2: 0 };
+  if (n < 2) return { slope: 0, intercept: pts[0]?.[1] ?? 0, r2: 0, ciMargin: NaN };
   let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
   for (const [x, y] of pts) {
     sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y;
   }
   const denom = n * sxx - sx * sx;
-  if (!denom) return { slope: 0, r2: 0 };
+  if (!denom) return { slope: 0, intercept: sy / n, r2: 0, ciMargin: NaN };
   const slope = (n * sxy - sx * sy) / denom;
+  const intercept = (sy - slope * sx) / n;
   const rNum = n * sxy - sx * sy;
   const rDen = Math.sqrt(denom * (n * syy - sy * sy));
   const r = rDen ? rNum / rDen : 0;
-  return { slope, r2: r * r };
+
+  // Errore standard della pendenza: s² = varianza residua (SSE / df), Sxx =
+  // somma degli scarti al quadrato di x. CI95 = t(df) * SE(slope).
+  let sse = 0;
+  for (const [x, y] of pts) {
+    const resid = y - (intercept + slope * x);
+    sse += resid * resid;
+  }
+  const df = n - 2;
+  const sxxDev = sxx - (sx * sx) / n;
+  const se = df > 0 && sxxDev > 0 ? Math.sqrt(sse / df / sxxDev) : NaN;
+  const ciMargin = Number.isFinite(se) ? tCrit95(df) * se : NaN;
+
+  return { slope, intercept, r2: r * r, ciMargin };
 }
 
 async function fetchDaily(city, end) {
@@ -252,6 +291,7 @@ export function aggregate(j) {
     trend: {
       perYear: round(reg.slope, 4),
       perDecade: round(reg.slope * 10, 3),
+      perDecadeCi95: round(reg.ciMargin * 10, 3),
       totalChange: round(reg.slope * (lastY.year - firstY.year), 2),
       r2: round(reg.r2, 3),
       baselineMean: round(baselineMean),
@@ -292,13 +332,16 @@ async function main() {
   for (const city of order) {
     // Di default mantieni le città già presenti (rerun = solo mancanti).
     // Ma ri-scarica le principali se manca il conteggio giorni/notti (hd)
-    // o i record di durata (ondata di calore / gelo più lunghi).
+    // o i record di durata (ondata di calore / gelo più lunghi); e QUALSIASI
+    // città (non solo le principali: il trend si calcola per tutte) se manca
+    // l'intervallo di confidenza sulla pendenza.
     const cached = existing[city.slug];
     const hasHeat = cached?.yearly?.[0]?.hd !== undefined;
     const hasStreak = cached?.records?.longestHeatwave !== undefined;
     const hasColdStreak = cached?.records?.longestColdSnap !== undefined;
+    const hasCi = cached?.trend?.perDecadeCi95 !== undefined;
     const needsHeat = city.main && (!hasHeat || !hasStreak || !hasColdStreak);
-    if (!refreshAll && cached?.yearly?.length && !needsHeat) {
+    if (!refreshAll && cached?.yearly?.length && !needsHeat && hasCi) {
       skipped++;
       continue;
     }
@@ -323,13 +366,27 @@ async function main() {
     await sleep(2500); // distanzia le richieste per rispettare il rate limit
   }
 
+  // Fingerprint di integrità: hash SHA-256 degli aggregati per-città, con le
+  // chiavi ordinate alfabeticamente per un risultato deterministico
+  // indipendente dall'ordine con cui le città sono state (ri)scaricate in
+  // questa esecuzione. Chiunque riesegua aggregate() sugli stessi dati
+  // grezzi può verificare che il risultato pubblicato sia esattamente questo,
+  // senza doversi fidare della parola del sito.
+  const cityHash = createHash("sha256");
+  for (const slug of Object.keys(out).sort()) {
+    cityHash.update(slug);
+    cityHash.update(JSON.stringify(out[slug]));
+  }
+
   // Metadati di provenienza dello snapshot: quando è stato generato, da quale
-  // fonte, ed eventualmente con quale commit (disponibile nei build Vercel via
-  // VERCEL_GIT_COMMIT_SHA). Permette di riprodurre esattamente questi numeri.
+  // fonte, con quale commit (disponibile nei build Vercel via
+  // VERCEL_GIT_COMMIT_SHA), e l'hash sopra. Permette di riprodurre e
+  // verificare esattamente questi numeri.
   out._meta = {
     generatedAt: end,
     source: "Open-Meteo Archive API — ERA5 reanalysis (ECMWF/Copernicus C3S)",
     commit: process.env.VERCEL_GIT_COMMIT_SHA ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7) : null,
+    sha256: cityHash.digest("hex"),
   };
 
   writeFileSync(OUT, JSON.stringify(out));

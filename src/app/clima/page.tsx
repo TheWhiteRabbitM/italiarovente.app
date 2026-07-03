@@ -1,5 +1,5 @@
 import { CITIES } from "@/lib/cities";
-import { getArchiveStats } from "@/lib/weather";
+import { getArchiveStats, linreg } from "@/lib/weather";
 import { AnomalyBarChart, DecadeBars } from "@/components/charts";
 import { WarmingStripes } from "@/components/WarmingStripes";
 import { Verdict } from "@/components/Verdict";
@@ -113,22 +113,6 @@ export const metadata = {
   },
 };
 
-function linreg(pts: [number, number][]) {
-  const n = pts.length;
-  if (n < 2) return { slope: 0, r2: 0 };
-  let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
-  for (const [x, y] of pts) {
-    sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y;
-  }
-  const denom = n * sxx - sx * sx;
-  if (!denom) return { slope: 0, r2: 0 };
-  const slope = (n * sxy - sx * sy) / denom;
-  const rNum = n * sxy - sx * sy;
-  const rDen = Math.sqrt(denom * (n * syy - sy * sy));
-  const r = rDen ? rNum / rDen : 0;
-  return { slope, r2: r * r };
-}
-
 export default async function ClimaPage({
   lang = "it",
 }: {
@@ -222,6 +206,7 @@ export default async function ClimaPage({
         scope={t.scope}
         normalsDelta={normalsDelta}
         perDecade={reg.slope * 10}
+        ci95={reg.ciMargin * 10}
         r2={reg.r2}
         firstYear={firstYear}
         lastYear={lastYear}

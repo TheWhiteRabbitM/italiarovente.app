@@ -24,11 +24,13 @@ const STR = {
       <>La tendenza di fondo ({firstYear}–{lastYear}) è di</>
     ),
     perDecadeSuffix: "per decennio",
+    ci95Suffix: (margin: string) => <> (±{margin}, intervallo di confidenza al 95%)</>,
     signalSuffix: (strength: string, r2: string) => (
       <> ed è un segnale {strength} (R² = {r2}).</>
     ),
     metricBetweenNormals: "Tra le due normali",
     metricPerDecade: "Per decennio",
+    metricPerDecadeSub: (margin: string) => `± ${margin} (IC 95%)`,
     metricReliability: "Affidabilità (R²)",
     metricSeries: "Serie analizzata",
   },
@@ -52,11 +54,13 @@ const STR = {
       <>The underlying trend ({firstYear}–{lastYear}) is</>
     ),
     perDecadeSuffix: "per decade",
+    ci95Suffix: (margin: string) => <> (±{margin}, 95% confidence interval)</>,
     signalSuffix: (strength: string, r2: string) => (
       <> and is a {strength} signal (R² = {r2}).</>
     ),
     metricBetweenNormals: "Between the two normals",
     metricPerDecade: "Per decade",
+    metricPerDecadeSub: (margin: string) => `± ${margin} (95% CI)`,
     metricReliability: "Reliability (R²)",
     metricSeries: "Series analyzed",
   },
@@ -68,6 +72,7 @@ export function Verdict({
   scope,
   normalsDelta,
   perDecade,
+  ci95,
   r2,
   firstYear,
   lastYear,
@@ -78,6 +83,7 @@ export function Verdict({
   scope: string;
   normalsDelta: number; // recentNormal - baseline
   perDecade: number;
+  ci95?: number; // margine ± dell'IC al 95% sulla pendenza (stessa unità di perDecade)
   r2: number;
   firstYear: number;
   lastYear: number;
@@ -87,6 +93,10 @@ export function Verdict({
 }) {
   const { unit } = useUnit();
   const t = STR[lang];
+  const ci95Str =
+    ci95 != null && Number.isFinite(ci95)
+      ? fmtAnomaly(ci95, 2, unit, { locale: lang, showUnit: false }).replace("+", "")
+      : null;
   const warming = normalsDelta > 0.1;
   const cooling = normalsDelta < -0.1;
   const headline = warming ? t.warming : cooling ? t.cooling : t.neutral;
@@ -126,12 +136,18 @@ export function Verdict({
           <strong style={{ color: accent }}>
             {fmtAnomaly(perDecade, 2, unit, { locale: lang })} {t.perDecadeSuffix}
           </strong>
+          {ci95Str ? t.ci95Suffix(ci95Str) : null}
           {t.signalSuffix(strength, r2.toFixed(2))}
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <Metric label={t.metricBetweenNormals} value={fmtAnomaly(normalsDelta, 1, unit, { locale: lang })} color={accent} />
-          <Metric label={t.metricPerDecade} value={fmtAnomaly(perDecade, 2, unit, { locale: lang })} color={accent} />
+          <Metric
+            label={t.metricPerDecade}
+            value={fmtAnomaly(perDecade, 2, unit, { locale: lang })}
+            sub={ci95Str ? t.metricPerDecadeSub(ci95Str) : undefined}
+            color={accent}
+          />
           <Metric label={t.metricReliability} value={r2.toFixed(2)} color="var(--on-surface-variant)" />
           <Metric label={t.metricSeries} value={`${firstYear}–${lastYear}`} color="var(--on-surface-variant)" />
         </div>
@@ -143,10 +159,12 @@ export function Verdict({
 function Metric({
   label,
   value,
+  sub,
   color,
 }: {
   label: string;
   value: string;
+  sub?: string;
   color: string;
 }) {
   return (
@@ -157,6 +175,7 @@ function Metric({
       <div className="text-xl font-extrabold tracking-tight" style={{ color }}>
         {value}
       </div>
+      {sub ? <div className="text-[11px] text-on-surface-variant mt-0.5">{sub}</div> : null}
     </div>
   );
 }

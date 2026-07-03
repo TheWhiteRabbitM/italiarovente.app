@@ -21,6 +21,7 @@ export async function GET() {
     "normale_1991_2020",
     "riscaldamento_c",
     "gradi_decennio",
+    "gradi_decennio_ic95",
     "r2",
     "anno_inizio_serie",
   ];
@@ -39,6 +40,9 @@ export async function GET() {
         s.trend.recentNormal.toFixed(2),
         (s.trend.recentNormal - s.trend.baselineMean).toFixed(2),
         s.trend.perDecade.toFixed(3),
+        s.trend.perDecadeCi95 != null && Number.isFinite(s.trend.perDecadeCi95)
+          ? s.trend.perDecadeCi95.toFixed(3)
+          : "",
         s.trend.r2.toFixed(3),
         String(s.startYear),
       ]

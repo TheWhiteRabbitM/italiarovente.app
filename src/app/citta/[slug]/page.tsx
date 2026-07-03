@@ -991,6 +991,7 @@ export async function renderCityPage(slug: string, lang: Lang) {
             scope={name}
             normalsDelta={archive.trend.recentNormal - archive.trend.baselineMean}
             perDecade={archive.trend.perDecade}
+            ci95={archive.trend.perDecadeCi95}
             r2={archive.trend.r2}
             firstYear={archive.trend.firstYear}
             lastYear={archive.trend.lastYear}

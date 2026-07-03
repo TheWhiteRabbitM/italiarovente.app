@@ -133,6 +133,28 @@ r         = (n·Σxy − Σx·Σy) / √[(n·Σx² − (Σx)²)(n·Σy² − (Σ
 R²        = r²
 ```
 
+### Confidence interval on the trend
+
+`trend.perDecadeCi95` is the ± margin of a **95% confidence interval on the regression slope**,
+also computed independently in both files — not indispensable, but the difference between "we
+see warming" and "we can bound how uncertain that pace is":
+
+```
+residual_i = y_i − (intercept + slope·x_i)
+SSE        = Σ residual_i²                        (sum of squared residuals)
+Sxx        = Σx² − (Σx)²/n                         (sum of squared deviations of x from its mean)
+SE(slope)  = √[ SSE / (n−2) / Sxx ]                 (standard error of the slope)
+CI95       = t(0.975, df=n−2) · SE(slope)           (± margin, same units as slope)
+```
+
+`t(0.975, df)` (two-tailed, 95%) is read from a small table of standard critical values and
+linearly interpolated between tabulated degrees of freedom; for `df ≥ 120` the normal
+approximation (1.96) is used, which for this site's series (n ≈ 80–86 years, df ≈ 78–84) differs
+from an exact tabulated value by roughly a thousandth — a documented approximation, not a hidden
+rounding error. See `T_TABLE`/`tCrit95` in
+[`scripts/fetch-history.mjs`](scripts/fetch-history.mjs) and
+[`src/lib/weather.ts`](src/lib/weather.ts).
+
 ### Worked example: Rome
 
 Real numbers pulled live from [`/api/export/citta.csv`](https://italiarovente.app/api/export/citta.csv):
@@ -168,6 +190,32 @@ one: every fetch simply gets whatever Open-Meteo currently serves. ECMWF publish
 is exactly why absolute daily records (🔥/❄️) exclude the last ~4 months of data — see
 `RECORD_CUTOFF_DAYS` in [`src/lib/weather.ts`](src/lib/weather.ts) — while yearly/monthly
 aggregates, which are far less sensitive to small revisions, use the full series.
+
+Open-Meteo not versioning ERA5 upstream, and the fact that the "true" published ERA5T→ERA5
+revision isn't independently re-fetchable after the fact, are acknowledged limits of this
+project's reproducibility that no amount of local tooling can fully close — see the note above on
+why daily records exclude the last ~4 months.
+
+### Dataset provenance and integrity
+
+Every `src/data/history.json` build writes a `_meta` block (see `scripts/fetch-history.mjs`):
+
+```json
+{
+  "generatedAt": "2026-07-03",
+  "source": "Open-Meteo Archive API — ERA5 reanalysis (ECMWF/Copernicus C3S)",
+  "commit": "73fd5b4",
+  "sha256": "…64 hex chars…"
+}
+```
+
+`sha256` is a fingerprint of every city's aggregated output (sorted by slug for a deterministic
+result independent of fetch order): a SHA-256 hash over each `slug + JSON.stringify(aggregate)`
+pair, concatenated. Recomputing `aggregate()` on the same raw daily series and getting the same
+hash is an independent check that the published numbers weren't altered in between — this is
+surfaced on [`/dati`](https://italiarovente.app/dati) and in
+[`/api/export/citta.json`](https://italiarovente.app/api/export/citta.json)
+(`dataset_generated_at`/`dataset_source`/`dataset_build`).
 
 ### Automated tests
 

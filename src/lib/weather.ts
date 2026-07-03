@@ -86,6 +86,11 @@ export type CityArchive = {
   trend: {
     perYear: number; // °C/anno (pendenza regressione lineare media annua)
     perDecade: number; // °C/decennio
+    // Margine ± dell'IC al 95% su perDecade (t di Student, df = n-2). Opzionale
+    // perché gli snapshot precalcolati con versioni precedenti dello script non
+    // lo avevano ancora: assente finché fetch-history.mjs non ha ricalcolato
+    // quella città, mai una stima parziale spacciata per definitiva.
+    perDecadeCi95?: number;
     totalChange: number; // °C stimati su tutta la serie (pendenza × anni)
     r2: number; // bontà di adattamento della retta (0-1)
     baselineMean: number; // normale climatica 1961-1990 (WMO)
@@ -509,6 +514,7 @@ async function computeArchive(city: City): Promise<CityArchive> {
     trend: {
       perYear: reg.slope,
       perDecade: reg.slope * 10,
+      perDecadeCi95: reg.ciMargin * 10,
       totalChange: reg.slope * (lastY.year - firstY.year),
       r2: reg.r2,
       baselineMean,
@@ -531,7 +537,12 @@ async function computeArchive(city: City): Promise<CityArchive> {
 export type HistorySnap = Omit<CityArchive, "recent">;
 const SNAPSHOT = historyData as unknown as Record<string, HistorySnap>;
 
-export type HistoryMeta = { generatedAt: string; source: string; commit: string | null };
+export type HistoryMeta = {
+  generatedAt: string;
+  source: string;
+  commit: string | null;
+  sha256?: string; // fingerprint SHA-256 degli aggregati per-città, per verifica indipendente
+};
 
 // Provenienza dello snapshot precalcolato: quando è stato generato e da quale
 // fonte, scritta da scripts/fetch-history.mjs. Serve a chi vuole riprodurre
@@ -616,13 +627,37 @@ export function getMinMaxWarming(archive: HistorySnap): MinMaxWarming | null {
   };
 }
 
-function linreg(pts: [number, number][]): {
+// Valori critici della t di Student per un intervallo di confidenza al 95%
+// (due code), interpolati linearmente tra i gradi di libertà tabulati. Per
+// df >= 120 si usa l'approssimazione alla normale standard (1.96) — scelta
+// esplicita e documentata, non un arrotondamento nascosto: con le serie di
+// questo sito (n ~ 80-85 anni, df ~ 78-83) la differenza rispetto a un valore
+// tabulato esatto è nell'ordine del millesimo.
+const T_TABLE: [number, number][] = [
+  [1, 12.706], [2, 4.303], [3, 3.182], [4, 2.776], [5, 2.571],
+  [6, 2.447], [7, 2.365], [8, 2.306], [9, 2.262], [10, 2.228],
+  [15, 2.131], [20, 2.086], [25, 2.060], [30, 2.042], [40, 2.021],
+  [50, 2.009], [60, 2.000], [80, 1.990], [100, 1.984], [120, 1.980],
+];
+function tCrit95(df: number): number {
+  if (df <= 0) return NaN;
+  if (df >= 120) return 1.96;
+  for (let i = 0; i < T_TABLE.length - 1; i++) {
+    const [df1, t1] = T_TABLE[i];
+    const [df2, t2] = T_TABLE[i + 1];
+    if (df >= df1 && df <= df2) return t1 + ((df - df1) / (df2 - df1)) * (t2 - t1);
+  }
+  return 1.96;
+}
+
+export function linreg(pts: [number, number][]): {
   slope: number;
   intercept: number;
   r2: number;
+  ciMargin: number; // margine ± dell'IC al 95% sulla pendenza, stessa unità di slope (°C/anno)
 } {
   const n = pts.length;
-  if (n < 2) return { slope: 0, intercept: pts[0]?.[1] ?? 0, r2: 0 };
+  if (n < 2) return { slope: 0, intercept: pts[0]?.[1] ?? 0, r2: 0, ciMargin: NaN };
   let sx = 0,
     sy = 0,
     sxx = 0,
@@ -636,11 +671,24 @@ function linreg(pts: [number, number][]): {
     syy += y * y;
   }
   const denom = n * sxx - sx * sx;
-  if (denom === 0) return { slope: 0, intercept: sy / n, r2: 0 };
+  if (denom === 0) return { slope: 0, intercept: sy / n, r2: 0, ciMargin: NaN };
   const slope = (n * sxy - sx * sy) / denom;
   const intercept = (sy - slope * sx) / n;
   const rNum = n * sxy - sx * sy;
   const rDen = Math.sqrt(denom * (n * syy - sy * sy));
   const r = rDen === 0 ? 0 : rNum / rDen;
-  return { slope, intercept, r2: r * r };
+
+  // Errore standard della pendenza: s² = varianza residua (SSE / df), Sxx =
+  // somma degli scarti al quadrato di x. CI95 = t(df) * SE(slope).
+  let sse = 0;
+  for (const [x, y] of pts) {
+    const resid = y - (intercept + slope * x);
+    sse += resid * resid;
+  }
+  const df = n - 2;
+  const sxxDev = sxx - (sx * sx) / n;
+  const se = df > 0 && sxxDev > 0 ? Math.sqrt(sse / df / sxxDev) : NaN;
+  const ciMargin = Number.isFinite(se) ? tCrit95(df) * se : NaN;
+
+  return { slope, intercept, r2: r * r, ciMargin };
 }
