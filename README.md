@@ -227,16 +227,21 @@ optional second data source: **E-OBS**, the station-based gridded dataset from t
 rather than model-based, E-OBS is a genuinely independent check on ERA5, not just another view of
 the same underlying model.
 
-**Current status: blocked, not live.** Most Copernicus/CDS data is CC-BY 4.0, but E-OBS carries its
-own, stricter license clause restricting use to *"non-commercial research and non-commercial
-education projects only."* We've asked ECA&D (eca@knmi.nl) whether italiarovente.app — free,
-ad-free, MIT-licensed, no revenue — qualifies, and are waiting to hear back. Until that's resolved,
-no real E-OBS data is fetched or published:
+**Current status: blocked on licensing only, not live.** Most Copernicus/CDS data is CC-BY 4.0, but
+E-OBS carries its own, stricter license clause restricting use to *"non-commercial research and
+non-commercial education projects only."* We've asked ECA&D (eca@knmi.nl) whether italiarovente.app
+— free, ad-free, MIT-licensed, no revenue — qualifies, and are waiting to hear back. The technical
+side is done and verified: CDS authentication was tested live (a read-only profile lookup, no data
+downloaded), and the exact E-OBS request parameters were confirmed against the dataset's public
+schema (`/api/catalogue/v1/collections/insitu-gridded-observations-europe`) and validated end-to-end
+against CDS's `costing` endpoint (which checks a request is well-formed without fetching any
+licensed data). Until ECA&D responds, no real E-OBS data is fetched or published:
 
 - `scripts/fetch-cds.mjs` contains a small reusable CDS client (async job submit/poll/download over
-  the `retrieve/v1` REST API) plus a NetCDF-parsing helper, but the actual E-OBS request parameters
-  are marked with an `UNVERIFIED` sentinel and the script **refuses to run** against the real CDS
-  API until that sentinel is deliberately removed.
+  the `retrieve/v1` REST API, authenticated via the `PRIVATE-TOKEN` header) plus a NetCDF-parsing
+  helper. The E-OBS request parameters are filled in and verified, but the script **refuses to
+  submit a real job** unless the environment variable `EOBS_LICENSE_CONFIRMED=1` is explicitly set
+  — a deliberate opt-in, not a default, meant to be flipped only after a positive answer from ECA&D.
 - `src/data/eobs.json` is currently a placeholder (every city `null`) with a
   `_meta.status: "pending-license-clarification"` flag, so nothing downstream mistakes it for
   production data.

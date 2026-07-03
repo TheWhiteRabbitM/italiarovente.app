@@ -4,14 +4,15 @@
 // ERA5 già usata da fetch-history.mjs. Serve come secondo termometro, non
 // come sostituto.
 //
-// STATO: bloccato in attesa di chiarimento sulla licenza E-OBS presso ECA&D
-// (eca@knmi.nl) — la licenza E-OBS restringe l'uso a "non-commercial research
-// and non-commercial education projects only". italiarovente.app è gratuito,
-// senza pubblicità, MIT/open source e senza ricavi, ma l'idoneità non è
-// ancora confermata da ECA&D. Finché non arriva una risposta, questo script
-// NON deve girare con parametri di richiesta reali: vedi CDS_REQUEST più
-// sotto e il controllo che lancia un errore se contiene ancora il sentinel
-// "UNVERIFIED".
+// STATO: parametri della richiesta VERIFICATI (schema pubblico del dataset +
+// endpoint "costing" del CDS, vedi commento sopra CDS_REQUEST) e autenticazione
+// CDS testata con successo (GET /api/profiles/v1/account, 2026-07-03). Resta
+// un solo blocco: la licenza E-OBS restringe l'uso a "non-commercial research
+// and non-commercial education projects only", e l'idoneità di
+// italiarovente.app (gratuito, senza pubblicità, MIT/open source, senza
+// ricavi) non è ancora confermata da ECA&D (eca@knmi.nl, richiesta inviata).
+// Finché non arriva una risposta positiva, questo script si rifiuta di
+// sottomettere un job reale — vedi assertLicenseConfirmed() più sotto.
 //
 // A differenza di fetch-history.mjs (chiamata sincrona, budget di pochi
 // minuti, eseguita ad ogni build Vercel), il CDS lavora in modo asincrono:
@@ -60,8 +61,10 @@ function cdsHeaders() {
       "CDS_API_KEY non impostata. Su GitHub Actions è un repository secret; in locale va esportata nell'ambiente.",
     );
   }
+  // Verificato con una chiamata reale (GET /api/profiles/v1/account): CDS usa
+  // l'header "PRIVATE-TOKEN", non "Authorization: Bearer" (che risponde 401).
   return {
-    Authorization: `Bearer ${token}`,
+    "PRIVATE-TOKEN": token,
     "Content-Type": "application/json",
   };
 }
@@ -161,52 +164,51 @@ export async function getResultUrl(jobId) {
  * @returns {Promise<Buffer>}
  */
 export async function downloadResult(url) {
-  // L'URL di download firmato del CDS non richiede il Bearer token (è
-  // pre-autenticato), ma lo includiamo comunque: è innocuo se ignorato.
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${process.env.CDS_API_KEY ?? ""}` } });
+  // L'URL di download firmato del CDS è tipicamente pre-autenticato (punta a
+  // un object store esterno), ma includiamo comunque l'header nel caso serva.
+  const res = await fetch(url, { headers: { "PRIVATE-TOKEN": process.env.CDS_API_KEY ?? "" } });
   if (!res.ok) throw new Error(`downloadResult: HTTP ${res.status}`);
   const arrayBuffer = await res.arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
 
 // ---------------------------------------------------------------------------
-// ⚠️⚠️⚠️  PLACEHOLDER — DA VERIFICARE PRIMA DI QUALSIASI ESECUZIONE REALE  ⚠️⚠️⚠️
-//
-// Questi sono i parametri della richiesta CDS per il dataset E-OBS
-// ("insitu-gridded-observations-europe"), MA sono valori "best-sourced ma non
-// verificati" raccolti da ricerca generica, NON dalla sessione CDS autenticata
-// dell'utente. Prima di lanciare un job reale, vanno sostituiti con l'esatta
-// stringa enum copiata dal pulsante "Show API request code" nella pagina del
-// dataset E-OBS sul sito CDS (richiede login), che mostra il payload esatto
-// per variable / product_type / grid_resolution / version / format ecc. così
-// come accettati dal backend in quel momento (questi valori cambiano nel
-// tempo, es. quando esce una nuova versione E-OBS).
-//
-// Il marcatore sentinella "UNVERIFIED" DEVE restare nell'oggetto finché non
-// viene sostituito: main() controlla la sua presenza e si rifiuta di
-// eseguire, per evitare un run reale accidentale con parametri sbagliati o
-// con una licenza ancora non chiarita da ECA&D.
+// Parametri della richiesta CDS per il dataset E-OBS — VERIFICATI, non più
+// placeholder. Ottenuti leggendo lo schema pubblico del dataset (metadati, non
+// dati protetti da licenza) via:
+//   GET /api/catalogue/v1/collections/insitu-gridded-observations-europe
+//   -> link "form"/"constraints" (JSON pubblico con gli enum validi)
+// e confermati end-to-end contro il vero endpoint "costing" del CDS (stima
+// dimensione/costo di una richiesta, non scarica dati):
+//   POST /api/retrieve/v1/processes/insitu-gridded-observations-europe/costing
+//   -> risposta 200 {"id":"size","cost":1.0,"limit":100.0} con questo identico
+//      oggetto, confermando che la richiesta è ben formata e verrebbe accettata.
+// Questi valori vanno ri-verificati se ECA&D pubblica una nuova versione
+// E-OBS (il campo "version" cambia periodicamente).
+const CDS_DATASET = "insitu-gridded-observations-europe";
 const CDS_REQUEST = {
-  __verified: "UNVERIFIED", // <- rimuovere questa riga SOLO dopo aver incollato i parametri veri
-  dataset: "insitu-gridded-observations-europe",
-  product_type: "ensemble_mean", // media d'insieme; alternativa "elevation" per il DEM, non pertinente qui
+  product_type: "ensemble_mean", // media d'insieme; alternative: "ensemble_spread", "elevation" (DEM, non pertinente)
   variable: "mean_temperature", // TG in nomenclatura E-OBS
-  grid_resolution: "0.1deg", // o "0.25deg" — da confermare
-  period: "full_period", // periodo storico completo disponibile
-  version: "v33.0e", // versione E-OBS più recente nota da ricerca — verificare quella corrente
-  format: "zip", // il file scaricato contiene tipicamente un NetCDF-4 (.nc)
+  grid_resolution: "0_25deg", // o "0_1deg" per la griglia più fine (file più grande)
+  period: "full_period", // valido per version 33_0e insieme a 1980_1994/1995_2010/reg_2011_2025
+  version: ["33_0e"], // versione E-OBS più recente al momento della verifica (2026-07-03) — è un array
 };
 
-function assertRequestVerified(request) {
-  const json = JSON.stringify(request);
-  if (json.includes("UNVERIFIED") || request.__verified === "UNVERIFIED") {
+// L'unico vincolo rimasto NON è più tecnico (i parametri sopra sono
+// verificati) ma di LICENZA: l'uso di E-OBS è limitato a "non-commercial
+// research and non-commercial education projects only", e l'idoneità di
+// italiarovente.app non è ancora stata confermata da ECA&D (eca@knmi.nl).
+// Lo script si rifiuta di sottomettere un job reale finché non viene
+// impostata esplicitamente la variabile d'ambiente EOBS_LICENSE_CONFIRMED=1
+// — un opt-in deliberato, da attivare solo dopo una risposta positiva da
+// ECA&D, non un default silenzioso.
+function assertLicenseConfirmed() {
+  if (process.env.EOBS_LICENSE_CONFIRMED !== "1") {
     throw new Error(
-      "CDS_REQUEST contiene ancora il marcatore sentinella \"UNVERIFIED\": i parametri della richiesta E-OBS " +
-        "(variable/grid_resolution/version/format) NON sono stati verificati contro la sessione CDS autenticata " +
-        "dell'utente (pulsante \"Show API request code\" sulla pagina del dataset). Inoltre l'idoneità di " +
-        "italiarovente.app alla licenza E-OBS (uso non commerciale) è ancora in attesa di conferma da ECA&D. " +
-        "Questo script si rifiuta di eseguire una chiamata reale finché entrambe le condizioni non sono risolte. " +
-        "Vedi il commento sopra CDS_REQUEST in scripts/fetch-cds.mjs.",
+      "Uso di E-OBS non ancora confermato da ECA&D (eca@knmi.nl) per italiarovente.app: la licenza E-OBS " +
+        "restringe l'uso a scopi di ricerca/educazione non commerciali. Questo script si rifiuta di sottomettere " +
+        "un job reale finché non si imposta esplicitamente EOBS_LICENSE_CONFIRMED=1 (solo dopo una risposta " +
+        "positiva). I parametri della richiesta (CDS_REQUEST) sono già verificati e pronti — vedi il commento qui sopra.",
     );
   }
 }
@@ -299,14 +301,12 @@ function todayISO() {
 async function main() {
   mkdirSync(dirname(OUT), { recursive: true });
 
-  // Rifiuta l'esecuzione reale finché i parametri non sono verificati e la
-  // licenza non è chiarita. Questo è l'unico "path" che questo script segue
-  // oggi: la parte di submit/poll/download/parse sopra è plumbing pronta ma
-  // non ancora collegata a un run live.
-  assertRequestVerified(CDS_REQUEST);
+  // Rifiuta l'esecuzione reale finché la licenza non è chiarita da ECA&D
+  // (i parametri della richiesta sono già verificati, vedi sopra).
+  assertLicenseConfirmed();
 
-  // --- Da qui in poi, codice non ancora raggiungibile finché il sentinel
-  // "UNVERIFIED" non viene rimosso consapevolmente da CDS_REQUEST. ---
+  // --- Da qui in poi, codice non ancora raggiungibile finché non si imposta
+  // esplicitamente EOBS_LICENSE_CONFIRMED=1 (solo dopo il via libera ECA&D). ---
 
   let existing = {};
   try {
@@ -318,8 +318,8 @@ async function main() {
   const out = { ...existing };
 
   try {
-    console.log(`Sottometto job CDS per dataset "${CDS_REQUEST.dataset}"...`);
-    const jobId = await submitJob(CDS_REQUEST.dataset, CDS_REQUEST);
+    console.log(`Sottometto job CDS per dataset "${CDS_DATASET}"...`);
+    const jobId = await submitJob(CDS_DATASET, CDS_REQUEST);
     console.log(`Job sottomesso: ${jobId}. Polling...`);
     const job = await pollJob(jobId, {
       onPoll: (status, elapsedMs) => console.log(`  [${Math.round(elapsedMs / 1000)}s] stato: ${status}`),
