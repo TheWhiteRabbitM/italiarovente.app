@@ -1,18 +1,12 @@
 // Layer dati E-OBS (Copernicus Climate Data Store) — cross-check indipendente
 // da stazione, contro l'ERA5 (rianalisi) già usato da src/lib/weather.ts.
 //
-// STATO: NON ANCORA IN PRODUZIONE. La licenza E-OBS restringe l'uso a
-// "non-commercial research and non-commercial education projects only"; è in
-// corso una richiesta di chiarimento a ECA&D (eca@knmi.nl) sull'idoneità di
-// italiarovente.app (gratuito, senza pubblicità, MIT/open source, senza
-// ricavi). Finché non arriva una risposta, src/data/eobs.json contiene solo
-// una struttura placeholder (tutte le città a `null`) generata da
-// scripts/fetch-cds.mjs, che a sua volta si rifiuta di chiamare l'API CDS
-// reale finché i suoi parametri restano marcati "UNVERIFIED".
-//
-// Questo modulo NON è collegato a nessuna UI: getEobsComparison() esiste solo
-// perché il codice chiamante futuro abbia già una firma stabile a cui
-// agganciarsi quando (e se) i dati diventeranno reali.
+// STATO: licenza confermata da ECA&D (eca@knmi.nl, 2026-07-03) — uso non
+// commerciale consentito a tre condizioni: progetto non commerciale, dati
+// E-OBS grezzi mai ridistribuiti (solo medie annue), attribuzione presente
+// (vedi EOBS_ATTRIBUTION in scripts/fetch-cds.mjs). src/data/eobs.json è
+// generato da scripts/fetch-cds.mjs via un job Copernicus CDS schedulato
+// mensilmente (.github/workflows/eobs-refresh.yml).
 
 import eobsData from "@/data/eobs.json";
 
@@ -20,7 +14,10 @@ export type EobsMeta = {
   generatedAt: string | null;
   source: string;
   commit: string | null;
-  status: "pending-license-clarification" | "active";
+  status: "pending-license-clarification" | "confirmed";
+  licenseConfirmedBy?: string;
+  licenseConditions?: string[];
+  attribution?: { it: string; en: string };
 };
 
 // Aggregato per-anno per una città, nello stesso spirito di YearlyPoint in
@@ -29,6 +26,7 @@ export type EobsMeta = {
 export type EobsYearlyPoint = {
   year: number;
   mean: number;
+  count: number;
 };
 
 export type EobsCityData = {

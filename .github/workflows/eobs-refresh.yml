@@ -8,13 +8,13 @@ name: eobs-refresh
 #  - la latenza dei job CDS è imprevedibile (minuti fino a oltre 20 ore in caso
 #    di congestione), incompatibile con una build live su Vercel.
 #
-# NOTA: i parametri della richiesta E-OBS sono verificati (vedi commento in
-# scripts/fetch-cds.mjs), ma lo script si rifiuta comunque di sottomettere un
-# job reale finché non è impostata la variabile EOBS_LICENSE_CONFIRMED=1 —
-# in attesa del chiarimento sulla licenza da parte di ECA&D (la licenza E-OBS
-# è "non-commercial research/education only"). Finché quella variabile non è
-# aggiunta come secret, questo workflow gira ma non produce nessuna chiamata
-# CDS reale né nessuna modifica a src/data/eobs.json.
+# NOTA: ECA&D (eca@knmi.nl) ha confermato via email il 2026-07-03 che l'uso
+# descritto (validare le nostre analisi ERA5, pubblicare solo aggregati
+# derivati con attribuzione) rientra nell'uso non commerciale consentito dalla
+# licenza E-OBS — vedi il commento in testa a scripts/fetch-cds.mjs per le
+# condizioni esatte. EOBS_LICENSE_CONFIRMED=1 è quindi impostata sotto come
+# opt-in esplicito e permanente (non un secret: non è un dato sensibile, è
+# solo un interruttore deliberato contro esecuzioni accidentali).
 
 on:
   schedule:
@@ -41,6 +41,7 @@ jobs:
         env:
           CDS_API_KEY: ${{ secrets.CDS_API_KEY }}
           GITHUB_SHA: ${{ github.sha }}
+          EOBS_LICENSE_CONFIRMED: "1"
         run: node scripts/fetch-cds.mjs
 
       - name: Commit updated eobs.json if changed

@@ -4,15 +4,23 @@
 // ERA5 già usata da fetch-history.mjs. Serve come secondo termometro, non
 // come sostituto.
 //
-// STATO: parametri della richiesta VERIFICATI (schema pubblico del dataset +
-// endpoint "costing" del CDS, vedi commento sopra CDS_REQUEST) e autenticazione
-// CDS testata con successo (GET /api/profiles/v1/account, 2026-07-03). Resta
-// un solo blocco: la licenza E-OBS restringe l'uso a "non-commercial research
-// and non-commercial education projects only", e l'idoneità di
-// italiarovente.app (gratuito, senza pubblicità, MIT/open source, senza
-// ricavi) non è ancora confermata da ECA&D (eca@knmi.nl, richiesta inviata).
-// Finché non arriva una risposta positiva, questo script si rifiuta di
-// sottomettere un job reale — vedi assertLicenseConfirmed() più sotto.
+// STATO: SBLOCCATO. Parametri della richiesta verificati (schema pubblico del
+// dataset + endpoint "costing" del CDS), autenticazione CDS testata con
+// successo, e — 2026-07-03 — ECA&D (eca@knmi.nl) ha confermato via email che
+// l'uso descritto (validare le nostre analisi ERA5 e pubblicare statistiche
+// aggregate derivate, MAI i dati E-OBS grezzi, con attribuzione) rientra
+// nell'uso non commerciale consentito, a tre condizioni esplicite:
+//   1. il progetto resta non commerciale;
+//   2. il dataset E-OBS grezzo non viene ridistribuito — solo aggregati
+//      (medie annue/decadali), mai la serie giornaliera puntuale scaricata;
+//   3. le citazioni richieste (E-OBS/ECA&D/UERRA/Copernicus + Cornes et al.
+//      2018, vedi ATTRIBUTION più sotto) compaiono sul sito.
+// La condizione 2 è applicata nel codice: extractNearestGridCells() estrae la
+// serie giornaliera solo come passo intermedio in memoria, MAI scritta su
+// disco; main() la aggrega subito a medie annue prima di scrivere eobs.json.
+// Se in futuro il progetto cambiasse natura (es. pubblicità, monetizzazione),
+// ECA&D va ricontattata: non dare per scontato che questo via libera resti
+// valido a tempo indeterminato.
 //
 // A differenza di fetch-history.mjs (chiamata sincrona, budget di pochi
 // minuti, eseguita ad ogni build Vercel), il CDS lavora in modo asincrono:
@@ -172,6 +180,28 @@ export async function downloadResult(url) {
   return Buffer.from(arrayBuffer);
 }
 
+/**
+ * CDS impacchetta il risultato E-OBS in uno ZIP contenente un singolo file
+ * NetCDF-4 (.nc) — scoperto empiricamente: l'URL del risultato termina in
+ * ".zip" e il buffer scaricato non ha la signature HDF5 (h5wasm lo rifiuta
+ * con "Not an HDF5 file" se passato direttamente). Questa funzione estrae il
+ * primo file .nc trovato nello zip.
+ * @param {Buffer} zipBuffer
+ * @returns {Promise<Buffer>} contenuto del file .nc
+ */
+export async function extractNetcdfFromZip(zipBuffer) {
+  const JSZip = (await import("jszip")).default;
+  const zip = await JSZip.loadAsync(zipBuffer);
+  const ncEntry = Object.values(zip.files).find((f) => !f.dir && f.name.toLowerCase().endsWith(".nc"));
+  if (!ncEntry) {
+    throw new Error(
+      `extractNetcdfFromZip: nessun file .nc trovato nello zip. Contenuto: ${Object.keys(zip.files).join(", ")}`,
+    );
+  }
+  const arrayBuffer = await ncEntry.async("arraybuffer");
+  return Buffer.from(arrayBuffer);
+}
+
 // ---------------------------------------------------------------------------
 // Parametri della richiesta CDS per il dataset E-OBS — VERIFICATI, non più
 // placeholder. Ottenuti leggendo lo schema pubblico del dataset (metadati, non
@@ -194,21 +224,25 @@ const CDS_REQUEST = {
   version: ["33_0e"], // versione E-OBS più recente al momento della verifica (2026-07-03) — è un array
 };
 
-// L'unico vincolo rimasto NON è più tecnico (i parametri sopra sono
-// verificati) ma di LICENZA: l'uso di E-OBS è limitato a "non-commercial
-// research and non-commercial education projects only", e l'idoneità di
-// italiarovente.app non è ancora stata confermata da ECA&D (eca@knmi.nl).
-// Lo script si rifiuta di sottomettere un job reale finché non viene
-// impostata esplicitamente la variabile d'ambiente EOBS_LICENSE_CONFIRMED=1
-// — un opt-in deliberato, da attivare solo dopo una risposta positiva da
-// ECA&D, non un default silenzioso.
+// Testo di attribuzione richiesto dalla licenza E-OBS (condizione 3 sopra) —
+// da mostrare ovunque compaiano dati derivati da E-OBS sul sito (pagina città,
+// disclaimer). Riutilizzato anche in src/lib/eobs.ts.
+export const EOBS_ATTRIBUTION = {
+  it: "Dati E-OBS: progetto UERRA (EU-FP6) e Copernicus Climate Change Service; fornitori dei dati: rete ECA&D (ecad.eu). Fonte: Cornes, R., G. van der Schrier, E.J.M. van den Besselaar, and P.D. Jones. 2018: An Ensemble Version of the E-OBS Temperature and Precipitation Datasets.",
+  en: "E-OBS data: EU-FP6 project UERRA and the Copernicus Climate Change Service; data providers: the ECA&D project (ecad.eu). Source: Cornes, R., G. van der Schrier, E.J.M. van den Besselaar, and P.D. Jones. 2018: An Ensemble Version of the E-OBS Temperature and Precipitation Datasets.",
+};
+
+// Anche con il via libera di ECA&D, lo script si rifiuta di sottomettere un
+// job reale finché non si imposta esplicitamente la variabile d'ambiente
+// EOBS_LICENSE_CONFIRMED=1 — un opt-in deliberato invece di un default
+// silenzioso, coerente con come questo script è stato progettato fin
+// dall'inizio (misura doppia, taglia una volta).
 function assertLicenseConfirmed() {
   if (process.env.EOBS_LICENSE_CONFIRMED !== "1") {
     throw new Error(
-      "Uso di E-OBS non ancora confermato da ECA&D (eca@knmi.nl) per italiarovente.app: la licenza E-OBS " +
-        "restringe l'uso a scopi di ricerca/educazione non commerciali. Questo script si rifiuta di sottomettere " +
-        "un job reale finché non si imposta esplicitamente EOBS_LICENSE_CONFIRMED=1 (solo dopo una risposta " +
-        "positiva). I parametri della richiesta (CDS_REQUEST) sono già verificati e pronti — vedi il commento qui sopra.",
+      "EOBS_LICENSE_CONFIRMED non impostata a \"1\": anche se ECA&D ha confermato l'idoneità di italiarovente.app " +
+        "(email del 2026-07-03, vedi commento in testa al file), questo script richiede comunque l'opt-in esplicito " +
+        "prima di sottomettere un job reale, per evitare esecuzioni accidentali.",
     );
   }
 }
@@ -221,17 +255,28 @@ function assertLicenseConfirmed() {
 // classico NetCDF3 e NON è adatto ai file NetCDF4 di E-OBS — non usarlo.
 // ---------------------------------------------------------------------------
 
+// Decodifica un'unità di tempo CF-convention tipo "days since 1950-01-01
+// 00:00:00" in una data di partenza, per convertire l'indice temporale del
+// NetCDF in anno solare senza dipendere da una libreria CF completa.
+function parseCfTimeUnits(unitsStr) {
+  const m = /days since (\d{4}-\d{2}-\d{2})/.exec(unitsStr ?? "");
+  if (!m) throw new Error(`parseCfTimeUnits: formato unità tempo non riconosciuto: "${unitsStr}"`);
+  return new Date(m[1] + "T00:00:00Z");
+}
+
 /**
- * Estrae, per ogni città, il valore della cella-griglia più vicina da un
- * dataset NetCDF-4 E-OBS (variabili attese: lat, lon, e la variabile
- * meteorologica richiesta, es. "tg" per la temperatura media).
+ * Estrae, per ogni città, la serie giornaliera della cella-griglia più
+ * vicina da un dataset NetCDF-4 E-OBS, e la aggrega SUBITO a medie annue —
+ * la serie giornaliera intermedia resta solo in memoria, non viene mai
+ * restituita né scritta su disco (condizione di licenza ECA&D: solo
+ * aggregati derivati, mai il dato E-OBS grezzo).
  *
  * @param {Buffer} netcdfBuffer - contenuto del file .nc
  * @param {{slug: string, name: string, lat: number, lon: number}[]} cities
  * @param {string} variableName - nome della variabile NetCDF da leggere (es. "tg")
- * @returns {Promise<Record<string, number[]>>} slug -> serie di valori nel tempo
+ * @returns {Promise<Record<string, {year: number, mean: number, count: number}[]>>}
  */
-export async function extractNearestGridCells(netcdfBuffer, cities, variableName) {
+export async function extractYearlyMeans(netcdfBuffer, cities, variableName) {
   const h5wasm = await import("h5wasm");
   await h5wasm.ready;
 
@@ -242,46 +287,118 @@ export async function extractNearestGridCells(netcdfBuffer, cities, variableName
 
   const file = new h5wasm.File(tmpName, "r");
   try {
-    const lat = file.get("latitude")?.value ?? file.get("lat")?.value;
-    const lon = file.get("longitude")?.value ?? file.get("lon")?.value;
-    const varDataset = file.get(variableName);
-    if (!lat || !lon || !varDataset) {
+    const latDs = file.get("latitude") ?? file.get("lat");
+    const lonDs = file.get("longitude") ?? file.get("lon");
+    const timeDs = file.get("time");
+    const varDs = file.get(variableName);
+    if (!latDs || !lonDs || !timeDs || !varDs) {
       throw new Error(
-        `extractNearestGridCells: variabili attese non trovate nel NetCDF (lat/lon/${variableName}). ` +
-          `Chiavi disponibili: ${Object.keys(file.keys?.() ?? {})}`,
+        `extractYearlyMeans: variabili attese non trovate nel NetCDF (latitude/longitude/time/${variableName}). ` +
+          `Chiavi disponibili: ${JSON.stringify(Object.keys(file.keys ? file.keys() : file))}`,
       );
     }
-    const values = varDataset.value; // atteso: array [time, lat, lon] appiattito
+    const lat = latDs.value; // piccolo (~200 elementi), letto interamente senza problemi
+    const lon = lonDs.value; // idem (~500 elementi)
+    const timeRaw = timeDs.value; // piccolo (~28k elementi, giorni interi)
+    // Gli attributi stringa di h5wasm (units/long_name/...) sono già stringhe
+    // JS normali — NON array da indicizzare con [0] (bug scoperto ispezionando
+    // il file reale: "days since 1950-01-01"[0] === "d").
+    const timeUnits = timeDs.attrs?.units?.value;
+    const epoch = parseCfTimeUnits(timeUnits);
+    const years = [...timeRaw].map((d) => {
+      const date = new Date(epoch.getTime() + d * 86400000);
+      return date.getUTCFullYear();
+    });
 
-    function nearestIndex(arr, target) {
-      let bestIdx = 0;
-      let bestDist = Infinity;
-      for (let i = 0; i < arr.length; i++) {
-        const d = Math.abs(arr[i] - target);
-        if (d < bestDist) {
-          bestDist = d;
-          bestIdx = i;
+    // Il dato "tg" è impacchettato come intero a 16 bit (dtype "<h") con
+    // scale_factor/add_offset — scoperto ispezionando il file reale: il
+    // valore reale è raw*scale_factor + add_offset, e il valore mancante è
+    // -9999 nel dominio IMPACCHETTATO (va confrontato prima di scompattare).
+    // Questi attributi numerici SONO array-like con un solo elemento (a
+    // differenza degli attributi stringa sopra) -> [0] indexing corretto qui.
+    const scaleFactor = varDs.attrs?.scale_factor?.value?.[0] ?? 1;
+    const addOffset = varDs.attrs?.add_offset?.value?.[0] ?? 0;
+    const fillValue = varDs.attrs?._FillValue?.value?.[0] ?? varDs.attrs?.missing_value?.value?.[0];
+
+    // E-OBS è un dataset SOLO TERRA: per le città costiere, la cella-griglia
+    // più vicina in assoluto può cadere in mare (interamente fill value) —
+    // scoperto empiricamente su 5 delle 12 città principali (Palermo, Genova,
+    // Bari, Venezia, Cagliari, tutte costiere). Per questo si generano più
+    // celle candidate ordinate per distanza reale (non nearest per-asse
+    // indipendente, che può combinare un lat e un lon "vicini" in una cella
+    // di mare) entro un raggio di ricerca, e si prova ciascuna finché non se
+    // ne trova una con dati sufficientemente completi.
+    const SEARCH_RADIUS_DEG = 1.5; // ~6 celle a 0.25°, ampio abbastanza per una penisola stretta
+    const MIN_VALID_YEARS = 50; // su ~76 anni attesi: soglia per scartare celle quasi-vuote
+
+    function candidateCells(targetLat, targetLon) {
+      const candidates = [];
+      for (let i = 0; i < lat.length; i++) {
+        if (Math.abs(lat[i] - targetLat) > SEARCH_RADIUS_DEG) continue;
+        for (let j = 0; j < lon.length; j++) {
+          if (Math.abs(lon[j] - targetLon) > SEARCH_RADIUS_DEG) continue;
+          const d = Math.hypot(lat[i] - targetLat, lon[j] - targetLon);
+          candidates.push({ latIdx: i, lonIdx: j, d });
         }
       }
-      return bestIdx;
+      candidates.sort((a, b) => a.d - b.d);
+      return candidates;
+    }
+
+    const nTime = timeRaw.length;
+
+    function aggregateCell(latIdx, lonIdx) {
+      // Lettura a fetta (hyperslab): solo la colonna [tutti i tempi, questa
+      // cella], non l'intero cubo europeo — necessario, l'intero array "tg"
+      // (~5 GB da scompattato) eccede il limite di memoria di h5wasm (2 GB).
+      const raw = varDs.slice([
+        [0, nTime, 1],
+        [latIdx, latIdx + 1, 1],
+        [lonIdx, lonIdx + 1, 1],
+      ]);
+
+      // Media annua: somma/conteggio dei giorni validi per anno, MAI la
+      // serie giornaliera stessa conservata oltre questo ciclo (condizione
+      // di licenza ECA&D: solo aggregati derivati).
+      const yearAgg = new Map();
+      for (let t = 0; t < nTime; t++) {
+        const rv = raw[t];
+        if (rv === fillValue) continue;
+        const v = rv * scaleFactor + addOffset;
+        const y = years[t];
+        const a = yearAgg.get(y) ?? { sum: 0, n: 0 };
+        a.sum += v;
+        a.n += 1;
+        yearAgg.set(y, a);
+      }
+      return [...yearAgg.entries()]
+        .map(([year, a]) => ({ year, mean: Math.round((a.sum / a.n) * 100) / 100, count: a.n }))
+        .sort((a, b) => a.year - b.year);
     }
 
     const result = {};
     for (const city of cities) {
-      const latIdx = nearestIndex(lat, city.lat);
-      const lonIdx = nearestIndex(lon, city.lon);
-      // Estrazione della serie temporale per la cella (latIdx, lonIdx).
-      // La forma esatta (ordine degli assi) va confermata contro il file
-      // NetCDF reale una volta ottenuto — placeholder strutturale per ora.
-      const nLat = lat.length;
-      const nLon = lon.length;
-      const nTime = values.length / (nLat * nLon);
-      const series = [];
-      for (let t = 0; t < nTime; t++) {
-        const idx = t * nLat * nLon + latIdx * nLon + lonIdx;
-        series.push(values[idx]);
+      const candidates = candidateCells(city.lat, city.lon);
+      let yearly = [];
+      let usedCandidate = null;
+      for (const c of candidates) {
+        const attempt = aggregateCell(c.latIdx, c.lonIdx);
+        if (attempt.length >= MIN_VALID_YEARS) {
+          yearly = attempt;
+          usedCandidate = c;
+          break;
+        }
       }
-      result[city.slug] = series;
+      if (!usedCandidate) {
+        console.warn(
+          `  [${city.slug}] nessuna cella valida trovata entro ${SEARCH_RADIUS_DEG}° (${candidates.length} candidate provate) — probabile isola/costa isolata.`,
+        );
+      } else if (usedCandidate.d > 0.3) {
+        console.log(
+          `  [${city.slug}] cella più vicina era in mare/mancante, usata quella a ${usedCandidate.d.toFixed(2)}° di distanza.`,
+        );
+      }
+      result[city.slug] = yearly;
     }
     return result;
   } finally {
@@ -326,17 +443,22 @@ async function main() {
     });
     const resultUrl = await getResultUrl(job.jobID ?? jobId);
     console.log(`Download risultato da ${resultUrl}...`);
-    const buffer = await downloadResult(resultUrl);
+    const zipBuffer = await downloadResult(resultUrl);
+    console.log(`Scaricati ${zipBuffer.length} byte (zip). Estraggo il NetCDF...`);
+    const buffer = await extractNetcdfFromZip(zipBuffer);
+    console.log(`NetCDF estratto: ${buffer.length} byte. Parsing...`);
+    if (process.env.EOBS_DEBUG_SAVE_NC) {
+      writeFileSync(process.env.EOBS_DEBUG_SAVE_NC, buffer);
+      console.log(`[debug] NetCDF salvato in ${process.env.EOBS_DEBUG_SAVE_NC}`);
+    }
 
     const variableName = "tg"; // E-OBS: "tg" = temperatura media giornaliera
-    const series = await extractNearestGridCells(buffer, MAIN_CITIES, variableName);
+    const yearly = await extractYearlyMeans(buffer, MAIN_CITIES, variableName);
 
-    // TODO: aggregare la serie giornaliera per anno (mean temp) nello stesso
-    // stile di aggregate() in fetch-history.mjs, una volta note la forma e la
-    // frequenza reali dei dati restituiti da CDS.
     for (const city of MAIN_CITIES) {
-      out[city.slug] = { series: series[city.slug] ?? null };
+      out[city.slug] = { yearly: yearly[city.slug] ?? null };
     }
+    console.log(`Estratte medie annue per ${MAIN_CITIES.length} città.`);
   } catch (e) {
     console.error(`Errore nel fetch CDS/E-OBS: ${e.message} -> mantengo i dati esistenti`);
     // Resiliente come fetch-history.mjs: in caso di errore, non tocca i dati
@@ -345,9 +467,16 @@ async function main() {
 
   out._meta = {
     generatedAt: todayISO(),
-    source: "Copernicus Climate Data Store — E-OBS ensemble mean",
+    source: "Copernicus Climate Data Store — E-OBS ensemble mean (station-based, independent of ERA5)",
     commit: process.env.GITHUB_SHA ? process.env.GITHUB_SHA.slice(0, 7) : null,
-    status: "pending-license-clarification",
+    status: "confirmed",
+    licenseConfirmedBy: "ECA&D (eca@knmi.nl), 2026-07-03",
+    licenseConditions: [
+      "non-commercial use only",
+      "raw E-OBS data not redistributed (yearly means only)",
+      "attribution required — see EOBS_ATTRIBUTION",
+    ],
+    attribution: EOBS_ATTRIBUTION,
   };
 
   writeFileSync(OUT, JSON.stringify(out, null, 2));

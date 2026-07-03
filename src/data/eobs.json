@@ -1,20 +1,4576 @@
 {
   "_meta": {
-    "generatedAt": null,
-    "source": "Copernicus Climate Data Store — E-OBS ensemble mean",
+    "generatedAt": "2026-07-03",
+    "source": "Copernicus Climate Data Store — E-OBS ensemble mean (station-based, independent of ERA5)",
     "commit": null,
-    "status": "pending-license-clarification"
+    "status": "confirmed",
+    "licenseConfirmedBy": "ECA&D (eca@knmi.nl), 2026-07-03",
+    "licenseConditions": [
+      "non-commercial use only",
+      "raw E-OBS data not redistributed (yearly means only)",
+      "attribution required — see EOBS_ATTRIBUTION"
+    ],
+    "attribution": {
+      "it": "Dati E-OBS: progetto UERRA (EU-FP6) e Copernicus Climate Change Service; fornitori dei dati: rete ECA&D (ecad.eu). Fonte: Cornes, R., G. van der Schrier, E.J.M. van den Besselaar, and P.D. Jones. 2018: An Ensemble Version of the E-OBS Temperature and Precipitation Datasets.",
+      "en": "E-OBS data: EU-FP6 project UERRA and the Copernicus Climate Change Service; data providers: the ECA&D project (ecad.eu). Source: Cornes, R., G. van der Schrier, E.J.M. van den Besselaar, and P.D. Jones. 2018: An Ensemble Version of the E-OBS Temperature and Precipitation Datasets."
+    }
   },
-  "roma": null,
-  "milano": null,
-  "napoli": null,
-  "torino": null,
-  "palermo": null,
-  "genova": null,
-  "bologna": null,
-  "firenze": null,
-  "bari": null,
-  "venezia": null,
-  "catania": null,
-  "cagliari": null
+  "roma": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 16.81,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 15.96,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 16.17,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 15.8,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 15.48,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 16.22,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 15.09,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 16.11,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 16.13,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 16.15,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 16.04,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 16.4,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 15.49,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 15.62,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 15.96,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 15.43,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 15.83,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 15.93,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 15.42,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 15.58,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.87,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 15.71,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 15.35,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 15.6,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 15.22,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 15.53,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 15.13,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 15.51,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 14.74,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.35,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 14.79,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 15.52,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 16.49,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 15.66,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 15.26,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 16.42,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 15.96,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 16.46,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 15.8,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 15.37,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 15.8,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 15.34,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 16.2,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 15.83,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 17.54,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 15.77,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 16.26,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 17.19,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 16.81,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 16.87,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 16.45,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 16.46,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 16.5,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 17.13,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 15.94,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 15.63,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 16.78,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 17.16,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 16.81,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 16.99,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 16.29,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 16.69,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 16.72,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 16.34,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 16.73,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 16.78,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 16.52,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 16.35,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 16.71,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 16.68,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 16.59,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 16.39,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 17.43,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 17.43,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.41,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 17.39,
+        "count": 365
+      }
+    ]
+  },
+  "milano": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 15,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 14.42,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 14.29,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 14.7,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 13.49,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 14.04,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 12.82,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 13.7,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 13.13,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 13.43,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.83,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 13.9,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 12.59,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 12.08,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 13.02,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 12.43,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 12.99,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 12.5,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 12.03,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 12.38,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.58,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 12.26,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.84,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 13.13,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 13.19,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 12.74,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 12.41,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 11.94,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 12.47,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 12.15,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 12.61,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 12.99,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 12.22,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 12.71,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 13.15,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.95,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 13.76,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 13.36,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 13.65,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 12.98,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 13.74,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 13.78,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 14.06,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 13.07,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 13.49,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 14.04,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 13.6,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 13.1,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 13.36,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 12.96,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 13.42,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 14.54,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 13.84,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 13.37,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 14.16,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 14.62,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 14.14,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 14.52,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 13.08,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 14.15,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 13.77,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 13.39,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 14.53,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 14.51,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 14.06,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 14.59,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 15.09,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 15.04,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 14.7,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 14.14,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 15.64,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 15.53,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 15.3,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 15.21,
+        "count": 365
+      }
+    ]
+  },
+  "napoli": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 17.53,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 16.55,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 16.64,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 16.16,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 15.96,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 16.74,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 15.7,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 16.59,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 15.63,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 15.15,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 15.63,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 15.7,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 15.42,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 15.39,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 15.36,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 15.05,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 15.61,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 15.46,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 14.95,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 15,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.09,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 14.75,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 14.91,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 14.58,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 14.59,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 15.12,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 14.13,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 15.53,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 14.69,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.82,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 14.79,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 14.9,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 15.96,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 15.16,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 14.93,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 15.26,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 15.18,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 15.66,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 15.78,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 14.84,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 15.71,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 14.3,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 14.84,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 14.35,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 16.19,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 15.02,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 15.01,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 15.63,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 15.73,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 16.05,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 16.73,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 16.85,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 17,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 17.49,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 17.23,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 17.14,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 17.66,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 17.94,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 17.74,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 17.23,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 16.87,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 17.52,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 16.93,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 16.93,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 16.99,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 16.72,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 15.96,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 16.4,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 16.81,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 16.66,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 16.4,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 16.32,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 16.78,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 16.61,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.07,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 16.89,
+        "count": 365
+      }
+    ]
+  },
+  "torino": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 12.78,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 12.37,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 12.29,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 12.6,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 11.83,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 12.42,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 11.22,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 12.37,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 12.24,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.06,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 12.7,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 11.81,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 11.85,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 12.8,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 11.67,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 12.51,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 12.54,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 12.23,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 11.91,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 12.15,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.21,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 12.19,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.15,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 12.18,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 12.45,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 12.34,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 12.03,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 11.48,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 11.87,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 11.34,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 11.81,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 12.36,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 11.91,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 11.3,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 11.55,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 12.16,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.08,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 12.52,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 12.68,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 12.87,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 12.35,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 12.3,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 11.98,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 13.35,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 12.32,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 12.19,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 13.18,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 12.76,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 12.97,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 12.94,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 12.86,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 13.32,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 12.72,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 12.24,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 13.01,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 13.23,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 12.65,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 12.84,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 11.85,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 13.12,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 13.02,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 12.46,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 13.12,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 13.13,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 12.78,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 12.88,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 13.34,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 13.38,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 13.15,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 12.73,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 14.06,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 13.84,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 13.55,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 13.59,
+        "count": 365
+      }
+    ]
+  },
+  "palermo": {
+    "yearly": [
+      {
+        "year": 1951,
+        "mean": 16.58,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 16.84,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 16.17,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 16.17,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 17.03,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 15.7,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 16.29,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 15.91,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 15.74,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 16.51,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 16.84,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 16.42,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 16.19,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 16.35,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 16.07,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 16.07,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 16.27,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 15.94,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 15.39,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.91,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 15.44,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 15.67,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 15.79,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 15.47,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 15.5,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 14.92,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 16.25,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 15.11,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.79,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 15.07,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 15.72,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 16.54,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 16.17,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 15.85,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 16.3,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 16.18,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 16.65,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 16.77,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 16.37,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 16.9,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 15.46,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 15.89,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 15.69,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 17.36,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 16.17,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 16.01,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 16.78,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 16.54,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 17.19,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 17.07,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 16.76,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 17.06,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 16.88,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 16.11,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 15.76,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 16.62,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 16.69,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 16.62,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 16.62,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 16.55,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 16.31,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 16.71,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 16.29,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 16.66,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 16.51,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 16.67,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 16.34,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 16.62,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 16.59,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 16.63,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 17.05,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 17.37,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 17.15,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.6,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 17.25,
+        "count": 365
+      }
+    ]
+  },
+  "genova": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 13.78,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 13.16,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 13.16,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 13.49,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 12.43,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 13.14,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 11.88,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 12.56,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 12.69,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.09,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 12.31,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 11.73,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 11.86,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 12.58,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 11.43,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 12.21,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 12.51,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 11.88,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 11.67,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 11.77,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.27,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 11.48,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.28,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 12.03,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 12.1,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 11.9,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 11.93,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 11.69,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 12.08,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 11.45,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 12.23,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 12.68,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 12.04,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 11.21,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 12.2,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 12.67,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.48,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 13.26,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 13.38,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 13.35,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 11.82,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 12.37,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 12.15,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 12.84,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 12.13,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 11.9,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 12.91,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 13.23,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 13.03,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 12.39,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 12.39,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 12.51,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 11.83,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 12.07,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 12.82,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 12.91,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 12.65,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 12.93,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 11.74,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 13.05,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 12.85,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 11.77,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 13.06,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 13.32,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 12.38,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 12.56,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 12.78,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 13.71,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 12.93,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 12.19,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 13.53,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 13.56,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 13.12,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 13.13,
+        "count": 365
+      }
+    ]
+  },
+  "bologna": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 13.8,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 13.43,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 13.41,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 13.45,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 12.35,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 12.85,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 12.13,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 13.42,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 13.37,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.85,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 13.77,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 12.34,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 12.14,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 12.56,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 12.1,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 13.11,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 13.27,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 12.4,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 12.11,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 12.39,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.65,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 12.42,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.76,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 13.29,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 13.06,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 12.34,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 13.03,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 12.28,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 12.57,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 12.12,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 12.81,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 13.18,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 11.93,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 12.93,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 12.95,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.67,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 13.64,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 13.54,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 13.72,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 12.84,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 13.67,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 13.93,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 14.5,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 13.32,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 12.79,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 14.28,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 14.29,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 14.36,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 15.29,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 14.47,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 14.19,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 14.3,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 13.01,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 12.58,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 13.63,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 14.27,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 14.04,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 13.93,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 12.72,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 13.97,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 14.02,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 13.35,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 14.24,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 14.09,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 13.87,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 14.22,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 14.23,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 14.66,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 14.28,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 13.89,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 14.97,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 15.15,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 14.98,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 14.68,
+        "count": 365
+      }
+    ]
+  },
+  "firenze": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 13.43,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 13,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 13.05,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 13.02,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 12.04,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 12.61,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 11.79,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 12.99,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 12.92,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.58,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 13.27,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 12.16,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 12.23,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 12.73,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 12.35,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 13.17,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 12.38,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 11.65,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 12.51,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.35,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 12.15,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.56,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 12.57,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 13.35,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 12.66,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 12.78,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 12.32,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 12.57,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 11.96,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 12.83,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 13.26,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 12.42,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 12.07,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 13.1,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 12.63,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.71,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 13.1,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 13.14,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 13.4,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 12.53,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 13.39,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 13.2,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 13.95,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 12.55,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 11.9,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 13.22,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 12.9,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 13.71,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 13.28,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 13.47,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 13.72,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 12.89,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 12.28,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 12.63,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 12.89,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 12.82,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 13.05,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 11.88,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 13.03,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 12.97,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 12.56,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 13.21,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 13.17,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 12.25,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 12.35,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 12.34,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 13.44,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 12.68,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 12.11,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 13.22,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 13.57,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 13.47,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 13.11,
+        "count": 365
+      }
+    ]
+  },
+  "bari": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 16.89,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 15.81,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 15.69,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 15.25,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 15.06,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 15.86,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 15.03,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 15.89,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 15.21,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 14.6,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 15.26,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 15.23,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 14.86,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 15.1,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 14.75,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 14.59,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 15.13,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 15.07,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 15.05,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 14.91,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.16,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 14.9,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 14.81,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 14.76,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 14.65,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 14.57,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 13.47,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 15.24,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 14.29,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.06,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 13.92,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 14.29,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 15.43,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 14.77,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 14.12,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 15.18,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 15.33,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 15.05,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 14.91,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 14.64,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 15.29,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 14.25,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 15.3,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 15.03,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 15.89,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 14.5,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 14.4,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 14.86,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 15.1,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 15.38,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 15.78,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 15.72,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 15.95,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 16.18,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 15.69,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 15.18,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 15.57,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 16.1,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 16.05,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 15.8,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 15.63,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 16.21,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 16.3,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 16.2,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 16.45,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 16.53,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 16.38,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 16.17,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 16.81,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 16.65,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 16.67,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 16.51,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 16.29,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 16.74,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.4,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 16.48,
+        "count": 365
+      }
+    ]
+  },
+  "venezia": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 13.86,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 13.26,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 12.86,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 13.03,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 12.18,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 12.55,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 11.77,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 13.06,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 13.1,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 13.23,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 12.66,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 13.37,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 12.14,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 12.17,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 12.64,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 11.76,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 12.55,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 12.52,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 12.24,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 12.22,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 11.83,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 12.28,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 12.39,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 12.47,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 12.77,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 12.94,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 12.36,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 13.36,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 12.48,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 12.3,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 11.95,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 12.52,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 13.29,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 12.95,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 12.06,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 12.1,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 12.78,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 12.51,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 13.03,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 12.54,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 13,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 12.16,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 12.94,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 12.84,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 13.69,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 12.06,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 12.6,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 13.83,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 13.93,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 13.71,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 14.54,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 13.98,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 14.4,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 15.06,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 13.71,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 13.4,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 13.86,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 14.53,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 13.56,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 13.5,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 12.97,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 13.77,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 13.57,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 13.57,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 14.5,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 13.86,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 13.54,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 14.11,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 14.51,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 14.12,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 13.92,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 13.44,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 14.45,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 14.34,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 14.64,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 14.55,
+        "count": 365
+      }
+    ]
+  },
+  "catania": {
+    "yearly": [
+      {
+        "year": 1959,
+        "mean": 15.34,
+        "count": 351
+      },
+      {
+        "year": 1960,
+        "mean": 16.08,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 16.23,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 15.84,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 15.66,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 15.66,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 15.73,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 15.9,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 15.73,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 15.63,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 15.6,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.48,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 15,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 15.36,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 16.22,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 16.71,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 15.55,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 15.04,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 15.75,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 14.81,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.01,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 14.51,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 15.79,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 16.43,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 16.26,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 16.07,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 16.33,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 16.46,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 16.62,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 16.68,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 16.35,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 16.69,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 15.88,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 16,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 16.22,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 17.2,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 16.19,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 15.95,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 16.54,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 16.56,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 17.21,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 17.07,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 16.89,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 16.31,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 16.42,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 15.81,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 15.21,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 15.82,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 16.27,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 16.16,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 15.8,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 15.74,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 15.55,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 16.17,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 15.95,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 16.21,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 16.13,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 16.31,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 16,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 16.28,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 16,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 16.04,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 16.33,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 16.61,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 16.63,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.21,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 16.58,
+        "count": 365
+      }
+    ]
+  },
+  "cagliari": {
+    "yearly": [
+      {
+        "year": 1950,
+        "mean": 17.05,
+        "count": 365
+      },
+      {
+        "year": 1951,
+        "mean": 15.69,
+        "count": 365
+      },
+      {
+        "year": 1952,
+        "mean": 15.92,
+        "count": 366
+      },
+      {
+        "year": 1953,
+        "mean": 15.37,
+        "count": 365
+      },
+      {
+        "year": 1954,
+        "mean": 15.05,
+        "count": 365
+      },
+      {
+        "year": 1955,
+        "mean": 15.94,
+        "count": 365
+      },
+      {
+        "year": 1956,
+        "mean": 14.56,
+        "count": 366
+      },
+      {
+        "year": 1957,
+        "mean": 15.34,
+        "count": 365
+      },
+      {
+        "year": 1958,
+        "mean": 15.52,
+        "count": 365
+      },
+      {
+        "year": 1959,
+        "mean": 15.51,
+        "count": 365
+      },
+      {
+        "year": 1960,
+        "mean": 15.3,
+        "count": 366
+      },
+      {
+        "year": 1961,
+        "mean": 15.65,
+        "count": 365
+      },
+      {
+        "year": 1962,
+        "mean": 15.01,
+        "count": 365
+      },
+      {
+        "year": 1963,
+        "mean": 14.93,
+        "count": 365
+      },
+      {
+        "year": 1964,
+        "mean": 15.3,
+        "count": 366
+      },
+      {
+        "year": 1965,
+        "mean": 15.1,
+        "count": 365
+      },
+      {
+        "year": 1966,
+        "mean": 15.58,
+        "count": 365
+      },
+      {
+        "year": 1967,
+        "mean": 15.87,
+        "count": 365
+      },
+      {
+        "year": 1968,
+        "mean": 15.73,
+        "count": 366
+      },
+      {
+        "year": 1969,
+        "mean": 15.28,
+        "count": 365
+      },
+      {
+        "year": 1970,
+        "mean": 15.66,
+        "count": 365
+      },
+      {
+        "year": 1971,
+        "mean": 15.4,
+        "count": 365
+      },
+      {
+        "year": 1972,
+        "mean": 15.18,
+        "count": 366
+      },
+      {
+        "year": 1973,
+        "mean": 15.3,
+        "count": 365
+      },
+      {
+        "year": 1974,
+        "mean": 14.76,
+        "count": 365
+      },
+      {
+        "year": 1975,
+        "mean": 15.14,
+        "count": 365
+      },
+      {
+        "year": 1976,
+        "mean": 14.88,
+        "count": 366
+      },
+      {
+        "year": 1977,
+        "mean": 16.06,
+        "count": 365
+      },
+      {
+        "year": 1978,
+        "mean": 15.14,
+        "count": 365
+      },
+      {
+        "year": 1979,
+        "mean": 15.29,
+        "count": 365
+      },
+      {
+        "year": 1980,
+        "mean": 14.9,
+        "count": 366
+      },
+      {
+        "year": 1981,
+        "mean": 15.45,
+        "count": 365
+      },
+      {
+        "year": 1982,
+        "mean": 16.25,
+        "count": 365
+      },
+      {
+        "year": 1983,
+        "mean": 15.88,
+        "count": 365
+      },
+      {
+        "year": 1984,
+        "mean": 15,
+        "count": 366
+      },
+      {
+        "year": 1985,
+        "mean": 15.38,
+        "count": 365
+      },
+      {
+        "year": 1986,
+        "mean": 15.83,
+        "count": 365
+      },
+      {
+        "year": 1987,
+        "mean": 16.27,
+        "count": 365
+      },
+      {
+        "year": 1988,
+        "mean": 16.32,
+        "count": 366
+      },
+      {
+        "year": 1989,
+        "mean": 16.13,
+        "count": 365
+      },
+      {
+        "year": 1990,
+        "mean": 16.18,
+        "count": 365
+      },
+      {
+        "year": 1991,
+        "mean": 15.27,
+        "count": 365
+      },
+      {
+        "year": 1992,
+        "mean": 15.93,
+        "count": 366
+      },
+      {
+        "year": 1993,
+        "mean": 15.62,
+        "count": 365
+      },
+      {
+        "year": 1994,
+        "mean": 16.78,
+        "count": 365
+      },
+      {
+        "year": 1995,
+        "mean": 16.04,
+        "count": 365
+      },
+      {
+        "year": 1996,
+        "mean": 15.57,
+        "count": 366
+      },
+      {
+        "year": 1997,
+        "mean": 16.45,
+        "count": 365
+      },
+      {
+        "year": 1998,
+        "mean": 15.97,
+        "count": 365
+      },
+      {
+        "year": 1999,
+        "mean": 16.58,
+        "count": 365
+      },
+      {
+        "year": 2000,
+        "mean": 16.64,
+        "count": 366
+      },
+      {
+        "year": 2001,
+        "mean": 16.42,
+        "count": 365
+      },
+      {
+        "year": 2002,
+        "mean": 16.84,
+        "count": 365
+      },
+      {
+        "year": 2003,
+        "mean": 17.34,
+        "count": 365
+      },
+      {
+        "year": 2004,
+        "mean": 16.32,
+        "count": 366
+      },
+      {
+        "year": 2005,
+        "mean": 15.9,
+        "count": 365
+      },
+      {
+        "year": 2006,
+        "mean": 16.95,
+        "count": 365
+      },
+      {
+        "year": 2007,
+        "mean": 16.65,
+        "count": 365
+      },
+      {
+        "year": 2008,
+        "mean": 16.52,
+        "count": 366
+      },
+      {
+        "year": 2009,
+        "mean": 16.71,
+        "count": 365
+      },
+      {
+        "year": 2010,
+        "mean": 16.41,
+        "count": 365
+      },
+      {
+        "year": 2011,
+        "mean": 16.82,
+        "count": 365
+      },
+      {
+        "year": 2012,
+        "mean": 17.02,
+        "count": 366
+      },
+      {
+        "year": 2013,
+        "mean": 16.67,
+        "count": 365
+      },
+      {
+        "year": 2014,
+        "mean": 17.3,
+        "count": 365
+      },
+      {
+        "year": 2015,
+        "mean": 17.45,
+        "count": 365
+      },
+      {
+        "year": 2016,
+        "mean": 17.27,
+        "count": 366
+      },
+      {
+        "year": 2017,
+        "mean": 17.02,
+        "count": 365
+      },
+      {
+        "year": 2018,
+        "mean": 17.17,
+        "count": 365
+      },
+      {
+        "year": 2019,
+        "mean": 17.04,
+        "count": 365
+      },
+      {
+        "year": 2020,
+        "mean": 17.14,
+        "count": 366
+      },
+      {
+        "year": 2021,
+        "mean": 16.91,
+        "count": 365
+      },
+      {
+        "year": 2022,
+        "mean": 17.84,
+        "count": 365
+      },
+      {
+        "year": 2023,
+        "mean": 17.8,
+        "count": 365
+      },
+      {
+        "year": 2024,
+        "mean": 17.9,
+        "count": 366
+      },
+      {
+        "year": 2025,
+        "mean": 18.11,
+        "count": 365
+      }
+    ]
+  }
 }

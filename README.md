@@ -217,36 +217,43 @@ surfaced on [`/dati`](https://italiarovente.app/dati) and in
 [`/api/export/citta.json`](https://italiarovente.app/api/export/citta.json)
 (`dataset_generated_at`/`dataset_source`/`dataset_build`).
 
-### Planned: E-OBS cross-check (not yet live)
+### E-OBS cross-check (data pipeline live, not yet shown on any page)
 
 The site's historical numbers all come from **ERA5**, a *reanalysis* (a physical model constrained
-by observations, not raw station data). To sanity-check ERA5 independently, we're scaffolding an
-optional second data source: **E-OBS**, the station-based gridded dataset from the
-[Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) (CDS), built by
-[ECA&D](https://www.ecad.eu/) from actual European weather-station records. Being station-based
-rather than model-based, E-OBS is a genuinely independent check on ERA5, not just another view of
-the same underlying model.
+by observations, not raw station data). To sanity-check ERA5 independently, `scripts/fetch-cds.mjs`
+fetches a second, genuinely independent data source: **E-OBS**, the station-based gridded dataset
+from the [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) (CDS), built by
+[ECA&D](https://www.ecad.eu/) from actual European weather-station records — not model output.
 
-**Current status: blocked on licensing only, not live.** Most Copernicus/CDS data is CC-BY 4.0, but
-E-OBS carries its own, stricter license clause restricting use to *"non-commercial research and
-non-commercial education projects only."* We've asked ECA&D (eca@knmi.nl) whether italiarovente.app
-— free, ad-free, MIT-licensed, no revenue — qualifies, and are waiting to hear back. The technical
-side is done and verified: CDS authentication was tested live (a read-only profile lookup, no data
-downloaded), and the exact E-OBS request parameters were confirmed against the dataset's public
-schema (`/api/catalogue/v1/collections/insitu-gridded-observations-europe`) and validated end-to-end
-against CDS's `costing` endpoint (which checks a request is well-formed without fetching any
-licensed data). Until ECA&D responds, no real E-OBS data is fetched or published:
+**Licensing**: E-OBS carries a stricter clause than the general Copernicus CC-BY 4.0 license,
+restricting use to *"non-commercial research and non-commercial education projects only."* ECA&D
+(eca@knmi.nl) confirmed by email on 2026-07-03 that italiarovente.app's described use — validating
+our own ERA5-derived analyses and publishing only derived aggregate statistics (yearly means, never
+the raw E-OBS data) with attribution — falls within that non-commercial scope, conditional on: the
+project staying non-commercial, never redistributing raw E-OBS data, and displaying the required
+citation (E-OBS/ECA&D/UERRA/Copernicus + Cornes et al. 2018 — see `EOBS_ATTRIBUTION` in
+`scripts/fetch-cds.mjs`). `fetch-cds.mjs` enforces the "aggregates only" condition in code: daily
+values are read via NetCDF hyperslab slicing and aggregated to yearly means entirely in memory,
+never written to disk.
 
-- `scripts/fetch-cds.mjs` contains a small reusable CDS client (async job submit/poll/download over
-  the `retrieve/v1` REST API, authenticated via the `PRIVATE-TOKEN` header) plus a NetCDF-parsing
-  helper. The E-OBS request parameters are filled in and verified, but the script **refuses to
-  submit a real job** unless the environment variable `EOBS_LICENSE_CONFIRMED=1` is explicitly set
-  — a deliberate opt-in, not a default, meant to be flipped only after a positive answer from ECA&D.
-- `src/data/eobs.json` is currently a placeholder (every city `null`) with a
-  `_meta.status: "pending-license-clarification"` flag, so nothing downstream mistakes it for
-  production data.
-- `src/lib/eobs.ts` defines the intended shape and a `getEobsComparison()` stub that returns `null`
-  — it isn't wired into any page yet.
+**How it works**: CDS's job-submission API returned real results in 20–60 seconds in testing — far
+faster than the multi-hour worst case documented publicly, though latency isn't guaranteed. Three
+real bugs only surfaced once actually run against live data (each independently verified and
+fixed): the result is a **zip** wrapping the NetCDF, not a raw NetCDF; the temperature variable is
+packed as 16-bit integers requiring `scale_factor`/`add_offset` unpacking (not plain floats); and
+because E-OBS is **land-only**, the naive nearest grid cell for a coastal city can land in the sea
+(all-fill-value) — `fetch-cds.mjs` now searches outward for the nearest grid cell with real data.
+Runs monthly via `.github/workflows/eobs-refresh.yml` (`workflow_dispatch` also available for a
+manual run) — E-OBS versions are released periodically, not daily, and job latency is unpredictable
+enough to be a poor fit for the live Vercel build.
+
+**Current status**: `src/data/eobs.json` holds real per-city yearly means for all 12 main cities,
+`_meta.status: "confirmed"`. Both sources agree on the *direction* of warming everywhere; the
+*magnitude* varies city by city (e.g. Rome: +0.90 °C E-OBS vs +0.88 °C ERA5, very close; Florence:
++0.26 °C vs +0.99 °C, a real divergence) — expected given the different methodologies (station
+network vs model reanalysis), and exactly the kind of signal a genuine cross-check should surface.
+`src/lib/eobs.ts` defines the data shape and a `getEobsComparison()` stub that still returns `null`
+— **the data pipeline is done and verified, but nothing is wired into any page yet.**
 
 If/when this goes live, it will run on its own schedule: a separate, **monthly**
 `.github/workflows/eobs-refresh.yml` GitHub Actions workflow (E-OBS versions are released
