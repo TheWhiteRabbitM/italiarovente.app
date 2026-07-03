@@ -19,6 +19,8 @@ import {
 import type { Metadata } from "next";
 import { WarmingStripes } from "@/components/WarmingStripes";
 import { Verdict } from "@/components/Verdict";
+import { EobsCrossCheck } from "@/components/EobsCrossCheck";
+import { getEobsComparison } from "@/lib/eobs";
 import { Methodology } from "@/components/Methodology";
 import { EmbedButton } from "@/components/EmbedButton";
 import { DayLookup } from "@/components/DayLookup";
@@ -658,6 +660,8 @@ export async function renderCityPage(slug: string, lang: Lang) {
   const archive = archiveR.status === "fulfilled" ? archiveR.value : null;
   // Qualità dell'aria: dato accessorio, null su qualsiasi errore -> niente chip.
   const air = airR.status === "fulfilled" ? airR.value : null;
+  // Cross-check E-OBS: null per le città fuori dalle 12 principali coperte.
+  const eobsComparison = getEobsComparison(city.slug);
 
   const cur = forecast.current;
   const w = lang === "en" ? weatherDescEn(cur.code) : weatherDesc(cur.code);
@@ -999,6 +1003,15 @@ export async function renderCityPage(slug: string, lang: Lang) {
             recentNormal={archive.trend.recentNormal}
             lang={lang}
           />
+
+          {/* CROSS-CHECK E-OBS (solo 12 città principali) */}
+          {eobsComparison && (
+            <EobsCrossCheck
+              eobs={eobsComparison}
+              era5Warming={archive.trend.recentNormal - archive.trend.baselineMean}
+              lang={lang}
+            />
+          )}
 
           {/* SMART INSIGHT */}
           {insight && (

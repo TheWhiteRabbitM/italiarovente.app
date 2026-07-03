@@ -209,6 +209,10 @@ const STR = {
         a: `${CITIES.length} città italiane, dalle principali (con dati precisi su massime e minime) alle capitali di provincia. Elenco completo su italiarovente.app/citta.`,
       },
       {
+        q: "Perché sulle 12 città principali ci sono due numeri di riscaldamento leggermente diversi?",
+        a: "Sulle 12 città principali mostriamo un secondo confronto, calcolato con lo stesso metodo (normale 1991–2020 meno normale 1961–1990) ma su una fonte indipendente: E-OBS, costruito dal progetto ECA&D/Copernicus solo da osservazioni dirette di stazioni meteo europee, non da un modello come ERA5. Le due fonti usano metodi, risoluzioni e reti di stazioni diverse, quindi una differenza di qualche decimo di grado tra i due numeri è normale, non un errore — quello che conta è che nessuna delle due contraddice l'altra sulla direzione del riscaldamento. Dati E-OBS: progetto UERRA (EU-FP6) e Copernicus Climate Change Service, forniti dalla rete ECA&D (ecad.eu); fonte: Cornes et al. 2018, An Ensemble Version of the E-OBS Temperature and Precipitation Datasets. Uso non commerciale, come da licenza E-OBS.",
+      },
+      {
         q: "È un sito meteorologico ufficiale?",
         a: "No. Ha scopo informativo e divulgativo: non sostituisce i servizi meteo ufficiali né i dati ISPRA, e non va usato per decisioni critiche (sicurezza, agricoltura, navigazione).",
       },
@@ -412,6 +416,10 @@ const STR = {
       {
         q: "How many cities does the site cover?",
         a: `${CITIES.length} Italian cities, from the main ones (with precise max/min data) to provincial capitals. Full list at italiarovente.app/en/citta.`,
+      },
+      {
+        q: "Why do the 12 main cities show two slightly different warming numbers?",
+        a: "On the 12 main cities we show a second comparison, computed with the same method (1991–2020 normal minus 1961–1990 normal) but on an independent source: E-OBS, built by the ECA&D/Copernicus project solely from direct European weather-station observations, not from a model like ERA5. The two sources use different methods, resolutions, and station networks, so a difference of a few tenths of a degree between the two numbers is normal, not an error — what matters is that neither contradicts the other on the direction of warming. E-OBS data: EU-FP6 project UERRA and the Copernicus Climate Change Service, provided by the ECA&D network (ecad.eu); source: Cornes et al. 2018, An Ensemble Version of the E-OBS Temperature and Precipitation Datasets. Non-commercial use, per the E-OBS license.",
       },
       {
         q: "Is this an official weather service?",
