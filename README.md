@@ -217,7 +217,7 @@ surfaced on [`/dati`](https://italiarovente.app/dati) and in
 [`/api/export/citta.json`](https://italiarovente.app/api/export/citta.json)
 (`dataset_generated_at`/`dataset_source`/`dataset_build`).
 
-### E-OBS cross-check (data pipeline live, not yet shown on any page)
+### E-OBS cross-check — live on the 12 main city pages
 
 The site's historical numbers all come from **ERA5**, a *reanalysis* (a physical model constrained
 by observations, not raw station data). To sanity-check ERA5 independently, `scripts/fetch-cds.mjs`
@@ -252,8 +252,17 @@ enough to be a poor fit for the live Vercel build.
 *magnitude* varies city by city (e.g. Rome: +0.90 °C E-OBS vs +0.88 °C ERA5, very close; Florence:
 +0.26 °C vs +0.99 °C, a real divergence) — expected given the different methodologies (station
 network vs model reanalysis), and exactly the kind of signal a genuine cross-check should surface.
-`src/lib/eobs.ts` defines the data shape and a `getEobsComparison()` stub that still returns `null`
-— **the data pipeline is done and verified, but nothing is wired into any page yet.**
+
+`src/lib/eobs.ts`'s `getEobsComparison(citySlug)` computes the same "two 30-year normals" warming
+figure used everywhere on the site, applied to the E-OBS series — same method, different source. The
+[`EobsCrossCheck`](src/components/EobsCrossCheck.tsx) component shows it right after the Verdetto
+card on each of the 12 main cities' pages (absent on the other 95 cities, which have no E-OBS data).
+It's deliberately framed as a **comparison, not a confirmation**: both warming figures are shown side
+by side, with an explicit note that a difference of a few tenths of a degree between the two is
+normal — different methods, resolutions and station networks — not a sign either source is wrong.
+The required E-OBS/ECA&D/Cornes et al. citation is shown in every card, and a dedicated
+[disclaimer FAQ entry](https://italiarovente.app/disclaimer) explains the methodology gap in more
+depth (also feeds the page's `FAQPage` structured data).
 
 If/when this goes live, it will run on its own schedule: a separate, **monthly**
 `.github/workflows/eobs-refresh.yml` GitHub Actions workflow (E-OBS versions are released
