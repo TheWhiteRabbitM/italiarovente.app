@@ -227,7 +227,18 @@ npm test
 function used to build `history.json` a synthetic daily series with a known, noise-free linear
 trend, then checks its output against values computed independently by closed-form arithmetic
 (not derived from the code under test) — climate normals, warming, decade means, regression
-slope/R², leap-year day counts, and record detection.
+slope/R²/confidence interval, leap-year day counts, and record detection.
+
+A separate **golden dataset test** guards against silent algorithm drift on *real* data: a fixed
+5-year daily series for Rome (2015–2019, fetched once from Open-Meteo and committed at
+[`scripts/fixtures/golden-roma-2015-2019.json`](scripts/fixtures/golden-roma-2015-2019.json)) is
+run through `aggregate()`, and specific outputs (a year's mean, the trend, the hot/cold records —
+which happen to land on the well-documented August 2017 heatwave and the February 2018 "Burian"
+cold snap) are asserted against values frozen once and committed alongside the fixture. Unlike the
+synthetic tests above, this doesn't prove the numbers are *correct* in an absolute sense — it
+proves the algorithm's output on this exact real input hasn't silently changed. An intentional
+algorithm change that alters these values must update the frozen expectations deliberately, in the
+same commit, with a stated reason.
 
 ## 🛠️ Tech stack
 

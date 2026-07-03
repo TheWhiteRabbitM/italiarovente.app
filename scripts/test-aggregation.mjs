@@ -7,7 +7,12 @@
 // Esegui con: node scripts/test-aggregation.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { aggregate, linreg } from "./fetch-history.mjs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // --- Fixture: 60 anni (1961-2020), un trend lineare perfetto -------------
 // mean(anno) = 10 + 0.1 * (anno - 1961)  ->  +0.1°C/anno esatti, R²=1.
@@ -251,4 +256,37 @@ test("aggregate: caldo e gelo sono sequenze indipendenti calcolate nello stesso 
   const r = aggregate(fixtureFromDays(days));
   assert.equal(r.records.longestHeatwave.days, 3);
   assert.equal(r.records.longestColdSnap.days, 2);
+});
+
+// --- Golden dataset: dati reali (non sintetici), valori congelati --------
+// A differenza dei test sopra (fixture sintetiche, valore atteso da formula
+// chiusa), questo usa una serie REALE scaricata una tantum da Open-Meteo
+// (Roma, 2015-2019, vedi scripts/fixtures/golden-roma-2015-2019.json) e
+// congela l'output di aggregate() su quei dati esatti. Non verifica che i
+// numeri siano "giusti" in senso assoluto (per quello ci sono i test sopra),
+// ma che aggregate() non cambi silenziosamente risultato su un input reale
+// invariato: un cambiamento all'algoritmo che altera questi valori deve
+// essere una scelta deliberata (aggiornare i valori attesi qui sotto), non
+// una regressione accidentale. Valori congelati il 2026-07-03.
+test("aggregate: dataset golden (Roma 2015-2019, dati reali) -> nessuna deriva silenziosa dell'algoritmo", () => {
+  const fixturePath = join(__dirname, "fixtures", "golden-roma-2015-2019.json");
+  const golden = JSON.parse(readFileSync(fixturePath, "utf8"));
+  const r = aggregate(golden);
+
+  const y2017 = r.yearly.find((y) => y.year === 2017);
+  assert.equal(y2017.count, 365);
+  assert.equal(y2017.mean, 16.18);
+  assert.equal(y2017.hd, 76);
+
+  assert.equal(r.trend.perDecade, 0.96);
+  assert.equal(r.trend.r2, 0.715);
+  assert.equal(r.trend.perDecadeCi95, 1.113);
+
+  // 2017-08-02 (ondata di calore nota) e 2018-02-28 (irruzione fredda
+  // "Burian", neve a Roma) -> entrambi eventi storicamente documentati, non
+  // solo numeri plausibili a caso.
+  assert.equal(r.records.hottest.value, 39.3);
+  assert.equal(r.records.hottest.date, "2017-08-02");
+  assert.equal(r.records.coldest.value, -10.2);
+  assert.equal(r.records.coldest.date, "2018-02-28");
 });
