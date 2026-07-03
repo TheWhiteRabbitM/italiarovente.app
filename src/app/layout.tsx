@@ -38,6 +38,11 @@ export const metadata: Metadata = {
     "warming stripes",
     "città italiane",
     "dati storici clima",
+    "archivio meteo storico",
+    "temperature storiche città italiane dal 1940",
+    "quanto si è scaldata la mia città",
+    "record caldo italia",
+    "giorni di caldo africano",
     "ERA5",
   ],
   authors: [{ name: "Italia Rovente" }],
@@ -108,6 +113,17 @@ export default function RootLayout({
     license: "https://open-meteo.com/en/license",
   };
 
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Italia Rovente",
+    url: SITE_URL,
+    logo: `${SITE_URL}/icon-512.png`,
+    description:
+      "Progetto open source e indipendente che pubblica temperature storiche e attuali delle città italiane dal 1940, con metodo dichiarato e dati ERA5/ECMWF via Open-Meteo.",
+    sameAs: ["https://github.com/TheWhiteRabbitM/italiarovente.app"],
+  };
+
   return (
     <html
       lang="it"
@@ -125,6 +141,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         <UnitProvider>
           <ChromeGate>

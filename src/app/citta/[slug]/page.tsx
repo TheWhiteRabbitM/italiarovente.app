@@ -103,14 +103,46 @@ const STR = {
         <strong>{hotT}</strong> del <strong>{date}</strong> ({years} anni fa).
       </>
     ),
+    winterRecordCooler: (
+      name: string,
+      curT: React.ReactNode,
+      coldT: React.ReactNode,
+      date: string,
+      years: number,
+    ) => (
+      <>
+        Con {curT} a {name} oggi, consolati: il <strong>{date}</strong> (
+        {years} anni fa) qui si toccarono <strong>{coldT}</strong> — il record
+        di freddo assoluto della serie dal 1940.
+      </>
+    ),
+    winterRecordClose: (
+      name: string,
+      curT: React.ReactNode,
+      coldT: React.ReactNode,
+      date: string,
+      years: number,
+    ) => (
+      <>
+        Con {curT}, {name} oggi è vicinissima al record di freddo assoluto di
+        sempre: <strong>{coldT}</strong> del <strong>{date}</strong> ({years}{" "}
+        anni fa).
+      </>
+    ),
     analogShare: (name: string, otherCity: string, decade: string, meanNow: string, meanThen: string) =>
       `${name} ha oggi la stessa temperatura media annua che aveva ${otherCity} negli ${decade} — ${meanNow} contro ${meanThen}.`,
     summerRecordShareCooler: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `Con ${curT} a ${name} oggi, consolati: il ${date} (${years} anni fa) qui si toccarono ${hotT} — il record assoluto della serie dal 1940.`,
     summerRecordShareClose: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `Con ${curT}, ${name} oggi è vicinissima al record assoluto di sempre: ${hotT} del ${date} (${years} anni fa).`,
+    winterRecordShareCooler: (name: string, curT: string, coldT: string, date: string, years: number) =>
+      `Con ${curT} a ${name} oggi, consolati: il ${date} (${years} anni fa) qui si toccarono ${coldT} — il record di freddo assoluto della serie dal 1940.`,
+    winterRecordShareClose: (name: string, curT: string, coldT: string, date: string, years: number) =>
+      `Con ${curT}, ${name} oggi è vicinissima al record di freddo assoluto di sempre: ${coldT} del ${date} (${years} anni fa).`,
     ggShare: (name: string, ggVal: string, zone: string) =>
       `${name}: stima di ${ggVal} gradi giorno (zona ${zone}) — basata sull'indicatore ufficiale italiano (DPR 412/93) del fabbisogno di riscaldamento degli edifici.`,
+    durataShare: (name: string, days: number, start: string, end: string, peak: string) =>
+      `A ${name} l'ondata di calore più lunga mai registrata è durata ${days} giorni consecutivi (dal ${start} al ${end}), con un picco di ${peak}.`,
     stripesTitle: "Le strisce del riscaldamento",
     stripesSubtitle: (startYear: number) => (
       <>
@@ -151,6 +183,22 @@ const STR = {
       </>
     ),
     ggEli5: "Più alto = inverni più freddi/lunghi, più bisogno di riscaldare casa.",
+    durataTitle: "🔥📅 L'ondata di calore più lunga",
+    durataSubtitle: "Il record di durata: la sequenza più lunga di giorni consecutivi con massima ≥35° dal 1940.",
+    durataRange: (start: string, end: string, peak: React.ReactNode) => (
+      <>
+        {start} – {end} · picco {peak}
+      </>
+    ),
+    durataFreddoTitle: "🥶📅 La sequenza di gelo più lunga",
+    durataFreddoSubtitle: "Il record di durata: la sequenza più lunga di notti consecutive con minima ≤0° dal 1940.",
+    durataFreddoRange: (start: string, end: string, low: React.ReactNode) => (
+      <>
+        {start} – {end} · minimo {low}
+      </>
+    ),
+    durataFreddoShare: (name: string, days: number, start: string, end: string, low: string) =>
+      `A ${name} la sequenza di notti di gelo più lunga mai registrata è durata ${days} giorni consecutivi (dal ${start} al ${end}), con un minimo di ${low}.`,
     minMaxTitle: "Massime e minime: chi si scalda di più?",
     minMaxSubtitle:
       "Stesso confronto a due trentenni (1961–1990 vs 1991–2020), ma separato per massime diurne e minime notturne: spesso non salgono allo stesso ritmo.",
@@ -291,14 +339,46 @@ const STR = {
         ago).
       </>
     ),
+    winterRecordCooler: (
+      name: string,
+      curT: React.ReactNode,
+      coldT: React.ReactNode,
+      date: string,
+      years: number,
+    ) => (
+      <>
+        With {curT} in {name} today, take comfort: on <strong>{date}</strong>{" "}
+        ({years} years ago) it dropped to <strong>{coldT}</strong> here — the
+        all-time cold record of the series since 1940.
+      </>
+    ),
+    winterRecordClose: (
+      name: string,
+      curT: React.ReactNode,
+      coldT: React.ReactNode,
+      date: string,
+      years: number,
+    ) => (
+      <>
+        With {curT}, {name} today is very close to the all-time cold record:{" "}
+        <strong>{coldT}</strong> on <strong>{date}</strong> ({years} years
+        ago).
+      </>
+    ),
     analogShare: (name: string, otherCity: string, decade: string, meanNow: string, meanThen: string) =>
       `${name}'s average annual temperature today matches what ${otherCity} had in ${decade} — ${meanNow} vs ${meanThen}.`,
     summerRecordShareCooler: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `With ${curT} in ${name} today, take comfort: on ${date} (${years} years ago) it hit ${hotT} here — the all-time record since 1940.`,
     summerRecordShareClose: (name: string, curT: string, hotT: string, date: string, years: number) =>
       `With ${curT}, ${name} today is very close to the all-time record: ${hotT} on ${date} (${years} years ago).`,
+    winterRecordShareCooler: (name: string, curT: string, coldT: string, date: string, years: number) =>
+      `With ${curT} in ${name} today, take comfort: on ${date} (${years} years ago) it dropped to ${coldT} here — the all-time cold record since 1940.`,
+    winterRecordShareClose: (name: string, curT: string, coldT: string, date: string, years: number) =>
+      `With ${curT}, ${name} today is very close to the all-time cold record: ${coldT} on ${date} (${years} years ago).`,
     ggShare: (name: string, ggVal: string, zone: string) =>
       `${name}: an estimated ${ggVal} heating degree days (zone ${zone}) — based on Italy's official DPR 412/93 indicator of a building's heating demand.`,
+    durataShare: (name: string, days: number, start: string, end: string, peak: string) =>
+      `${name}'s longest heatwave ever recorded lasted ${days} consecutive days (${start}–${end}), peaking at ${peak}.`,
     stripesTitle: "The warming stripes",
     stripesSubtitle: (startYear: number) => (
       <>
@@ -339,6 +419,22 @@ const STR = {
       </>
     ),
     ggEli5: "Higher = colder/longer winters, more heating needed at home.",
+    durataTitle: "🔥📅 The longest heatwave",
+    durataSubtitle: "The duration record: the longest run of consecutive days with a high ≥35° since 1940.",
+    durataRange: (start: string, end: string, peak: React.ReactNode) => (
+      <>
+        {start} – {end} · peak {peak}
+      </>
+    ),
+    durataFreddoTitle: "🥶📅 The longest cold snap",
+    durataFreddoSubtitle: "The duration record: the longest run of consecutive nights with a low ≤0° since 1940.",
+    durataFreddoRange: (start: string, end: string, low: React.ReactNode) => (
+      <>
+        {start} – {end} · low {low}
+      </>
+    ),
+    durataFreddoShare: (name: string, days: number, start: string, end: string, low: string) =>
+      `${name}'s longest cold snap ever recorded lasted ${days} consecutive frosty nights (${start}–${end}), dropping to ${low}.`,
     minMaxTitle: "Highs and lows: which is warming faster?",
     minMaxSubtitle:
       "Same two-normal comparison (1961–1990 vs 1991–2020), but split between daytime highs and nighttime lows: they often don't rise at the same pace.",
@@ -589,6 +685,13 @@ export async function renderCityPage(slug: string, lang: Lang) {
   const gg = archive ? gradiGiorno(archive.monthly) : null;
   const zone = gg != null ? ggZone(gg) : null;
 
+  // Ondata di calore più lunga mai registrata: precalcolata in
+  // fetch-history.mjs dalla serie giornaliera (già scaricata per le medie
+  // annue), nessun fetch aggiuntivo qui.
+  const wave = archive?.records.longestHeatwave ?? null;
+  // Simmetrico, per la sequenza di notti di gelo più lunga.
+  const coldSnap = archive?.records.longestColdSnap ?? null;
+
   // Confronto climatico: quale altra città aveva, in passato, la stessa
   // temperatura media annua che questa città ha oggi.
   const analog = getClimateAnalog(city.slug);
@@ -611,6 +714,22 @@ export async function renderCityPage(slug: string, lang: Lang) {
     curMonth <= 9 &&
     yearsAgo != null &&
     yearsAgo > 0 &&
+    cur.temp != null;
+
+  // Confronto col record assoluto d'inverno: stessa logica, ma per il record
+  // di freddo (dicembre-febbraio), mostrato in una finestra più larga
+  // (novembre-marzo) perché le ondate di freddo sono meno prevedibili.
+  const cold = archive && archive.precise !== false ? archive.records.coldest : null;
+  const coldYear = cold ? parseInt(cold.date.slice(0, 4), 10) : null;
+  const coldMonth = cold ? parseInt(cold.date.slice(5, 7), 10) : null;
+  const yearsAgoWinter = coldYear != null ? nowDate.getUTCFullYear() - coldYear : null;
+  const showWinterRecord =
+    cold != null &&
+    coldMonth != null &&
+    (coldMonth === 12 || coldMonth === 1 || coldMonth === 2) &&
+    (curMonth === 11 || curMonth === 12 || curMonth === 1 || curMonth === 2 || curMonth === 3) &&
+    yearsAgoWinter != null &&
+    yearsAgoWinter > 0 &&
     cur.temp != null;
 
   // Altre città collegate (SEO internal-linking + UX): fino a 8 città della
@@ -639,8 +758,15 @@ export async function renderCityPage(slug: string, lang: Lang) {
 
   const path = lang === "en" ? `/en/citta/${city.slug}` : `/citta/${city.slug}`;
   const url = `${SITE_URL}${path}`;
-  const curiosityUrl = (kind: "record-estivo" | "gemello-climatico" | "gradi-giorno") =>
-    `${SITE_URL}${lang === "en" ? "/en" : ""}/condividi/curiosita/${city.slug}/${kind}`;
+  const curiosityUrl = (
+    kind:
+      | "record-estivo"
+      | "record-invernale"
+      | "gemello-climatico"
+      | "gradi-giorno"
+      | "record-durata"
+      | "record-durata-freddo",
+  ) => `${SITE_URL}${lang === "en" ? "/en" : ""}/condividi/curiosita/${city.slug}/${kind}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -977,6 +1103,43 @@ export async function renderCityPage(slug: string, lang: Lang) {
             </div>
           )}
 
+          {/* CONFRONTO CON IL RECORD INVERNALE ASSOLUTO */}
+          {showWinterRecord && cold && yearsAgoWinter != null && (
+            <div className="m3-card rise p-4 sm:p-5 mb-6 flex items-start gap-4">
+              <span className="text-3xl sm:text-4xl shrink-0">
+                {cur.temp! > cold.value ? "😌" : "🥶"}
+              </span>
+              <div>
+                <p className="text-sm sm:text-base leading-relaxed">
+                  {cur.temp! > cold.value
+                    ? t.winterRecordCooler(
+                        name,
+                        <Temp value={cur.temp} digits={0} />,
+                        <Temp value={cold.value} digits={1} />,
+                        fmtDate(cold.date, lang),
+                        yearsAgoWinter,
+                      )
+                    : t.winterRecordClose(
+                        name,
+                        <Temp value={cur.temp} digits={0} />,
+                        <Temp value={cold.value} digits={1} />,
+                        fmtDate(cold.date, lang),
+                        yearsAgoWinter,
+                      )}
+                </p>
+                <QuickShare
+                  lang={lang}
+                  url={curiosityUrl("record-invernale")}
+                  text={
+                    cur.temp! > cold.value
+                      ? t.winterRecordShareCooler(name, fmtTemp(cur.temp, 0), fmtTemp(cold.value, 1), fmtDate(cold.date, lang), yearsAgoWinter)
+                      : t.winterRecordShareClose(name, fmtTemp(cur.temp, 0), fmtTemp(cold.value, 1), fmtDate(cold.date, lang), yearsAgoWinter)
+                  }
+                />
+              </div>
+            </div>
+          )}
+
           {/* SEZIONE: DAL 1940 A OGGI (stripes + tutti i grafici storici) */}
           <SectionHeader eyebrow={t.secHistoryEyebrow} title={t.secHistory} />
           <section className="m3-card rise p-5 sm:p-6 mb-6">
@@ -1097,6 +1260,54 @@ export async function renderCityPage(slug: string, lang: Lang) {
                 lang={lang}
                 url={curiosityUrl("gradi-giorno")}
                 text={t.ggShare(name, gg.toLocaleString(lang === "it" ? "it-IT" : "en-US", { useGrouping: true }), zone)}
+              />
+            </section>
+          )}
+
+          {/* RECORD DI DURATA (ondata di calore più lunga) */}
+          {wave && (
+            <section className="m3-card rise p-5 sm:p-6 mb-6">
+              <h3 className="text-xl font-extrabold tracking-tight">{t.durataTitle}</h3>
+              <p className="text-sm text-on-surface-variant mb-4 mt-1 leading-relaxed">
+                {t.durataSubtitle}
+              </p>
+              <div className="rounded-2xl bg-surface-container-high p-4 inline-flex items-center gap-3">
+                <div className="text-3xl font-extrabold tracking-tight tabular-nums" style={{ color: "#ff8a5c" }}>
+                  {wave.days}
+                </div>
+                <div className="text-xs text-on-surface-variant">{lang === "en" ? "days" : "giorni"}</div>
+              </div>
+              <p className="text-sm text-on-surface-variant leading-relaxed mt-3">
+                {t.durataRange(fmtDate(wave.start, lang), fmtDate(wave.end, lang), <Temp value={wave.peak} digits={1} />)}
+              </p>
+              <QuickShare
+                lang={lang}
+                url={curiosityUrl("record-durata")}
+                text={t.durataShare(name, wave.days, fmtDate(wave.start, lang), fmtDate(wave.end, lang), fmtTemp(wave.peak, 1))}
+              />
+            </section>
+          )}
+
+          {/* RECORD DI DURATA (sequenza di gelo più lunga) */}
+          {coldSnap && (
+            <section className="m3-card rise p-5 sm:p-6 mb-6">
+              <h3 className="text-xl font-extrabold tracking-tight">{t.durataFreddoTitle}</h3>
+              <p className="text-sm text-on-surface-variant mb-4 mt-1 leading-relaxed">
+                {t.durataFreddoSubtitle}
+              </p>
+              <div className="rounded-2xl bg-surface-container-high p-4 inline-flex items-center gap-3">
+                <div className="text-3xl font-extrabold tracking-tight tabular-nums" style={{ color: "#7fb3ff" }}>
+                  {coldSnap.days}
+                </div>
+                <div className="text-xs text-on-surface-variant">{lang === "en" ? "days" : "giorni"}</div>
+              </div>
+              <p className="text-sm text-on-surface-variant leading-relaxed mt-3">
+                {t.durataFreddoRange(fmtDate(coldSnap.start, lang), fmtDate(coldSnap.end, lang), <Temp value={coldSnap.low} digits={1} />)}
+              </p>
+              <QuickShare
+                lang={lang}
+                url={curiosityUrl("record-durata-freddo")}
+                text={t.durataFreddoShare(name, coldSnap.days, fmtDate(coldSnap.start, lang), fmtDate(coldSnap.end, lang), fmtTemp(coldSnap.low, 1))}
               />
             </section>
           )}

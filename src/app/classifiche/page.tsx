@@ -8,12 +8,15 @@ import { SITE_URL } from "@/lib/site";
 export const metadata = {
   title: "Classifiche · Le città del riscaldamento",
   description:
-    `Le graduatorie delle ${CITIES.length} città monitorate: dove ci si scalda di più, il ritmo per decennio, i record assoluti e le notti tropicali. Dati ERA5/ECMWF dal 1940.`,
+    `Le graduatorie delle ${CITIES.length} città monitorate: dove ci si scalda di più, il ritmo per decennio, i record assoluti, i giorni di caldo africano e le notti tropicali. Dati ERA5/ECMWF dal 1940.`,
   keywords: [
     "classifica città più calde italia",
     "riscaldamento città italiane",
     "record temperatura italia",
+    "giorni di caldo africano",
+    "giorni roventi città italiane",
     "notti tropicali",
+    "quali città hanno più giorni di caldo estremo",
   ],
   alternates: { canonical: "/classifiche", languages: { en: "/en/classifiche" } },
   openGraph: {
@@ -48,6 +51,10 @@ const STR = {
       "Le massime e le minime giornaliere più estreme dell'intera serie (solo città con max/min reali).",
     recordsHot: "Le massime più alte",
     recordsCold: "Le minime più basse",
+    hdTitle: "🥵 I giorni più roventi",
+    hdSub:
+      "Giorni con massima ≥30° — la soglia comunemente chiamata «caldo africano»: media annua degli ultimi 5 anni completi, con l'aumento rispetto alla media 1961–1990 tra parentesi.",
+    hotDaysPerYear: "giorni/anno",
     tnTitle: "🌙 Le notti tropicali",
     tnSub:
       "Notti con minima ≥20°: media annua degli ultimi 5 anni completi, con l'aumento rispetto alla media 1961–1990 tra parentesi.",
@@ -81,6 +88,10 @@ const STR = {
       "The most extreme daily highs and lows of the whole series (only cities with real max/min data).",
     recordsHot: "Highest maximums",
     recordsCold: "Lowest minimums",
+    hdTitle: "🥵 The most scorching days",
+    hdSub:
+      "Days with a high ≥30° — the threshold commonly called «African heat»: yearly average over the last 5 full years, with the increase vs the 1961–1990 normal in parentheses.",
+    hotDaysPerYear: "days/year",
     tnTitle: "🌙 Tropical nights",
     tnSub:
       "Nights with a minimum ≥20°: yearly average over the last 5 full years, with the increase vs the 1961–1990 normal in parentheses.",
@@ -191,6 +202,23 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
   const coldestRecords = [...withRecords]
     .sort((a, b) => a.s.records.coldest.value - b.s.records.coldest.value)
     .slice(0, 5);
+
+  // --- Giorni roventi (≥30°, "caldo africano"): media ultimi 5 anni + delta vs 1961–1990 ---
+  const hotDays = stats
+    .flatMap(({ city, s }) => {
+      if (s.precise === false) return [];
+      const hdYears = s.yearly.filter((y) => y.count >= 360 && y.hd != null);
+      if (hdYears.length === 0) return [];
+      const last5 = hdYears.slice(-5);
+      const avg = last5.reduce((sum, y) => sum + (y.hd ?? 0), 0) / last5.length;
+      const baseYears = hdYears.filter((y) => y.year >= 1961 && y.year <= 1990);
+      const baseAvg = baseYears.length
+        ? baseYears.reduce((sum, y) => sum + (y.hd ?? 0), 0) / baseYears.length
+        : null;
+      return [{ city, avg, delta: baseAvg != null ? avg - baseAvg : null }];
+    })
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 10);
 
   // --- Notti tropicali: media ultimi 5 anni completi + delta vs 1961–1990 ---
   const tropical = stats
@@ -415,6 +443,37 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
               })}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 🥵 Giorni roventi (caldo africano) */}
+      <section className="mb-12">
+        <SectionHeader title={t.hdTitle} sub={t.hdSub} />
+        <div className="space-y-2.5">
+          {/* Conteggi di giorni, non temperature: nessuna conversione C/F. */}
+          {hotDays.map((r, i) => (
+            <RankRow
+              key={r.city.slug}
+              href={cityHref(r.city.slug, lang)}
+              rank={i + 1}
+              name={cityName(r.city, lang)}
+              badge={Math.round(r.avg)}
+              badgeBg="var(--primary-container)"
+              badgeText="var(--on-primary-container)"
+              sub={
+                <>
+                  ≈ {Math.round(r.avg)} {t.hotDaysPerYear}
+                  {r.delta != null && (
+                    <>
+                      {" "}
+                      ({r.delta >= 0 ? "+" : ""}
+                      {Math.round(r.delta)} {t.vsBaseline})
+                    </>
+                  )}
+                </>
+              }
+            />
+          ))}
         </div>
       </section>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CITIES } from "@/lib/cities";
 import { getLifetimeData } from "@/lib/lifetime";
 import { getBotStats } from "@/lib/botstats";
+import { getStatsHistory } from "@/lib/statshistory";
 import { fmtAnomaly } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 
@@ -187,6 +188,12 @@ const STR = {
     },
     botRequests: (n: number) => `${n.toLocaleString("it-IT")} richieste`,
     botUnavailable: "Dato non ancora disponibile.",
+    trendTitle: "Andamento",
+    trendIntro: "Uno scatto al giorno: visite umane contro richieste bot totali.",
+    trendUnavailable: "Ancora troppo poche rilevazioni per mostrare un andamento — torna tra qualche giorno.",
+    trendDate: "Data",
+    trendVisits: "Visite umane",
+    trendBots: "Richieste bot",
     faqTitle: "❓ Domande frequenti",
     faq: (warming: string) => [
       {
@@ -212,6 +219,14 @@ const STR = {
       {
         q: "Posso citare i dati di questo sito?",
         a: "Sì, con attribuzione a Italia Rovente e alla fonte dei dati (Open-Meteo / ERA5 / ECMWF-Copernicus). Il codice del sito è open source con licenza MIT.",
+      },
+      {
+        q: "Perché non si parla di ere glaciali o clima molto più antico?",
+        a: "Perché usiamo dati strumentali diretti (la rianalisi ERA5), affidabili solo dal 1940 in poi. Per periodi più antichi serve la paleoclimatologia, che ricostruisce il clima attraverso proxy indiretti — carote di ghiaccio, anelli degli alberi, sedimenti — con margini d'incertezza che crescono quanto più si va indietro nel tempo. Metodo diverso, stesso principio: la scienza si basa su fatti e dati verificabili. Il resto — allarmismo o minimizzazione — è narrativa, e qui non ne mostriamo.",
+      },
+      {
+        q: "Quali città italiane hanno più giorni di caldo estivo estremo (\"caldo africano\")?",
+        a: "La classifica aggiornata è su italiarovente.app/classifiche, sezione \"I giorni più roventi\": giorni con massima ≥30°, media degli ultimi 5 anni completi per ciascuna città monitorata, aggiornata automaticamente — qui non riportiamo un numero fisso perché cambierebbe e diventerebbe presto obsoleto.",
       },
     ],
     footer: "Dati © Open-Meteo · ERA5 © ECMWF / Copernicus · Codice © 2026 Italia Rovente (MIT)",
@@ -378,6 +393,12 @@ const STR = {
     },
     botRequests: (n: number) => `${n.toLocaleString("en-US")} requests`,
     botUnavailable: "Data not available yet.",
+    trendTitle: "Trend",
+    trendIntro: "One snapshot a day: human visits vs. total bot requests.",
+    trendUnavailable: "Not enough snapshots yet to show a trend — check back in a few days.",
+    trendDate: "Date",
+    trendVisits: "Human visits",
+    trendBots: "Bot requests",
     faqTitle: "❓ Frequently asked questions",
     faq: (warming: string) => [
       {
@@ -403,6 +424,14 @@ const STR = {
       {
         q: "Can I cite the data from this site?",
         a: "Yes, with attribution to Italia Rovente and the data source (Open-Meteo / ERA5 / ECMWF-Copernicus). The site's code is open source under the MIT license.",
+      },
+      {
+        q: "Why doesn't the site cover ice ages or much older climate?",
+        a: "Because we use direct instrumental data (the ERA5 reanalysis), reliable only from 1940 onward. Older periods require paleoclimatology, which reconstructs climate through indirect proxies — ice cores, tree rings, sediments — with uncertainty that grows the further back in time you go. A different method, same principle: science is built on verifiable facts and data. Everything else — alarmism or minimization — is narrative, and we don't show any of it here.",
+      },
+      {
+        q: "Which Italian cities have the most extreme summer heat days (\"African heat\")?",
+        a: "The up-to-date ranking is at italiarovente.app/en/classifiche, \"The most scorching days\" section: days with a high ≥30°, averaged over the last 5 full years for each monitored city, refreshed automatically — we don't quote a fixed number here because it would change and quickly go stale.",
       },
     ],
     footer: "Data © Open-Meteo · ERA5 © ECMWF / Copernicus · Code © 2026 Italia Rovente (MIT)",
@@ -457,6 +486,7 @@ export async function DisclaimerContent({ lang, homeHref }: { lang: Lang; homeHr
   const botRows = botStats
     ? BOT_CATEGORY_ORDER.map((key) => ({ key, n: botStats[key] ?? 0 })).filter((r) => r.n > 0)
     : [];
+  const statsHistory = await getStatsHistory();
 
   // FAQPage JSON-LD: le stesse domande/risposte mostrate in pagina, nel
   // formato che motori di ricerca e assistenti AI sanno estrarre e citare
@@ -538,6 +568,33 @@ export async function DisclaimerContent({ lang, homeHref }: { lang: Lang; homeHr
             </ul>
           ) : (
             <p>{t.botUnavailable}</p>
+          )}
+
+          <p className="font-bold text-on-surface mt-4">{t.trendTitle}</p>
+          <p className="text-xs mb-2">{t.trendIntro}</p>
+          {statsHistory.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-on-surface-variant">
+                    <th className="pr-3 py-1 font-semibold">{t.trendDate}</th>
+                    <th className="pr-3 py-1 font-semibold">{t.trendVisits}</th>
+                    <th className="py-1 font-semibold">{t.trendBots}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statsHistory.map((s) => (
+                    <tr key={s.date} className="border-t border-[var(--outline-variant)]">
+                      <td className="pr-3 py-1 tabular-nums">{s.date}</td>
+                      <td className="pr-3 py-1 tabular-nums">{s.visits.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
+                      <td className="py-1 tabular-nums">{s.botsTotal.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p>{t.trendUnavailable}</p>
           )}
         </Card>
 

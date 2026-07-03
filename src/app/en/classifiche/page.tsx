@@ -5,11 +5,13 @@ import { ClassifichePageContent } from "@/app/classifiche/page";
 export const metadata = {
   title: "Rankings · The cities of warming",
   description:
-    `Rankings across the ${CITIES.length} monitored Italian cities: where warming is strongest, the pace per decade, all-time records and tropical nights. ERA5/ECMWF data since 1940.`,
+    `Rankings across the ${CITIES.length} monitored Italian cities: where warming is strongest, the pace per decade, all-time records, days of extreme heat and tropical nights. ERA5/ECMWF data since 1940.`,
   keywords: [
     "hottest italian cities ranking",
     "italian cities warming",
     "italy temperature records",
+    "days of extreme heat italy",
+    "which italian city has the most heatwave days",
     "tropical nights italy",
   ],
   alternates: { canonical: "/en/classifiche", languages: { it: "/classifiche", "x-default": "/classifiche" } },

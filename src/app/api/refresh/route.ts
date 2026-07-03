@@ -4,6 +4,8 @@ import { MAIN_CITIES, cityName } from "@/lib/cities";
 import { getForecast, getArchive, getArchiveStats, type CityForecast } from "@/lib/weather";
 import { notifyAll, pushConfigured } from "@/lib/push";
 import { redis } from "@/lib/redis";
+import { logEvent } from "@/lib/eventlog";
+import { logDailyStatsSnapshot } from "@/lib/statshistory";
 
 // Endpoint di revalidazione invocato dal Cron Vercel ogni giorno.
 // Rinfresca il meteo ATTUALE (tag "forecast", leggero). Lo storico aggregato
@@ -154,21 +156,17 @@ async function checkHeatwaves(forecasts: Map<string, CityForecast>, todayStr: st
     `${top.days} consecutive days above 35° forecast from ${dayEn}. Peak: ${top.peak.toFixed(1)}°.` +
     (others > 0 ? ` ${others} other cities affected too.` : "");
 
-  const result = await notifyAll({
-    it: {
-      title: `🌡️ Ondata di calore in arrivo a ${top.city}`,
-      body,
-      url: `/citta/${top.slug}`,
-    },
-    en: {
-      title: `🌡️ Heatwave coming to ${top.cityEn}`,
-      body: bodyEn,
-      url: `/en/citta/${top.slug}`,
-    },
-  });
+  const eventIt = { title: `🌡️ Ondata di calore in arrivo a ${top.city}`, body, url: `/citta/${top.slug}` };
+  const eventEn = {
+    title: `🌡️ Heatwave coming to ${top.cityEn}`,
+    body: bodyEn,
+    url: `/en/citta/${top.slug}`,
+  };
+  const result = await notifyAll({ it: eventIt, en: eventEn });
   if (redis) {
     await redis.set(`heatwave:${top.slug}`, todayStr, { ex: HEAT_DEDUP_TTL });
   }
+  await logEvent({ date: new Date().toISOString(), type: "heatwave", it: eventIt, en: eventEn });
   return { city: top.city, slug: top.slug, days: top.days, peak: top.peak, start: top.start, others, sent: result.sent };
 }
 
@@ -234,23 +232,23 @@ async function sendMonthlyRecap(now: Date): Promise<MonthlyRecapOutcome> {
   const monthEn = prev.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" });
   const valueEn = `${anomaly >= 0 ? "+" : ""}${anomaly.toFixed(1)}°`;
 
-  const result = await notifyAll({
-    it: {
-      title: `📊 Il clima di ${mese} in Italia`,
-      body: `${Mese}: ${value} rispetto alla media storica del mese. Vedi i dati città per città.`,
-      url: `/`,
-    },
-    en: {
-      title: `📊 ${monthEn}'s climate in Italy`,
-      body: `${monthEn}: ${valueEn} vs the month's historical average. See the city-by-city data.`,
-      url: `/en`,
-    },
-  });
+  const eventIt = {
+    title: `📊 Il clima di ${mese} in Italia`,
+    body: `${Mese}: ${value} rispetto alla media storica del mese. Vedi i dati città per città.`,
+    url: `/`,
+  };
+  const eventEn = {
+    title: `📊 ${monthEn}'s climate in Italy`,
+    body: `${monthEn}: ${valueEn} vs the month's historical average. See the city-by-city data.`,
+    url: `/en`,
+  };
+  const result = await notifyAll({ it: eventIt, en: eventEn });
   if (redis) {
     await redis.set(`monthly-recap:${monthKey}`, now.toISOString().slice(0, 10), {
       ex: MONTHLY_DEDUP_TTL,
     });
   }
+  await logEvent({ date: now.toISOString(), type: "monthly", it: eventIt, en: eventEn });
   return {
     month: monthKey,
     anomaly: Math.round(anomaly * 100) / 100,
@@ -296,6 +294,12 @@ export async function GET(req: NextRequest) {
         en: { title: titleEn, body: bodyEn, url: `/en/citta/${first.slug}` },
       });
       notified = { ...result, records: broken.map((b) => b.city) };
+      await logEvent({
+        date: new Date().toISOString(),
+        type: "record",
+        it: { title, body, url: `/citta/${first.slug}` },
+        en: { title: titleEn, body: bodyEn, url: `/en/citta/${first.slug}` },
+      });
     }
 
     // Non fatale: un errore qui non deve rompere il resto del refresh.
@@ -315,12 +319,22 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Snapshot giornaliero visite/bot (dedup interno, indipendente dal push):
+  // non fatale, il refresh non deve fallire se questo salta.
+  let statsSnapshot: Awaited<ReturnType<typeof logDailyStatsSnapshot>> | { error: string } = { skipped: true };
+  try {
+    statsSnapshot = await logDailyStatsSnapshot();
+  } catch (e) {
+    statsSnapshot = { error: e instanceof Error ? e.message : String(e) };
+  }
+
   return NextResponse.json({
     revalidated: true,
     tags: ["forecast"],
     notified,
     heatwave,
     monthlyRecap,
+    statsSnapshot,
     at: new Date().toISOString(),
   });
 }

@@ -6,6 +6,8 @@ import { CityCard } from "@/components/CityCard";
 import { ZoneStats } from "@/components/ZoneStats";
 import { VisitCounter } from "@/components/VisitCounter";
 import { NotifyButton } from "@/components/NotifyButton";
+import { RotatingHero } from "@/components/RotatingHero";
+import { MyCity } from "@/components/MyCity";
 import { ItalyMap } from "@/components/ItalyMap";
 import { getItalyMap } from "@/lib/italymap";
 import { LifetimeWarming } from "@/components/LifetimeWarming";
@@ -123,59 +125,23 @@ export default async function Home() {
           <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse" />
           Dati live · aggiornati ogni giorno
         </div>
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tighter leading-[1.02] max-w-3xl mx-auto">
-          <span className="bg-gradient-to-r from-[var(--on-surface)] to-[var(--primary)] bg-clip-text text-transparent">
-            {hero?.primary.headline ?? "Come è cambiata la temperatura in Italia?"}
-          </span>
-        </h1>
-
-        {hero && (
-          <div className="mt-6 flex flex-col items-center">
-            <div
-              className="text-7xl sm:text-8xl font-extrabold tracking-tighter leading-none"
-              style={{ color: hero.primary.color }}
-            >
-              {hero.primary.deltaC != null ? (
+        <RotatingHero
+          lang="it"
+          defaultHeadline={hero?.primary.headline ?? "Come è cambiata la temperatura in Italia?"}
+          defaultBig={
+            hero ? (
+              hero.primary.deltaC != null ? (
                 <Temp value={hero.primary.deltaC} digits={1} delta locale="it" />
               ) : (
                 hero.primary.value
-              )}
-            </div>
-            <div className="text-sm sm:text-base font-bold text-on-surface-variant mt-1">
-              {hero.primary.caption}
-            </div>
-          </div>
-        )}
-
-        {hero && hero.secondary.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-stretch justify-center gap-3 max-w-2xl mx-auto">
-            {hero.secondary.map((f, i) => (
-              <div
-                key={i}
-                className="hero-bubble rounded-3xl bg-surface-container-high px-4 py-2.5 text-left"
-                style={{
-                  animationDelay: `${i * 0.35}s`,
-                  animationDuration: `${4.2 + (i % 3) * 0.5}s`,
-                  boxShadow: `0 6px 18px color-mix(in srgb, ${f.color} 22%, transparent)`,
-                }}
-              >
-                <div className="text-xs text-on-surface-variant leading-tight">
-                  {f.headline}
-                </div>
-                <div className="text-sm leading-tight">
-                  <span className="font-extrabold" style={{ color: f.color }}>
-                    {f.deltaC != null ? (
-                      <Temp value={f.deltaC} digits={1} delta locale="it" />
-                    ) : (
-                      f.value
-                    )}
-                  </span>{" "}
-                  <span className="text-on-surface-variant">{f.caption}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )
+            ) : (
+              "–"
+            )
+          }
+          defaultCaption={hero?.primary.caption ?? ""}
+          defaultColor={hero?.primary.color ?? "var(--primary)"}
+        />
 
         <p className="mt-5 text-base sm:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
           Ogni estate lo stesso dibattito: &quot;caldo record&quot;, &quot;afa
@@ -206,6 +172,8 @@ export default async function Home() {
           <VisitCounter />
         </div>
       </section>
+
+      <MyCity lang="it" />
 
       {/* RIEPILOGO NAZIONALE */}
       <section className="grid gap-4 sm:grid-cols-3 mb-12">

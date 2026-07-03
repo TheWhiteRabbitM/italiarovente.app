@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CITIES } from "@/lib/cities";
+import { getHistoryMeta } from "@/lib/weather";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata = {
@@ -33,6 +34,7 @@ const STR = {
     downloadBody: (n: number) =>
       `Una riga per ciascuna delle ${n} città monitorate: normale climatica 1961–1990, normale 1991–2020, riscaldamento, tendenza per decennio (R²) e anno di inizio della serie.`,
     downloadCta: "⬇️ Scarica citta.csv",
+    downloadJsonCta: "⬇️ Scarica citta.json",
     colsTitle: "Colonne",
     cols: [
       ["slug, citta, regione, lat, lon", "identificativi della città"],
@@ -58,9 +60,26 @@ const STR = {
     methodTitle: "🧪 Metodo, in breve",
     methodBody:
       "Riscaldamento = normale 1991–2020 meno normale 1961–1990 (differenza tra due medie trentennali, non un anno recente contro il passato). Tendenza = regressione lineare sulle medie annue dell'intera serie.",
+    provenanceTitle: "🔖 Provenienza di questo snapshot",
+    provenanceBody: (generatedAt: string, source: string, build: string | null) => (
+      <>
+        Snapshot generato il <strong>{generatedAt}</strong>, fonte <strong>{source}</strong>
+        {build ? (
+          <>
+            , build <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">{build}</code>
+          </>
+        ) : null}
+        . Riprendendo lo stesso metodo su questo stesso snapshot (il file{" "}
+        <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">history.json</code>{" "}
+        nel repository) si ottengono esattamente gli stessi numeri.
+      </>
+    ),
+    provenanceUnavailable:
+      "Data di generazione non disponibile per questo ambiente (normale in sviluppo locale).",
     otherTitle: "Altri modi di consultare i dati",
     otherLinks: [
       { href: "/llms.txt", label: "llms.txt — indice per assistenti AI" },
+      { href: "/feed.xml", label: "feed.xml — RSS di record, ondate di calore e recap mensile" },
       { href: "/citta", label: "Elenco città con pagina dedicata" },
       { href: "/classifiche", label: "Classifiche e graduatorie" },
     ],
@@ -75,6 +94,7 @@ const STR = {
     downloadBody: (n: number) =>
       `One row per each of the ${n} monitored cities: 1961–1990 climate normal, 1991–2020 normal, warming, per-decade trend (R²), and the series' start year.`,
     downloadCta: "⬇️ Download citta.csv",
+    downloadJsonCta: "⬇️ Download citta.json",
     colsTitle: "Columns",
     cols: [
       ["slug, citta, regione, lat, lon", "city identifiers (Italian names)"],
@@ -101,9 +121,25 @@ const STR = {
     methodTitle: "🧪 Method, briefly",
     methodBody:
       "Warming = 1991–2020 normal minus 1961–1990 normal (the difference between two 30-year averages, not a recent year against the past). Trend = linear regression on the annual means of the whole series.",
+    provenanceTitle: "🔖 Provenance of this snapshot",
+    provenanceBody: (generatedAt: string, source: string, build: string | null) => (
+      <>
+        Snapshot generated on <strong>{generatedAt}</strong>, source <strong>{source}</strong>
+        {build ? (
+          <>
+            , build <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">{build}</code>
+          </>
+        ) : null}
+        . Re-running the same method on this exact snapshot (the{" "}
+        <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded">history.json</code>{" "}
+        file in the repository) reproduces exactly the same numbers.
+      </>
+    ),
+    provenanceUnavailable: "Generation date not available in this environment (normal in local dev).",
     otherTitle: "Other ways to consult the data",
     otherLinks: [
       { href: "/llms.txt", label: "llms.txt — index for AI assistants" },
+      { href: "/en/feed.xml", label: "feed.xml — RSS of records, heatwaves and the monthly recap" },
       { href: "/en/citta", label: "City list with dedicated pages" },
       { href: "/en/classifiche", label: "Rankings" },
     ],
@@ -123,6 +159,7 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
   const t = STR[lang];
   const base = lang === "en" ? "/en" : "";
   const pageUrl = `${SITE_URL}${base}/dati`;
+  const meta = getHistoryMeta();
 
   // Dataset JSON-LD: descrive il CSV scaricabile in un formato che motori di
   // ricerca e assistenti AI sanno indicizzare come fonte dati primaria
@@ -138,6 +175,7 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
     creator: { "@type": "Organization", name: "Italia Rovente", url: SITE_URL },
     temporalCoverage: "1940/..",
     spatialCoverage: { "@type": "Place", name: "Italia" },
+    ...(meta?.generatedAt ? { dateModified: meta.generatedAt } : {}),
     distribution: {
       "@type": "DataDownload",
       encodingFormat: "text/csv",
@@ -162,12 +200,20 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
       <div className="space-y-5">
         <Card title={t.downloadTitle}>
           <p>{t.downloadBody(CITIES.length)}</p>
-          <a
-            href="/api/export/citta.csv"
-            className="m3-chip bg-primary text-on-primary px-5 py-2.5 inline-flex hover:scale-105 transition-transform"
-          >
-            {t.downloadCta}
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/api/export/citta.csv"
+              className="m3-chip bg-primary text-on-primary px-5 py-2.5 inline-flex hover:scale-105 transition-transform"
+            >
+              {t.downloadCta}
+            </a>
+            <a
+              href="/api/export/citta.json"
+              className="m3-chip bg-surface-container-high text-on-surface px-5 py-2.5 inline-flex hover:scale-105 transition-transform"
+            >
+              {t.downloadJsonCta}
+            </a>
+          </div>
           <div>
             <div className="font-bold text-on-surface mt-4 mb-2">{t.colsTitle}</div>
             <ul className="list-disc pl-5 space-y-1">
@@ -183,6 +229,14 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
 
         <Card title={t.methodTitle}>
           <p>{t.methodBody}</p>
+        </Card>
+
+        <Card title={t.provenanceTitle}>
+          <p>
+            {meta?.generatedAt
+              ? t.provenanceBody(meta.generatedAt, meta.source, meta.commit)
+              : t.provenanceUnavailable}
+          </p>
         </Card>
 
         <Card title={t.licenseTitle}>

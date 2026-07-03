@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "FETCH_BUDGET_MS=600000 node scripts/fetch-history.mjs && next build",
+  "crons": [
+    {
+      "path": "/api/refresh",
+      "schedule": "30 5 * * *"
+    }
+  ]
+}

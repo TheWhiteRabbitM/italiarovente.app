@@ -74,6 +74,14 @@ export type CityArchive = {
     coldest: Extreme;
     warmestYear: YearlyPoint;
     coolestYear: YearlyPoint;
+    // Sequenza più lunga di giorni consecutivi con massima >= 35° (solo
+    // città principali, precalcolato in fetch-history.mjs). Assente/null se
+    // non ancora calcolato o nel fallback live (computeArchive) — mai una
+    // stima parziale spacciata per definitiva.
+    longestHeatwave?: { days: number; start: string; end: string; peak: number } | null;
+    // Simmetrico, ma per la sequenza più lunga di notti di gelo consecutive
+    // (minima <= 0°C).
+    longestColdSnap?: { days: number; start: string; end: string; low: number } | null;
   };
   trend: {
     perYear: number; // °C/anno (pendenza regressione lineare media annua)
@@ -522,6 +530,16 @@ async function computeArchive(city: City): Promise<CityArchive> {
 // ---------------------------------------------------------------------------
 export type HistorySnap = Omit<CityArchive, "recent">;
 const SNAPSHOT = historyData as unknown as Record<string, HistorySnap>;
+
+export type HistoryMeta = { generatedAt: string; source: string; commit: string | null };
+
+// Provenienza dello snapshot precalcolato: quando è stato generato e da quale
+// fonte, scritta da scripts/fetch-history.mjs. Serve a chi vuole riprodurre
+// esattamente questi numeri (vedi /dati).
+export function getHistoryMeta(): HistoryMeta | null {
+  const meta = (historyData as Record<string, unknown>)._meta;
+  return (meta as HistoryMeta) ?? null;
+}
 
 async function fetchRecentDaily(city: City): Promise<DailyPoint[]> {
   const year = new Date().getUTCFullYear();

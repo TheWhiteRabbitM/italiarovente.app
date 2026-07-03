@@ -6,6 +6,8 @@ import { CityCard } from "@/components/CityCard";
 import { ZoneStats } from "@/components/ZoneStats";
 import { VisitCounter } from "@/components/VisitCounter";
 import { NotifyButton } from "@/components/NotifyButton";
+import { RotatingHero } from "@/components/RotatingHero";
+import { MyCity } from "@/components/MyCity";
 import { ItalyMap } from "@/components/ItalyMap";
 import { getItalyMap } from "@/lib/italymap";
 import { LifetimeWarming } from "@/components/LifetimeWarming";
@@ -138,59 +140,23 @@ export default async function EnglishHome() {
           <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse" />
           Live data · updated daily
         </div>
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tighter leading-[1.02] max-w-3xl mx-auto">
-          <span className="bg-gradient-to-r from-[var(--on-surface)] to-[var(--primary)] bg-clip-text text-transparent">
-            {hero?.primary.headline ?? "How has Italy's temperature changed?"}
-          </span>
-        </h1>
-
-        {hero && (
-          <div className="mt-6 flex flex-col items-center">
-            <div
-              className="text-7xl sm:text-8xl font-extrabold tracking-tighter leading-none"
-              style={{ color: hero.primary.color }}
-            >
-              {hero.primary.deltaC != null ? (
+        <RotatingHero
+          lang="en"
+          defaultHeadline={hero?.primary.headline ?? "How has Italy's temperature changed?"}
+          defaultBig={
+            hero ? (
+              hero.primary.deltaC != null ? (
                 <Temp value={hero.primary.deltaC} digits={1} delta locale="en" />
               ) : (
                 hero.primary.value
-              )}
-            </div>
-            <div className="text-sm sm:text-base font-bold text-on-surface-variant mt-1">
-              {hero.primary.caption}
-            </div>
-          </div>
-        )}
-
-        {hero && hero.secondary.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-stretch justify-center gap-3 max-w-2xl mx-auto">
-            {hero.secondary.map((f, i) => (
-              <div
-                key={i}
-                className="hero-bubble rounded-3xl bg-surface-container-high px-4 py-2.5 text-left"
-                style={{
-                  animationDelay: `${i * 0.35}s`,
-                  animationDuration: `${4.2 + (i % 3) * 0.5}s`,
-                  boxShadow: `0 6px 18px color-mix(in srgb, ${f.color} 22%, transparent)`,
-                }}
-              >
-                <div className="text-xs text-on-surface-variant leading-tight">
-                  {f.headline}
-                </div>
-                <div className="text-sm leading-tight">
-                  <span className="font-extrabold" style={{ color: f.color }}>
-                    {f.deltaC != null ? (
-                      <Temp value={f.deltaC} digits={1} delta locale="en" />
-                    ) : (
-                      f.value
-                    )}
-                  </span>{" "}
-                  <span className="text-on-surface-variant">{f.caption}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )
+            ) : (
+              "–"
+            )
+          }
+          defaultCaption={hero?.primary.caption ?? ""}
+          defaultColor={hero?.primary.color ?? "var(--primary)"}
+        />
 
         <p className="mt-5 text-base sm:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
           Every summer it&apos;s the same debate: &quot;hottest ever&quot;, &quot;unbearable
@@ -220,6 +186,8 @@ export default async function EnglishHome() {
           <VisitCounter lang="en" />
         </div>
       </section>
+
+      <MyCity lang="en" />
 
       {/* NATIONAL SUMMARY */}
       <section className="grid gap-4 sm:grid-cols-3 mb-12">

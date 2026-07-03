@@ -103,3 +103,110 @@ test("aggregate: record di caldo/freddo coerenti con i massimi/minimi sintetici"
   // tmin = mean - 5, mean è minima nel primo anno -> record di freddo nel 1961.
   assert.equal(r.records.coldest.date.slice(0, 4), "1961");
 });
+
+// Un anno intero "noioso" (1990, sotto ogni soglia) prima dei giorni di
+// test: aggregate() richiede almeno un anno completo (>=360 giorni validi)
+// per calcolare trend/decenni senza andare in errore — qui serve solo a
+// soddisfare quel requisito, non interferisce con i test sulle sequenze.
+function boringYear(year) {
+  const days = [];
+  for (let m = 0; m < 12; m++) {
+    const last = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
+    for (let d = 1; d <= last; d++) {
+      const date = `${year}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      days.push([date, 15]);
+    }
+  }
+  return days;
+}
+
+function fixtureFromDays(days) {
+  // days: array di [dataISO, tmax], anteposto a un anno "noioso" per dare
+  // ad aggregate() almeno un anno completo -> costruisce un input minimo.
+  const all = [...boringYear(1990), ...days];
+  return {
+    daily: {
+      time: all.map(([d]) => d),
+      temperature_2m_mean: all.map(([, mx]) => mx - 5),
+      temperature_2m_max: all.map(([, mx]) => mx),
+      temperature_2m_min: all.map(([, mx]) => mx - 10),
+    },
+  };
+}
+
+test("aggregate: ondata di calore -> vince la sequenza consecutiva più lunga, non la somma totale", () => {
+  // 3 giorni >=35°, un giorno sotto soglia (interrompe), poi 6 giorni >=35°.
+  const days = [
+    ["2015-07-01", 35], ["2015-07-02", 35], ["2015-07-03", 35],
+    ["2015-07-04", 34], // sotto soglia -> interrompe la sequenza
+    ["2015-07-05", 35], ["2015-07-06", 35], ["2015-07-07", 35],
+    ["2015-07-08", 35], ["2015-07-09", 35], ["2015-07-10", 35],
+  ];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestHeatwave.days, 6, `attesi 6 giorni, ottenuti ${r.records.longestHeatwave.days}`);
+  assert.equal(r.records.longestHeatwave.start, "2015-07-05");
+  assert.equal(r.records.longestHeatwave.end, "2015-07-10");
+});
+
+test("aggregate: un buco nella serie (data mancante) interrompe la sequenza anche se i valori qualificano", () => {
+  // 5 giorni >=35°, poi un salto di 2 giorni (data mancante), poi altri 4.
+  const days = [
+    ["2015-08-01", 36], ["2015-08-02", 36], ["2015-08-03", 36], ["2015-08-04", 36], ["2015-08-05", 36],
+    // 2015-08-06 mancante -> non consecutivo
+    ["2015-08-07", 36], ["2015-08-08", 36], ["2015-08-09", 36], ["2015-08-10", 36],
+  ];
+  const r = aggregate(fixtureFromDays(days));
+  // Se il buco NON interrompesse la sequenza, il totale sarebbe 9 giorni.
+  assert.equal(r.records.longestHeatwave.days, 5, `attesi 5 giorni (il buco deve interrompere), ottenuti ${r.records.longestHeatwave.days}`);
+  assert.equal(r.records.longestHeatwave.start, "2015-08-01");
+  assert.equal(r.records.longestHeatwave.end, "2015-08-05");
+});
+
+test("aggregate: nessun giorno sopra soglia -> longestHeatwave è null", () => {
+  const days = [["2015-01-01", 10], ["2015-01-02", 12], ["2015-01-03", 8]];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestHeatwave, null);
+});
+
+// tmin = tmax - 10 nella fixture: per testare il gelo (tmin <= 0) bastano
+// tmax bassi (es. tmax=5 -> tmin=-5). Nessun collegamento col caldo: sono
+// due sequenze indipendenti calcolate nello stesso giro del ciclo.
+test("aggregate: notti di gelo -> vince la sequenza consecutiva più lunga, non la somma totale", () => {
+  const days = [
+    ["2016-01-01", 5], ["2016-01-02", 5], ["2016-01-03", 5], // tmin -5,-5,-5
+    ["2016-01-04", 15], // tmin 5, sopra zero -> interrompe
+    ["2016-01-05", 5], ["2016-01-06", 5], ["2016-01-07", 5], ["2016-01-08", 5], ["2016-01-09", 5],
+  ];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestColdSnap.days, 5, `attesi 5 giorni, ottenuti ${r.records.longestColdSnap.days}`);
+  assert.equal(r.records.longestColdSnap.start, "2016-01-05");
+  assert.equal(r.records.longestColdSnap.end, "2016-01-09");
+  assert.ok(Math.abs(r.records.longestColdSnap.low - -5) < EPS, `low atteso -5, ottenuto ${r.records.longestColdSnap.low}`);
+});
+
+test("aggregate: un buco nella serie interrompe anche la sequenza di gelo", () => {
+  const days = [
+    ["2016-02-01", 5], ["2016-02-02", 5], ["2016-02-03", 5], ["2016-02-04", 5],
+    // 2016-02-05 mancante -> non consecutivo
+    ["2016-02-06", 5], ["2016-02-07", 5],
+  ];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestColdSnap.days, 4, `attesi 4 giorni (il buco deve interrompere), ottenuti ${r.records.longestColdSnap.days}`);
+});
+
+test("aggregate: nessun giorno sotto soglia -> longestColdSnap è null", () => {
+  const days = [["2016-03-01", 20], ["2016-03-02", 22], ["2016-03-03", 18]];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestColdSnap, null);
+});
+
+test("aggregate: caldo e gelo sono sequenze indipendenti calcolate nello stesso passaggio", () => {
+  const days = [
+    ["2017-06-01", 36], ["2017-06-02", 36], ["2017-06-03", 36], // ondata di calore, 3gg
+    ["2017-06-04", 15], // giorno neutro
+    ["2017-07-01", 4], ["2017-07-02", 4], // gelo, 2gg (tmin -6)
+  ];
+  const r = aggregate(fixtureFromDays(days));
+  assert.equal(r.records.longestHeatwave.days, 3);
+  assert.equal(r.records.longestColdSnap.days, 2);
+});
