@@ -35,9 +35,16 @@ what conclusion to draw.
     summer record (shown only in season).
   - 🏠 **Heating degree days ("gradi giorno")** — an estimate based on Italy's official DPR 412/93
     heating-demand indicator, with the city's climate zone (A–F).
-  - Each curiosity has its own shareable mini-page with a matching Open Graph preview image.
+  - 📅 **Longest heatwave / longest cold snap on record** — the longest consecutive run of days
+    ≥35 °C, and separately the longest run of frost days (min ≤0 °C), computed from the same
+    daily series already fetched for the yearly aggregates.
+  - Each curiosity has its own shareable mini-page with a matching Open Graph preview image, and
+    the homepage headline itself rotates through a live curiosity on every visit.
 - 🏆 **Rankings** (`/classifiche`) — fastest-warming and "coolest" cities, per-decade pace,
-  absolute records, tropical nights, and diurnal temperature range.
+  absolute records, days of extreme/"African" heat (≥30 °C), tropical nights, and diurnal
+  temperature range.
+- 👤 **Follow your city** — an optional, no-account, `localStorage`-only shortcut on the homepage
+  that shows a saved city's current temperature and warming figure at a glance.
 - 🗺️ **Regions** (`/regioni`) — average warming per Italian region.
 - 📈 **National trend** (`/clima`) — is the warming real? put to the test with the full dataset.
 - ⚖️ **City vs. city** (`/confronto`) and **Italy vs. 14 European capitals** (`/europa`), same
@@ -46,10 +53,14 @@ what conclusion to draw.
 - 🧠 **Daily climate quiz** (`/quiz`) built entirely from the site's real numbers.
 - 🤖 **"Ask the climate"** — an AI assistant that answers only with figures returned by this
   site's own data tools, never from memory; if it doesn't have the number, it says so.
-- 📄 **Open data** (`/dati`) — a downloadable CSV of the per-city historical aggregates, with
-  `Dataset` structured data for search engines and AI answer engines.
+- 📄 **Open data** (`/dati`) — downloadable CSV and JSON of the per-city historical aggregates,
+  with `Dataset` structured data for search engines and AI answer engines.
+- 🧭 **AEO-friendly by design** — [`/llms.txt`](https://italiarovente.app/llms.txt) points AI
+  assistants to the right page for common questions and gives ready-to-use, live-numbered
+  citation examples, on top of `FAQPage`/`Dataset`/`Organization` structured data site-wide.
+- 📡 **RSS feed** (`/feed.xml`) — new absolute records, incoming heatwaves, and the monthly recap.
 - 📊 **Anonymous, aggregated stats** — human visits and AI-bot/crawler traffic (by category),
-  shown publicly on the disclaimer page — no personal data.
+  including a daily history table, shown publicly on the disclaimer page — no personal data.
 - 🔔 Push notifications for new heatwaves and a monthly recap (opt-in).
 - 🌡️ Fahrenheit/Celsius toggle, light/dark theme, shareable posters and social images.
 
