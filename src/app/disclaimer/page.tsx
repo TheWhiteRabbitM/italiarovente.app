@@ -3,6 +3,7 @@ import { CITIES } from "@/lib/cities";
 import { getLifetimeData } from "@/lib/lifetime";
 import { getBotStats } from "@/lib/botstats";
 import { getStatsHistory } from "@/lib/statshistory";
+import { TrendSparkline } from "@/components/TrendSparkline";
 import { fmtAnomaly } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 
@@ -194,6 +195,7 @@ const STR = {
     trendDate: "Data",
     trendVisits: "Visite umane",
     trendBots: "Richieste bot",
+    trendRecentTitle: (n: number) => `Ultimi ${n} giorni`,
     faqTitle: "❓ Domande frequenti",
     faq: (warming: string) => [
       {
@@ -403,6 +405,7 @@ const STR = {
     trendDate: "Date",
     trendVisits: "Human visits",
     trendBots: "Bot requests",
+    trendRecentTitle: (n: number) => `Last ${n} days`,
     faqTitle: "❓ Frequently asked questions",
     faq: (warming: string) => [
       {
@@ -581,26 +584,53 @@ export async function DisclaimerContent({ lang, homeHref }: { lang: Lang; homeHr
           <p className="font-bold text-on-surface mt-4">{t.trendTitle}</p>
           <p className="text-xs mb-2">{t.trendIntro}</p>
           {statsHistory.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-left text-on-surface-variant">
-                    <th className="pr-3 py-1 font-semibold">{t.trendDate}</th>
-                    <th className="pr-3 py-1 font-semibold">{t.trendVisits}</th>
-                    <th className="py-1 font-semibold">{t.trendBots}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {statsHistory.map((s) => (
-                    <tr key={s.date} className="border-t border-[var(--outline-variant)]">
-                      <td className="pr-3 py-1 tabular-nums">{s.date}</td>
-                      <td className="pr-3 py-1 tabular-nums">{s.visits.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
-                      <td className="py-1 tabular-nums">{s.botsTotal.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
+            <>
+              {statsHistory.length >= 2 && (
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="rounded-2xl bg-surface-container-high p-3">
+                    <div className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wide">
+                      {t.trendVisits}
+                    </div>
+                    <div className="text-lg font-extrabold tracking-tight tabular-nums">
+                      {statsHistory[statsHistory.length - 1].visits.toLocaleString(lang === "it" ? "it-IT" : "en-US")}
+                    </div>
+                    <TrendSparkline values={statsHistory.map((s) => s.visits)} color="var(--tertiary)" />
+                  </div>
+                  <div className="rounded-2xl bg-surface-container-high p-3">
+                    <div className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wide">
+                      {t.trendBots}
+                    </div>
+                    <div className="text-lg font-extrabold tracking-tight tabular-nums">
+                      {statsHistory[statsHistory.length - 1].botsTotal.toLocaleString(lang === "it" ? "it-IT" : "en-US")}
+                    </div>
+                    <TrendSparkline values={statsHistory.map((s) => s.botsTotal)} color="var(--secondary)" />
+                  </div>
+                </div>
+              )}
+              <p className="text-xs font-semibold text-on-surface-variant mb-1">
+                {t.trendRecentTitle(Math.min(7, statsHistory.length))}
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-left text-on-surface-variant">
+                      <th className="pr-3 py-1 font-semibold">{t.trendDate}</th>
+                      <th className="pr-3 py-1 font-semibold">{t.trendVisits}</th>
+                      <th className="py-1 font-semibold">{t.trendBots}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {statsHistory.slice(-7).reverse().map((s) => (
+                      <tr key={s.date} className="border-t border-[var(--outline-variant)]">
+                        <td className="pr-3 py-1 tabular-nums">{s.date}</td>
+                        <td className="pr-3 py-1 tabular-nums">{s.visits.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
+                        <td className="py-1 tabular-nums">{s.botsTotal.toLocaleString(lang === "it" ? "it-IT" : "en-US")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <p>{t.trendUnavailable}</p>
           )}
