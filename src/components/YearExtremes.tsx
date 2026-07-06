@@ -44,17 +44,19 @@ export function YearExtremes({
   years,
   baseline,
   lang = "it",
+  count = 5,
 }: {
   years: { y: number; m: number }[];
   baseline: number;
   lang?: "it" | "en";
+  count?: number;
 }) {
   const t = STR[lang];
   if (years.length < 10) return null;
 
   const withAnomaly = years.map((y) => ({ year: y.y, anomaly: Math.round((y.m - baseline) * 100) / 100 }));
-  const hottest = [...withAnomaly].sort((a, b) => b.anomaly - a.anomaly).slice(0, 5);
-  const coldest = [...withAnomaly].sort((a, b) => a.anomaly - b.anomaly).slice(0, 5);
+  const hottest = [...withAnomaly].sort((a, b) => b.anomaly - a.anomaly).slice(0, count);
+  const coldest = [...withAnomaly].sort((a, b) => a.anomaly - b.anomaly).slice(0, count);
 
   return (
     <section className="mb-12">

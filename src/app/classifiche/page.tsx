@@ -3,6 +3,9 @@ import { CITIES, cityName, type City } from "@/lib/cities";
 import { getArchiveStats } from "@/lib/weather";
 import { anomalyColor, readableTextOn, tempColor, fmtDate } from "@/lib/format";
 import { Temp } from "@/components/Temp";
+import { YearExtremes } from "@/components/YearExtremes";
+import { gradiGiorno, ggZone } from "@/lib/degreedays";
+import { getLifetimeData } from "@/lib/lifetime";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata = {
@@ -67,6 +70,24 @@ const STR = {
     swingLowTitle: "🌊 L'escursione termica minore",
     swingLowSub:
       "Dove il divario giorno/notte è più piccolo: spesso segnale di clima mite, costiero o insulare.",
+    heatwaveTitle: "🔥📅 L'ondata di calore più lunga di sempre",
+    heatwaveSub:
+      "Il record assoluto di giorni consecutivi con massima ≥35°, città per città (solo dove il dato è già stato ricalcolato).",
+    daysUnit: "giorni",
+    coldSnapTitle: "🥶📅 La sequenza di gelo più lunga di sempre",
+    coldSnapSub:
+      "Il record assoluto di notti consecutive con minima ≤0°, città per città.",
+    reliabilityTitle: "📊 Il segnale di riscaldamento più chiaro",
+    reliabilitySub:
+      "R² della regressione lineare sull'intera serie storica: più è vicino a 1, più la tendenza è netta e poco rumorosa — non quanto si scalda, ma quanto è leggibile il segnale.",
+    noisyTitle: "🎲 Il segnale più rumoroso",
+    noisySub:
+      "Dove l'andamento anno per anno oscilla di più rispetto alla tendenza di fondo: un R² basso non significa che il riscaldamento non ci sia, solo che è meno regolare.",
+    ggTitle: "🏠 Dove si riscalda di più in inverno",
+    ggSub:
+      "Gradi giorno (DPR 412/93, stima dalla climatologia mensile): più alto è il numero, più fabbisogno di riscaldamento ha un edificio in quella città. Tra parentesi la zona climatica (A–F).",
+    ggLowTitle: "☀️ Dove si riscalda di meno in inverno",
+    ggLowSub: "Le città con il fabbisogno di riscaldamento stimato più basso.",
   },
   en: {
     backLink: "← All cities",
@@ -104,6 +125,24 @@ const STR = {
     swingLowTitle: "🌊 The narrowest day/night swing",
     swingLowSub:
       "Where the day/night gap is smallest: often a sign of a mild, coastal or island climate.",
+    heatwaveTitle: "🔥📅 The longest heatwave on record",
+    heatwaveSub:
+      "The all-time record of consecutive days with a high ≥35°, city by city (only where this field has already been recalculated).",
+    daysUnit: "days",
+    coldSnapTitle: "🥶📅 The longest cold snap on record",
+    coldSnapSub:
+      "The all-time record of consecutive nights with a low ≤0°, city by city.",
+    reliabilityTitle: "📊 The clearest warming signal",
+    reliabilitySub:
+      "R² of the linear regression over the whole historical series: the closer to 1, the clearer and less noisy the trend — not how much it's warming, but how readable the signal is.",
+    noisyTitle: "🎲 The noisiest signal",
+    noisySub:
+      "Where year-to-year swings around the underlying trend are largest: a low R² doesn't mean the warming isn't real, just that it's less regular.",
+    ggTitle: "🏠 Where winter heating demand is highest",
+    ggSub:
+      "Heating degree days (DPR 412/93, estimated from monthly climatology): the higher the number, the more heating a building needs in that city. Climate zone (A–F) in parentheses.",
+    ggLowTitle: "☀️ Where winter heating demand is lowest",
+    ggLowSub: "The cities with the lowest estimated heating demand.",
   },
 } as const;
 
@@ -250,6 +289,39 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
     .sort((a, b) => b.avg - a.avg);
   const topSwing = swing.slice(0, 10);
   const lowSwing = swing.slice(-5).reverse();
+
+  // --- Ondata di calore più lunga di sempre (record assoluto, per città) ---
+  const heatwaveRanking = stats
+    .filter(({ s }) => Number.isFinite(s.records?.longestHeatwave?.days))
+    .sort((a, b) => b.s.records.longestHeatwave!.days - a.s.records.longestHeatwave!.days)
+    .slice(0, 10);
+
+  // --- Sequenza di gelo più lunga di sempre (record assoluto, per città) ---
+  const coldSnapRanking = stats
+    .filter(({ s }) => Number.isFinite(s.records?.longestColdSnap?.days))
+    .sort((a, b) => b.s.records.longestColdSnap!.days - a.s.records.longestColdSnap!.days)
+    .slice(0, 10);
+
+  // --- Affidabilità del trend: R² della regressione (segnale più chiaro / più rumoroso) ---
+  const reliabilityRanking = stats
+    .map(({ city, s }) => ({ city, r2: s.trend.r2, perDecade: s.trend.perDecade }))
+    .filter((r) => Number.isFinite(r.r2))
+    .sort((a, b) => b.r2 - a.r2);
+  const topReliability = reliabilityRanking.slice(0, 10);
+  const noisiest = reliabilityRanking.slice(-5).reverse();
+
+  // --- Gradi giorno (fabbisogno di riscaldamento invernale, DPR 412/93) ---
+  const degreeDaysRanking = stats
+    .flatMap(({ city, s }) => {
+      const gg = gradiGiorno(s.monthly);
+      return gg != null ? [{ city, gg }] : [];
+    })
+    .sort((a, b) => b.gg - a.gg);
+  const topDegreeDays = degreeDaysRanking.slice(0, 10);
+  const lowDegreeDays = degreeDaysRanking.slice(-5).reverse();
+
+  // --- Anni più estremi in assoluto (media nazionale, riuso getLifetimeData) ---
+  const lifetimeData = getLifetimeData();
 
   // JSON-LD: BreadcrumbList (Home → Classifiche) + ItemList della classifica
   // principale (top 10 riscaldamento) — i motori di ricerca prediligono
@@ -541,6 +613,147 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
           ))}
         </div>
       </section>
+
+      {/* 🔥📅 Ondata di calore più lunga di sempre */}
+      {heatwaveRanking.length > 0 && (
+        <section className="mb-12">
+          <SectionHeader title={t.heatwaveTitle} sub={t.heatwaveSub} />
+          <div className="space-y-2.5">
+            {heatwaveRanking.map(({ city, s }, i) => {
+              const rec = s.records.longestHeatwave!;
+              return (
+                <RankRow
+                  key={city.slug}
+                  href={cityHref(city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(city, lang)}
+                  badge={rec.days}
+                  badgeBg="#ff8a5c"
+                  badgeText={readableTextOn("#ff8a5c")}
+                  sub={
+                    <>
+                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
+                      <Temp value={rec.peak} digits={1} />
+                    </>
+                  }
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 🥶📅 Sequenza di gelo più lunga di sempre */}
+      {coldSnapRanking.length > 0 && (
+        <section className="mb-12">
+          <SectionHeader title={t.coldSnapTitle} sub={t.coldSnapSub} />
+          <div className="space-y-2.5">
+            {coldSnapRanking.map(({ city, s }, i) => {
+              const rec = s.records.longestColdSnap!;
+              return (
+                <RankRow
+                  key={city.slug}
+                  href={cityHref(city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(city, lang)}
+                  badge={rec.days}
+                  badgeBg="#7fb3ff"
+                  badgeText={readableTextOn("#7fb3ff")}
+                  sub={
+                    <>
+                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
+                      <Temp value={rec.low} digits={1} />
+                    </>
+                  }
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 📊 Affidabilità del trend (R²) */}
+      <section className="mb-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
+          <div>
+            <SectionHeader title={t.reliabilityTitle} sub={t.reliabilitySub} />
+            <div className="space-y-2.5">
+              {topReliability.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.r2.toFixed(2)}
+                  badgeBg="var(--primary-container)"
+                  badgeText="var(--on-primary-container)"
+                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <SectionHeader title={t.noisyTitle} sub={t.noisySub} />
+            <div className="space-y-2.5">
+              {noisiest.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.r2.toFixed(2)}
+                  badgeBg="var(--surface-container-high)"
+                  badgeText="var(--on-surface)"
+                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 🏠 Gradi giorno (fabbisogno di riscaldamento invernale) */}
+      <section className="mb-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
+          <div>
+            <SectionHeader title={t.ggTitle} sub={t.ggSub} />
+            <div className="space-y-2.5">
+              {topDegreeDays.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.gg}
+                  badgeBg="var(--tertiary-container)"
+                  badgeText="var(--on-tertiary-container)"
+                  sub={ggZone(r.gg)}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <SectionHeader title={t.ggLowTitle} sub={t.ggLowSub} />
+            <div className="space-y-2.5">
+              {lowDegreeDays.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.gg}
+                  badgeBg="var(--tertiary-container)"
+                  badgeText="var(--on-tertiary-container)"
+                  sub={ggZone(r.gg)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 🏆 Gli anni più estremi in assoluto (media nazionale) */}
+      <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang={lang} count={10} />
     </div>
   );
 }
