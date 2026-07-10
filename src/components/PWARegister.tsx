@@ -14,7 +14,11 @@ import { useEffect } from "react";
 // cache-first del SW serve la versione vecchia di un componente anche dopo
 // averlo modificato — un DOM che contraddice l'HTML servito, difficilissimo
 // da diagnosticare.
-const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID ?? "dev";
+// `?? "dev"` non basta: una variabile d'ambiente può essere presente e VUOTA
+// (è successo su Vercel con VERCEL_GIT_COMMIT_SHA), e `"" ?? x` restituisce "".
+// Un `?v=` vuoto fa ricadere sw.js sul nome di cache fisso, annullando la
+// versioning per build. Qui il vuoto è un valore non valido, come l'assenza.
+const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID?.trim() || "dev";
 
 export function PWARegister() {
   useEffect(() => {
