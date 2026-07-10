@@ -13,7 +13,7 @@ export function TrendSparkline({
   width?: number;
   height?: number;
 }) {
-  if (values.length < 2) return <div style={{ width, height }} />;
+  if (values.length < 2) return <div style={{ width: "100%", height }} />;
 
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -34,7 +34,13 @@ export function TrendSparkline({
   const last = coords[coords.length - 1];
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <svg
+      width="100%"
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className="block max-w-full"
+    >
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
