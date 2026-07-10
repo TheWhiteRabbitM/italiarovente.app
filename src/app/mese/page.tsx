@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getMonthlyBulletin, ordinalIt, ordinalEn } from "@/lib/monthlyCompare";
+import { getMonthlyBulletin, hotRank, publishedAnomaly, ordinalIt, ordinalEn } from "@/lib/monthlyCompare";
 import { WarmingStripes } from "@/components/WarmingStripes";
 import { AnomalyBarChart } from "@/components/charts";
 import { Temp } from "@/components/Temp";
@@ -74,6 +74,13 @@ const STR = {
     chartBody: "La linea tratteggiata è la tendenza di fondo su questo singolo mese.",
     rankingTitle: (mese: string) => `I ${mese} più caldi di sempre`,
     rankingBody: "Primi dieci, dal più caldo. In grassetto il mese appena concluso.",
+    rankingTies:
+      "I valori sono pubblicati a due decimali, e la classifica è calcolata su quelli: due mesi che mostrano la stessa anomalia condividono il posto. Separarli con decimali più fini sarebbe una differenza inventata dall'arrotondamento dei dati di partenza.",
+    colYear: "Anno",
+    colAnomaly: "Anomalia",
+    colMean: "Media del mese",
+    colCity: "Città",
+    colPlace: "Posto",
     citiesTitle: (mese: string, year: number) => `${mese[0].toUpperCase()}${mese.slice(1)} ${year}, città per città`,
     citiesBody:
       "Ogni città confrontata con la propria normale 1961–1990 dello stesso mese, e il suo posto nella propria classifica storica. Ordinate dall'anomalia più alta.",
@@ -136,6 +143,13 @@ const STR = {
     chartBody: "The dashed line is the underlying trend for this single month.",
     rankingTitle: (mese: string) => `The hottest ${mese}s on record`,
     rankingBody: "Top ten, hottest first. The month just ended is in bold.",
+    rankingTies:
+      "Values are published to two decimals, and the ranking is computed on those: two months showing the same anomaly share a place. Separating them with finer decimals would be a difference invented by the rounding of the source data.",
+    colYear: "Year",
+    colAnomaly: "Anomaly",
+    colMean: "Month's average",
+    colCity: "City",
+    colPlace: "Rank",
     citiesTitle: (mese: string, year: number) => `${mese} ${year}, city by city`,
     citiesBody:
       "Each city compared with its own 1961–1990 normal for the same month, and its place in its own historical ranking. Sorted by the highest anomaly.",
@@ -227,7 +241,13 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
   const rankStr = lang === "en" ? ordinalEn(national.rank) : ordinalIt(national.rank);
   const kind = national.direction === "hot" ? t.hot : t.cold;
 
-  const hottest = [...series].sort((a, b) => b.mean - a.mean).slice(0, 10);
+  // Ordina sull'anomalia pubblicata (2 decimali), non sul float grezzo, così la
+  // sequenza a schermo combacia con i numeri a schermo; i pari merito restano in
+  // ordine cronologico invece che in un ordine deciso da decimali invisibili.
+  const allAnomalies = series.map((s) => s.anomaly);
+  const hottest = [...series]
+    .sort((a, b) => publishedAnomaly(b.anomaly) - publishedAnomaly(a.anomaly) || a.year - b.year)
+    .slice(0, 10);
   const heroColor = anomalyColor(national.anomaly, 2);
 
   return (
@@ -254,14 +274,14 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
       <section className="grid gap-3 sm:grid-cols-3 mb-10">
         <Stat label={t.statAnomaly} sub={t.statAnomalySub}>
           <span style={{ color: heroColor }}>
-            <Temp value={national.anomaly} digits={1} delta locale={lang} />
+            <Temp value={national.anomaly} digits={2} delta locale={lang} />
           </span>
         </Stat>
         <Stat label={t.statMean} sub={t.statMeanSub}>
-          <Temp value={national.value} digits={1} locale={lang} />
+          <Temp value={national.value} digits={2} locale={lang} />
         </Stat>
         <Stat label={t.statNormal} sub={t.statNormalSub}>
-          <Temp value={national.normal} digits={1} locale={lang} />
+          <Temp value={national.normal} digits={2} locale={lang} />
         </Stat>
       </section>
 
@@ -288,9 +308,16 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
       {/* CLASSIFICA STORICA DI QUESTO MESE */}
       <section className="m3-card rise p-5 sm:p-6 mb-8">
         <h2 className="text-xl font-extrabold tracking-tight mb-1">{t.rankingTitle(mese)}</h2>
-        <p className="text-sm text-on-surface-variant mb-4">{t.rankingBody}</p>
+        <p className="text-sm text-on-surface-variant mb-1">{t.rankingBody}</p>
+        <p className="text-xs text-on-surface-variant mb-4">{t.rankingTies}</p>
+        <div className="flex items-center gap-3 px-2 pb-1.5 mb-1 border-b border-[var(--outline-variant)] text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
+          <span className="w-6 shrink-0" />
+          <span className="w-16">{t.colYear}</span>
+          <span className="shrink-0">{t.colAnomaly}</span>
+          <span className="ml-auto">{t.colMean}</span>
+        </div>
         <div className="space-y-1.5">
-          {hottest.map((y, i) => {
+          {hottest.map((y) => {
             const col = anomalyColor(y.anomaly, 2);
             const isCurrent = y.year === national.year;
             return (
@@ -301,7 +328,7 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
                 }`}
               >
                 <span className="w-6 text-right text-xs font-extrabold text-on-surface-variant tabular-nums shrink-0">
-                  {i + 1}
+                  {hotRank(allAnomalies, y.anomaly)}
                 </span>
                 <span
                   className={`w-16 tabular-nums ${isCurrent ? "font-extrabold" : "font-semibold"}`}
@@ -315,7 +342,7 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
                   <Temp value={y.anomaly} digits={2} delta locale={lang} />
                 </div>
                 <span className="text-xs text-on-surface-variant tabular-nums ml-auto">
-                  <Temp value={y.mean} digits={1} locale={lang} />
+                  <Temp value={y.mean} digits={2} locale={lang} />
                 </span>
               </div>
             );
@@ -329,6 +356,11 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
           {t.citiesTitle(mese, national.year)}
         </h2>
         <p className="text-sm text-on-surface-variant mb-4">{t.citiesBody}</p>
+        <div className="flex items-center gap-3 px-2 pb-1.5 mb-1 border-b border-[var(--outline-variant)] text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
+          <span className="w-14 text-center shrink-0">{t.colAnomaly}</span>
+          <span className="flex-1">{t.colCity}</span>
+          <span className="shrink-0">{t.colPlace}</span>
+        </div>
         <div className="space-y-1.5">
           {cities.map((c) => {
             const col = anomalyColor(c.anomaly, 2);
@@ -342,7 +374,7 @@ export function MesePageContent({ lang = "it" }: { lang?: "it" | "en" }) {
                   className="w-14 rounded-lg px-2 py-1 text-xs font-extrabold tabular-nums shrink-0 text-center"
                   style={{ background: col, color: readableTextOn(col) }}
                 >
-                  <Temp value={c.anomaly} digits={1} delta showUnit={false} locale={lang} />
+                  <Temp value={c.anomaly} digits={2} delta showUnit={false} locale={lang} />
                 </div>
                 <span className="font-semibold text-sm flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
                   {cityDisplayName(c.slug, c.name, lang)}

@@ -26,14 +26,20 @@ function deltaCtoF(deltaC: number): number {
   return (deltaC * 9) / 5;
 }
 
+// `locale: "it"` usa la virgola decimale, come già fa fmtAnomaly: senza,
+// una temperatura assoluta finirebbe accanto a un'anomalia con due separatori
+// diversi nella stessa riga ("25.43°" vs "+4,92°C"). Opzionale e di default
+// assente, così le chiamate esistenti non cambiano output.
 export function fmtTemp(
   t: number | null | undefined,
   digits = 1,
   unit: Unit = "c",
+  opts?: { locale?: "it" | "en" },
 ): string {
   if (t === null || t === undefined || Number.isNaN(t)) return "–";
   const v = unit === "f" ? cToF(t) : t;
-  return `${v.toFixed(digits)}°`;
+  const s = `${v.toFixed(digits)}°`;
+  return opts?.locale === "it" ? s.replace(".", ",") : s;
 }
 
 export function fmtDateIt(iso: string): string {

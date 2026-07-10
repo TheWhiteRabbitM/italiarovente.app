@@ -23,5 +23,5 @@ export function Temp({
   const { unit } = useUnit();
   if (value === null || value === undefined || Number.isNaN(value)) return <>–</>;
   if (delta) return <>{fmtAnomaly(value, digits, unit, { locale, showUnit })}</>;
-  return <>{fmtTemp(value, digits, unit)}</>;
+  return <>{fmtTemp(value, digits, unit, { locale })}</>;
 }

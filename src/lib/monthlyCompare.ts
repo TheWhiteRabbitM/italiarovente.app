@@ -93,28 +93,52 @@ function latestComplete(series: Pt[], minDays: number): Pt | null {
   return complete.reduce((a, b) => (b.year * 100 + b.month > a.year * 100 + a.month ? b : a));
 }
 
+// Le medie per città nello snapshot hanno 2 decimali: la media nazionale che
+// se ne ricava non è difendibile oltre quella precisione. Quindi pubblichiamo
+// 2 decimali e classifichiamo SU QUEL VALORE, non sul float grezzo. Due mesi
+// che mostrano la stessa anomalia condividono il posto (2°, 2°, 4°): dire che
+// uno precede l'altro per 0,003°C sarebbe una differenza inventata
+// dall'arrotondamento a monte, e a schermo sembrerebbe un ordine arbitrario.
+export const PUBLISHED_DECIMALS = 2;
+export function publishedAnomaly(a: number): number {
+  const f = 10 ** PUBLISHED_DECIMALS;
+  return Math.round(a * f) / f;
+}
+
+// Posto in classifica "dal più caldo", a pari merito (competition ranking):
+// quanti mesi sono strettamente più caldi di questo, più uno.
+export function hotRank(anomalies: number[], target: number): number {
+  const t = publishedAnomaly(target);
+  return 1 + anomalies.filter((a) => publishedAnomaly(a) > t).length;
+}
+
 // Rango dell'anno `year` fra tutti gli anni dello stesso mese. Sceglie la
 // direzione (caldo/freddo) più notevole delle due: 2° più caldo su 87 è una
 // notizia, 86° più freddo su 87 è lo stesso fatto detto peggio.
-function rankOf(values: { year: number; mean: number }[], year: number) {
+function rankOf(values: { year: number; anomaly: number }[], year: number) {
   if (values.length < MIN_YEARS_FOR_RANK) return null;
-  if (!values.some((v) => v.year === year)) return null;
-  const sortedDesc = [...values].sort((a, b) => b.mean - a.mean);
-  const hotRank = sortedDesc.findIndex((v) => v.year === year) + 1;
-  const coldRank = values.length - hotRank + 1;
-  return hotRank <= coldRank
-    ? { rank: hotRank, total: values.length, direction: "hot" as const }
-    : { rank: coldRank, total: values.length, direction: "cold" as const };
+  const target = values.find((v) => v.year === year);
+  if (!target) return null;
+  const anomalies = values.map((v) => v.anomaly);
+  const t = publishedAnomaly(target.anomaly);
+  const hot = 1 + anomalies.filter((a) => publishedAnomaly(a) > t).length;
+  const cold = 1 + anomalies.filter((a) => publishedAnomaly(a) < t).length;
+  return hot <= cold
+    ? { rank: hot, total: values.length, direction: "hot" as const }
+    : { rank: cold, total: values.length, direction: "cold" as const };
 }
 
 function buildHighlight(series: Pt[], minDays: number): MonthlyHighlight | null {
   const latest = latestComplete(series, minDays);
   if (!latest) return null;
-  const sameMonth = series.filter((s) => s.month === latest.month && s.count >= minDays);
-  const r = rankOf(sameMonth.map((s) => ({ year: s.year, mean: s.mean })), latest.year);
-  if (!r) return null;
   const normal = monthNormal(series, latest.month, minDays);
   if (normal === null) return null;
+  const sameMonth = series.filter((s) => s.month === latest.month && s.count >= minDays);
+  const r = rankOf(
+    sameMonth.map((s) => ({ year: s.year, anomaly: s.mean - normal })),
+    latest.year,
+  );
+  if (!r) return null;
   return {
     year: latest.year,
     month: latest.month,
@@ -210,15 +234,17 @@ export function getMonthlyBulletin(): MonthlyBulletin | null {
     if (!target) continue;
     const cityNormal = monthNormal(snap.monthlySeries, month);
     if (cityNormal === null) continue;
-    const r = rankOf(sameMonth.map((s) => ({ year: s.year, mean: s.mean })), national.year);
-    if (!r) continue;
+    if (sameMonth.length < MIN_YEARS_FOR_RANK) continue;
+    const anomalies = sameMonth.map((s) => s.mean - cityNormal);
+    const anomaly = target.mean - cityNormal;
     cities.push({
       slug: c.slug,
       name: cityName(c as City, "it"),
       mean: target.mean,
-      anomaly: target.mean - cityNormal,
-      rank: r.direction === "hot" ? r.rank : r.total - r.rank + 1, // rango sempre "dal più caldo"
-      total: r.total,
+      anomaly,
+      // Sempre "dal più caldo", a pari merito come la classifica nazionale.
+      rank: hotRank(anomalies, anomaly),
+      total: sameMonth.length,
     });
   }
   cities.sort((a, b) => b.anomaly - a.anomaly);
