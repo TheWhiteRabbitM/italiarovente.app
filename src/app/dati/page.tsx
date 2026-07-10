@@ -90,6 +90,7 @@ const STR = {
       "Data di generazione non disponibile per questo ambiente (normale in sviluppo locale).",
     otherTitle: "Altri modi di consultare i dati",
     otherLinks: [
+      { href: "/dati/api", label: "API pubblica — endpoint JSON/CSV, senza chiave, con specifica OpenAPI" },
       { href: "/llms.txt", label: "llms.txt — indice per assistenti AI" },
       { href: "/feed.xml", label: "feed.xml — RSS di record, ondate di calore e recap mensile" },
       { href: "/citta", label: "Elenco città con pagina dedicata" },
@@ -163,6 +164,7 @@ const STR = {
     provenanceUnavailable: "Generation date not available in this environment (normal in local dev).",
     otherTitle: "Other ways to consult the data",
     otherLinks: [
+      { href: "/en/dati/api", label: "Public API — JSON/CSV endpoints, no key, with an OpenAPI spec" },
       { href: "/llms.txt", label: "llms.txt — index for AI assistants" },
       { href: "/en/feed.xml", label: "feed.xml — RSS of records, heatwaves and the monthly recap" },
       { href: "/en/citta", label: "City list with dedicated pages" },

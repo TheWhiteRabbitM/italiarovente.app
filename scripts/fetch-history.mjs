@@ -405,8 +405,13 @@ async function main() {
   );
 
   // Il Build Command su Vercel è fissato dal pannello (non legge più
-  // package.json "build"), quindi le didascalie AI vanno agganciate qui,
-  // nello script che sappiamo essere sempre eseguito.
+  // package.json "build"), quindi tutto ciò che deve girare al build va
+  // agganciato qui, nello script che sappiamo essere sempre eseguito.
+  // L'archivio dei mari è incrementale e usa un'API diversa (marine-api, quota
+  // separata da quella dell'archivio ERA5): non fallisce insieme alle città.
+  const { run: fetchSea } = await import("./fetch-sea.mjs");
+  await fetchSea().catch((e) => console.log(`✗ mari: ${e.message}`));
+
   const { run: generateCaptions } = await import("./generate-captions.mjs");
   await generateCaptions();
 }

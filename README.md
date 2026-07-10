@@ -50,6 +50,9 @@ what conclusion to draw.
   states explicitly that it neither replicates nor verifies Copernicus' bulletins — different
   domain (only our monitored cities) and often a different baseline, so different numbers are
   expected rather than a sign one side is wrong.
+- 🌊 **Sea temperatures** — today's surface temperature for six open-water points, each with the
+  last 365 days of daily means from our own archive (since 2022-11-24) and the warmest day on
+  record *for that series*. Explicitly no trend: three years is not a climate signal.
 - 👤 **Follow your city** — an optional, no-account, `localStorage`-only shortcut on the homepage
   that shows a saved city's current temperature and warming figure at a glance.
 - 🗺️ **Regions** (`/regioni`) — average warming per Italian region.
@@ -62,6 +65,10 @@ what conclusion to draw.
   site's own data tools, never from memory; if it doesn't have the number, it says so.
 - 📄 **Open data** (`/dati`) — downloadable CSV and JSON of the per-city historical aggregates,
   with `Dataset` structured data for search engines and AI answer engines.
+- 🔌 **Public API** (`/dati/api`) — read-only, no key, CORS enabled, with an OpenAPI 3.1 spec at
+  `/api/openapi.json`. Cities (all, or one in full), the monthly bulletin, and the sea archive, as
+  JSON or CSV. Every response ships its own provenance and a SHA-256 fingerprint, so a reader can
+  recompute the numbers instead of trusting them.
 - 🧭 **AEO-friendly by design** — [`/llms.txt`](https://italiarovente.app/llms.txt) points AI
   assistants to the right page for common questions and gives ready-to-use, live-numbered
   citation examples, on top of `FAQPage`/`Dataset`/`Organization` structured data site-wide.
@@ -146,6 +153,38 @@ Everything on `/mese` is built from it, with three deliberate constraints:
 
 Because the snapshot fills in city by city across builds (Open-Meteo rate limits), `/mese` prints
 how many cities actually back the national number rather than implying all 107.
+
+### The sea archive (and why it has no trend)
+
+Sea surface temperature comes from a different source (Open-Meteo **Marine** API,
+separate rate limit from the ERA5 archive) and a much shorter series. We keep our own
+daily archive of it in `src/data/sea-history.json`, rebuilt incrementally by
+[`scripts/fetch-sea.mjs`](scripts/fetch-sea.mjs) at build time, with the same
+`_meta` provenance + SHA-256 fingerprint as `history.json`.
+
+Six open-water points, daily mean/max/min, **from 2022-11-24** — the first day the
+source returns a value for all six (before that it is `null` everywhere). Storage is
+a start date plus three parallel arrays indexed by day offset, so a date is never
+repeated 1300 times and gaps stay explicit.
+
+Three properties are enforced by tests rather than by convention:
+
+- **The source's gaps are preserved as `null`.** There is a genuine 14-day hole in the
+  upstream data (2025-01-29 → 2025-02-11, verified by querying the API directly). We
+  keep it. Interpolating it would mean inventing two weeks of measurements.
+- **The last days are re-fetched, not trusted.** Recent marine analysis can be revised,
+  so each run rewrites a 10-day window instead of appending blindly. Today's value never
+  enters the archive at all — it is a forecast, and stays a live figure on the homepage.
+- **The mean may sit up to 0.1 °C outside its own min–max.** The source rounds all three
+  to one decimal independently, so a winter day with almost no diurnal range reads
+  `mean=16.9, min=max=17.0`. That is a rounding artifact of the source, bounded by one
+  rounding unit across all 7,860 valid days; `min > max` never happens.
+
+**There is deliberately no trend function in `src/lib/seahistory.ts`, and none should be
+added.** Three years measures interannual noise, not climate. The archive is for records
+*of the series*, seasonality, and year-over-year comparison of the same calendar day —
+which is why `sameDayPreviousYears` lists the two or three past values individually
+instead of averaging them into a fake "normal". For a trend, use the air data since 1940.
 
 ### Regression formula
 
@@ -365,6 +404,48 @@ The historical dataset for all cities is pre-computed at build time into `src/da
 (see `scripts/fetch-history.mjs`) so that city pages read instantly at runtime instead of hitting
 the Open-Meteo Archive API on every request. A daily Vercel cron (`/api/refresh`) revalidates the
 "recent" tail of the data and checks for new heatwaves.
+
+### The public API surface
+
+Only `/api/export/*` and `/api/openapi.json` are public. They are `GET`-only, idempotent, free to
+serve, and carry no personal data; `src/lib/publicapi.ts` gives them a single set of headers (CORS,
+`Cache-Control`, `X-Attribution` — exposed via `Access-Control-Expose-Headers`, or cross-origin JS
+could not read it).
+
+Everything else under `/api/` stays disallowed in `robots.txt` and undocumented: `/api/ask` spends
+money on an LLM, `/api/vote`, `/api/visit` and `/api/push/subscribe` write, `/api/refresh` is the
+cron. **`robots.txt` previously disallowed `/api/` wholesale**, which quietly hid the CSV and JSON
+exports from the very AI crawlers they were built for — the allow rules for the public paths are
+what make them reachable, since robots resolves by longest match.
+
+No `OPTIONS` handlers, deliberately: a cross-origin `GET` without custom headers is a *simple
+request* and never triggers a preflight, while exporting `OPTIONS` would force Next to make the
+route dynamic and lose build-time static generation.
+
+When adding a public endpoint, add it to `PUBLIC_API` in `src/app/robots.ts`, to the OpenAPI spec,
+and to `/dati/api`. A spec that lies is worse than no spec.
+
+### Shipping to the PWA, not just to the web
+
+The site installs a service worker, so **a deploy is not live until installed users get it too.**
+`public/sw.js` derives its cache name from the build (`ir-<commit>`): `PWARegister` registers
+`/sw.js?v=<build>`, the changed URL makes the browser install the new worker, and `activate` then
+deletes every `ir-*` cache that is not the current one. Without that, `activate` had nothing to
+delete and the precached `offline.html`, `manifest.webmanifest` and icons stayed frozen forever on
+installed devices.
+
+In development the worker is **not** registered, and any existing one is unregistered on load.
+`next dev` serves chunks under stable, unhashed URLs, so the worker's cache-first strategy would
+hand back the previous version of a component you just edited — a hydrated DOM that contradicts the
+served HTML, and a genuinely nasty thing to debug.
+
+When verifying a deploy, check the served content *and* the worker. If the DOM disagrees with the
+HTML you just fetched, suspect the service worker first:
+
+```js
+await navigator.serviceWorker.getRegistrations()   // which script URL is active?
+await caches.keys()                                // should be exactly one ir-<commit>
+```
 
 ## 📁 Project structure
 

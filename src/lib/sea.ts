@@ -1,31 +1,30 @@
-// Temperatura del mare in tempo reale (Open-Meteo Marine API).
-// Nota: a differenza dei dati terrestri (ERA5, dal 1940), lo storico marino
-// affidabile parte solo da ~2023 — troppo corto per un'analisi di tendenza.
-// Per restare precisi mostriamo quindi solo il dato ATTUALE, non un trend.
+// Temperatura del mare di OGGI (Open-Meteo Marine API), dato live.
+// Lo storico giornaliero vive altrove: src/data/sea-history.json, generato al
+// build da scripts/fetch-sea.mjs e letto da src/lib/seahistory.ts.
+//
+// A differenza dell'aria (ERA5, dal 1940), la serie marina inizia il
+// 2022-11-24: va bene per record della serie, stagionalità e confronti anno su
+// anno, mai per una tendenza climatica.
 
-export type SeaPoint = { slug: string; name: string; lat: number; lon: number };
+import seasData from "@/data/seas.json";
+
+export type SeaPoint = {
+  slug: string;
+  name: string;
+  nameEn: string;
+  lat: number;
+  lon: number;
+};
 
 // Punti scelti in mare aperto, lontano dalle città principali (che sono quasi
 // tutte costiere: Genova, Napoli, Bari, Venezia, Palermo, Catania, Cagliari)
 // per evitare che il marcatore del mare si sovrapponga a quello di una città.
-export const SEA_POINTS: SeaPoint[] = [
-  { slug: "tirreno", name: "Mar Tirreno", lat: 40.3, lon: 11.2 },
-  { slug: "adriatico", name: "Mar Adriatico", lat: 43.3, lon: 15.2 },
-  { slug: "ionio", name: "Mar Ionio", lat: 39.2, lon: 17.9 },
-  { slug: "ligure", name: "Mar Ligure", lat: 43.6, lon: 8.4 },
-  { slug: "sardegna", name: "Mare di Sardegna", lat: 39.7, lon: 7.9 },
-  { slug: "sicilia", name: "Mare di Sicilia", lat: 36.8, lon: 12.8 },
-];
+// Fonte unica: src/data/seas.json, condiviso con scripts/fetch-sea.mjs.
+export const SEA_POINTS: SeaPoint[] = seasData as SeaPoint[];
 
-// Nomi inglesi dei mari — stesso schema di cityDisplayName in cities.ts.
-const SEA_NAME_EN: Record<string, string> = {
-  tirreno: "Tyrrhenian Sea",
-  adriatico: "Adriatic Sea",
-  ionio: "Ionian Sea",
-  ligure: "Ligurian Sea",
-  sardegna: "Sea of Sardinia",
-  sicilia: "Strait of Sicily",
-};
+const SEA_NAME_EN: Record<string, string> = Object.fromEntries(
+  SEA_POINTS.map((s) => [s.slug, s.nameEn]),
+);
 
 export function seaDisplayName(
   slug: string,

@@ -1,7 +1,9 @@
 import { CITIES } from "@/lib/cities";
 import { getArchiveStats } from "@/lib/weather";
+import { publicHeaders } from "@/lib/publicapi";
 
 export const revalidate = 3600;
+
 
 // Esporta gli aggregati storici già calcolati (nessun fetch): stesso metodo
 // "a due trentenni" usato ovunque sul sito, in formato CSV per chi vuole
@@ -55,9 +57,8 @@ export async function GET() {
 
   return new Response(csv, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
+      ...publicHeaders("text/csv; charset=utf-8"),
       "Content-Disposition": 'attachment; filename="italia-rovente-citta.csv"',
-      "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },
   });
 }

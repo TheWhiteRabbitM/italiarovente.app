@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "fetch-history": "node scripts/fetch-history.mjs",
+    "fetch-sea": "node scripts/fetch-sea.mjs",
     "fetch-cds": "node scripts/fetch-cds.mjs",
     "generate-captions": "node scripts/generate-captions.mjs",
     "build": "node scripts/fetch-history.mjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test scripts/test-aggregation.mjs"
+    "test": "node --test scripts/test-aggregation.mjs scripts/test-sea.mjs"
   },
   "dependencies": {
     "@ai-sdk/mistral": "^4.0.2",

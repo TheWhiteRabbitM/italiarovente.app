@@ -1,5 +1,13 @@
 // Service worker di Italia Rovente — installabilità PWA + offline + push.
-const CACHE = "ir-v2";
+//
+// Il nome della cache include la build: PWARegister registra `/sw.js?v=<build>`,
+// quindi a ogni deploy il browser vede uno script nuovo, lo installa, e in
+// `activate` questo SW cancella tutte le cache che non sono la sua. Con un nome
+// fisso (com'era prima) `activate` non cancellava niente e offline.html, il
+// manifest, le icone e gli asset cache-first restavano congelati per sempre
+// sui dispositivi con la PWA installata.
+const BUILD = new URL(self.location.href).searchParams.get("v") || "dev";
+const CACHE = `ir-${BUILD}`;
 const PRECACHE = ["/offline.html", "/manifest.webmanifest", "/icon-192.png"];
 
 self.addEventListener("install", (e) => {
@@ -15,8 +23,11 @@ self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches
       .keys()
+      // Solo le nostre cache ("ir-*"): non tocchiamo quelle di altri script.
       .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+        Promise.all(
+          keys.filter((k) => k.startsWith("ir-") && k !== CACHE).map((k) => caches.delete(k)),
+        ),
       )
       .then(() => self.clients.claim()),
   );

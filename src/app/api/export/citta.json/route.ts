@@ -1,8 +1,10 @@
 import { CITIES } from "@/lib/cities";
 import { getArchiveStats, getHistoryMeta } from "@/lib/weather";
 import { SITE_URL } from "@/lib/site";
+import { publicHeaders } from "@/lib/publicapi";
 
 export const revalidate = 3600;
+
 
 // Stessi aggregati di /api/export/citta.csv, in JSON per chi preferisce
 // consumarli via codice invece che aprirli in un foglio di calcolo.
@@ -54,7 +56,5 @@ export async function GET() {
     cities,
   };
 
-  return Response.json(body, {
-    headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" },
-  });
+  return Response.json(body, { headers: publicHeaders() });
 }

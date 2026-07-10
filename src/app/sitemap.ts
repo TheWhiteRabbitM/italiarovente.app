@@ -55,6 +55,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Dati aperti / CSV scaricabile (aggiornato quando i dati storici si aggiornano)
   const dati = pair("/dati", "/en/dati", now, "weekly", 0.5);
 
+  // Documentazione dell'API pubblica: è il punto d'ingresso per chi (o cosa)
+  // vuole consumare i dati via codice, quindi va indicizzata.
+  const api = pair("/dati/api", "/en/dati/api", now, "weekly", 0.6);
+
   // 107 pagine città
   const cities = CITIES.flatMap((c) =>
     pair(`/citta/${c.slug}`, `/en/citta/${c.slug}`, now, "daily", 0.8),
@@ -71,5 +75,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     pair(`/condividi/${c.slug}`, `/en/condividi/${c.slug}`, now, "weekly", 0.5),
   );
 
-  return [...home, ...hubs, ...quiz, ...europa, ...disclaimer, ...dati, ...cities, ...regions, ...share];
+  return [...home, ...hubs, ...quiz, ...europa, ...disclaimer, ...dati, ...api, ...cities, ...regions, ...share];
 }
