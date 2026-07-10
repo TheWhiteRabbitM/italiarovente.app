@@ -158,8 +158,33 @@ export default function ConfrontoPage({
   // barra deve comunque riflettere la sua reale intensità (in negativo).
   const maxAbsW = Math.max(1, ...ranking.map((r) => Math.abs(r.warming)));
 
+  const base = lang === "en" ? "/en" : "";
+  const pageUrl = `${SITE_URL}${base}/confronto`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: base ? `${SITE_URL}${base}` : SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: lang === "en" ? "Comparison" : "Confronto",
+        item: pageUrl,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="rise mb-8">
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
           {t.title}

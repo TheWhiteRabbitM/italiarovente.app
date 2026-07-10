@@ -502,14 +502,37 @@ export async function DisclaimerContent({ lang, homeHref }: { lang: Lang; homeHr
   // FAQPage JSON-LD: le stesse domande/risposte mostrate in pagina, nel
   // formato che motori di ricerca e assistenti AI sanno estrarre e citare
   // direttamente (Google rich results, ChatGPT/Perplexity/Claude browsing).
+  const base = lang === "en" ? "/en" : "";
+  const pageUrl = `${SITE_URL}${base}/disclaimer`;
   const faqJsonLd = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
+    "@graph": [
+      {
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: base ? `${SITE_URL}${base}` : SITE_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: lang === "en" ? "Disclaimer" : "Disclaimer",
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
   };
 
   return (

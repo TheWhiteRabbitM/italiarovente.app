@@ -187,8 +187,33 @@ export default async function ClimaPage({
   const lastYear = national[national.length - 1].year;
   const warmestYear = national.reduce((a, b) => (b.mean > a.mean ? b : a));
 
+  const base = lang === "en" ? "/en" : "";
+  const pageUrl = `${SITE_URL}${base}/clima`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: base ? `${SITE_URL}${base}` : SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: lang === "en" ? "Climate" : "Clima",
+        item: pageUrl,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="rise mb-8">
         <div className="m3-chip bg-primary-container text-on-primary-container mb-4">
           {t.chip}

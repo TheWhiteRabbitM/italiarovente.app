@@ -190,21 +190,42 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
   // (Google Dataset Search, citazioni dirette da parte di LLM).
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Dataset",
-    name: "Italia Rovente — aggregati storici delle città italiane",
-    description:
-      "Normali climatiche 1961-1990 e 1991-2020, riscaldamento e tendenza per decennio per le città italiane monitorate, derivati dal reanalysis ERA5 (ECMWF/Copernicus) via Open-Meteo.",
-    url: pageUrl,
-    license: "https://opensource.org/licenses/MIT",
-    creator: { "@type": "Organization", name: "Italia Rovente", url: SITE_URL },
-    temporalCoverage: "1940/..",
-    spatialCoverage: { "@type": "Place", name: "Italia" },
-    ...(meta?.generatedAt ? { dateModified: meta.generatedAt } : {}),
-    distribution: {
-      "@type": "DataDownload",
-      encodingFormat: "text/csv",
-      contentUrl: `${SITE_URL}/api/export/citta.csv`,
-    },
+    "@graph": [
+      {
+        "@type": "Dataset",
+        name: "Italia Rovente — aggregati storici delle città italiane",
+        description:
+          "Normali climatiche 1961-1990 e 1991-2020, riscaldamento e tendenza per decennio per le città italiane monitorate, derivati dal reanalysis ERA5 (ECMWF/Copernicus) via Open-Meteo.",
+        url: pageUrl,
+        license: "https://opensource.org/licenses/MIT",
+        creator: { "@type": "Organization", name: "Italia Rovente", url: SITE_URL },
+        temporalCoverage: "1940/..",
+        spatialCoverage: { "@type": "Place", name: "Italia" },
+        ...(meta?.generatedAt ? { dateModified: meta.generatedAt } : {}),
+        distribution: {
+          "@type": "DataDownload",
+          encodingFormat: "text/csv",
+          contentUrl: `${SITE_URL}/api/export/citta.csv`,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: base ? `${SITE_URL}${base}` : SITE_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: lang === "en" ? "Open data" : "Dati aperti",
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
   };
 
   return (

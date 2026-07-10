@@ -43,8 +43,21 @@ export default function CittaIndexPage() {
 
   const withData = items.filter((i) => i.warming != null).length;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Città", item: `${SITE_URL}/citta` },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="flex items-center justify-between gap-2 mb-6 flex-wrap">
         <Link
           href="/"
