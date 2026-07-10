@@ -39,7 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const home = pair("", "/en", now, "daily", 1);
 
   // Pagine hub principali
-  const hubs = ["/citta", "/regioni", "/clima", "/confronto", "/classifiche"].flatMap((p) =>
+  const hubs = ["/citta", "/regioni", "/clima", "/confronto", "/classifiche", "/mese"].flatMap((p) =>
     pair(p, `/en${p}`, now, "daily", 0.9),
   );
 

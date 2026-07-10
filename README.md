@@ -43,6 +43,13 @@ what conclusion to draw.
 - 🏆 **Rankings** (`/classifiche`) — fastest-warming and "coolest" cities, per-decade pace,
   absolute records, days of extreme/"African" heat (≥30 °C), tropical nights, and diurnal
   temperature range.
+- 📅 **Monthly bulletin** (`/mese`) — the Copernicus-style question ("was this the hottest June on
+  record?") answered for Italy only: the month just ended, its anomaly against the 1961–1990
+  normal *of that same calendar month*, its rank among every other instance of that month since
+  1940, warming stripes restricted to that single month, and a city-by-city breakdown. The page
+  states explicitly that it neither replicates nor verifies Copernicus' bulletins — different
+  domain (only our monitored cities) and often a different baseline, so different numbers are
+  expected rather than a sign one side is wrong.
 - 👤 **Follow your city** — an optional, no-account, `localStorage`-only shortcut on the homepage
   that shows a saved city's current temperature and warming figure at a glance.
 - 🗺️ **Regions** (`/regioni`) — average warming per Italian region.
@@ -118,6 +125,27 @@ GET https://archive-api.open-meteo.com/v1/archive
 - **Data freshness**: each city's precomputed snapshot in `history.json` carries a `lastDate`
   field — the most recent day actually covered by that snapshot. The site doesn't stamp a global
   "fetched on" date, but this per-city field is an honest, always-accurate substitute.
+
+### Monthly comparison
+
+Ranking a month against history needs a different aggregate from the ones above. `monthly` holds
+the *climatology* — one average per calendar month over the whole series — which cannot answer
+"was this June the hottest?". So each snapshot also carries `monthlySeries`: the mean of every
+individual `(year, month)` pair, plus its day count.
+
+Everything on `/mese` is built from it, with three deliberate constraints:
+
+- **Baseline is the 1961–1990 normal of that same calendar month**, not the whole-series average —
+  the same reference the warming stripes, the annual anomalies and the Verdict already use. A month
+  needs ≥20 years inside that window or no anomaly is published for it.
+- **A month counts only with ≥24 valid days**, so a month still in progress is never presented as
+  concluded. The national figure additionally requires at least half of the cities that have a
+  monthly series.
+- **A rank needs ≥15 years** of the same calendar month behind it, and the direction shown is
+  whichever end is closer ("2nd hottest of 87", never the same fact restated as "86th coldest").
+
+Because the snapshot fills in city by city across builds (Open-Meteo rate limits), `/mese` prints
+how many cities actually back the national number rather than implying all 107.
 
 ### Regression formula
 

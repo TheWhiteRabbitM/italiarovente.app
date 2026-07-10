@@ -144,6 +144,7 @@ export function aggregate(j) {
 
   const yearAgg = new Map();
   const monthAgg = new Map();
+  const monthYearAgg = new Map(); // media per singolo anno-mese (non l'intera serie)
   const monthEarly = new Map(); // media mensile 1961-1990
   const monthRecent = new Map(); // media mensile 1991-2020
   let baseSum = 0, baseN = 0, recSum = 0, recN = 0;
@@ -206,6 +207,10 @@ export function aggregate(j) {
       const ma = monthAgg.get(mo) ?? { sm: 0, sMax: 0, sMin: 0, n: 0 };
       ma.sm += m; ma.sMax += mx ?? m; ma.sMin += mn ?? m; ma.n++;
       monthAgg.set(mo, ma);
+      const myKey = `${y}-${mo}`;
+      const mya = monthYearAgg.get(myKey) ?? { sm: 0, n: 0, year: y, month: mo };
+      mya.sm += m; mya.n++;
+      monthYearAgg.set(myKey, mya);
       if (y >= 1961 && y <= 1990) {
         baseSum += m; baseN++;
         const e = monthEarly.get(mo) ?? { s: 0, n: 0 }; e.s += m; e.n++; monthEarly.set(mo, e);
@@ -240,6 +245,9 @@ export function aggregate(j) {
       min: round(a.sMin / a.n),
     }))
     .sort((a, b) => a.month - b.month);
+  const monthlySeries = [...monthYearAgg.values()]
+    .map((a) => ({ year: a.year, month: a.month, mean: round(a.sm / a.n), count: a.n }))
+    .sort((a, b) => a.year - b.year || a.month - b.month);
 
   const baselineMean = baseN ? baseSum / baseN : NaN;
   const recentNormal = recN ? recSum / recN : NaN;
@@ -274,6 +282,7 @@ export function aggregate(j) {
     anomalies,
     decades,
     monthly,
+    monthlySeries,
     records: {
       hottest: { date: hottest.date, value: round(hottest.value, 1) },
       coldest: { date: coldest.date, value: round(coldest.value, 1) },
@@ -340,8 +349,9 @@ async function main() {
     const hasStreak = cached?.records?.longestHeatwave !== undefined;
     const hasColdStreak = cached?.records?.longestColdSnap !== undefined;
     const hasCi = cached?.trend?.perDecadeCi95 !== undefined;
+    const hasMonthlySeries = cached?.monthlySeries !== undefined;
     const needsHeat = city.main && (!hasHeat || !hasStreak || !hasColdStreak);
-    if (!refreshAll && cached?.yearly?.length && !needsHeat && hasCi) {
+    if (!refreshAll && cached?.yearly?.length && !needsHeat && hasCi && hasMonthlySeries) {
       skipped++;
       continue;
     }

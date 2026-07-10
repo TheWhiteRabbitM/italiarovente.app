@@ -6,6 +6,7 @@ import { notifyAll, pushConfigured } from "@/lib/push";
 import { redis } from "@/lib/redis";
 import { logEvent } from "@/lib/eventlog";
 import { logDailyStatsSnapshot } from "@/lib/statshistory";
+import { nationalMonthlyHighlight, monthNormal, ordinalIt, ordinalEn } from "@/lib/monthlyCompare";
 
 // Endpoint di revalidazione invocato dal Cron Vercel ogni giorno.
 // Rinfresca il meteo ATTUALE (tag "forecast", leggero). Lo storico aggregato
@@ -212,12 +213,16 @@ async function sendMonthlyRecap(now: Date): Promise<MonthlyRecapOutcome> {
   for (const res of archives) {
     if (res.status !== "fulfilled") continue;
     const archive = res.value;
-    const clim = archive.monthly.find((m) => m.month === prevMonth);
-    if (!clim) continue;
+    // Baseline: la normale 1961-1990 dello stesso mese, come ovunque sul sito.
+    // Senza monthlySeries (snapshot vecchio) la città esce dal conteggio: mai
+    // una baseline diversa mescolata alle altre nella stessa media nazionale.
+    if (!archive.monthlySeries) continue;
+    const normal = monthNormal(archive.monthlySeries, prevMonth);
+    if (normal === null) continue;
     const days = archive.recent.filter((d) => d.date.startsWith(prefix) && d.mean != null);
     if (days.length < MONTHLY_MIN_DAYS) continue;
     const monthMean = days.reduce((sum, d) => sum + (d.mean as number), 0) / days.length;
-    anomalies.push(monthMean - clim.mean);
+    anomalies.push(monthMean - normal);
   }
   // Serve almeno metà delle città: con meno, la "media nazionale" non è tale.
   if (anomalies.length < MAIN_CITIES.length / 2) {
@@ -232,15 +237,34 @@ async function sendMonthlyRecap(now: Date): Promise<MonthlyRecapOutcome> {
   const monthEn = prev.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" });
   const valueEn = `${anomaly >= 0 ? "+" : ""}${anomaly.toFixed(1)}°`;
 
+  // Aggiunge il ranking ("il più caldo mai registrato") quando è notevole
+  // (tra i primi/ultimi 5 dal 1940): stesso dato di nationalMonthlyHighlight()
+  // usato in homepage, qui in più letto solo se combacia col mese appena
+  // recapppato (mai una classifica di un mese diverso spacciata per questo).
+  const highlight = nationalMonthlyHighlight();
+  const notable =
+    highlight &&
+    highlight.year === prevYear &&
+    highlight.month === prevMonth &&
+    highlight.rank <= 5;
+  let rankIt = "";
+  let rankEn = "";
+  if (notable) {
+    const kind = highlight.direction === "hot" ? "caldo" : "freddo";
+    const kindEn = highlight.direction === "hot" ? "hottest" : "coldest";
+    rankIt = ` È il ${ordinalIt(highlight.rank)} ${mese} più ${kind} dal ${highlight.sinceYear} (su ${highlight.total} anni).`;
+    rankEn = ` It's the ${ordinalEn(highlight.rank)} ${kindEn} ${monthEn} since ${highlight.sinceYear} (${highlight.total} years of records).`;
+  }
+
   const eventIt = {
     title: `📊 Il clima di ${mese} in Italia`,
-    body: `${Mese}: ${value} rispetto alla media storica del mese. Vedi i dati città per città.`,
-    url: `/`,
+    body: `${Mese}: ${value} rispetto alla normale 1961–1990.${rankIt} Vedi il bollettino completo.`,
+    url: `/mese`,
   };
   const eventEn = {
     title: `📊 ${monthEn}'s climate in Italy`,
-    body: `${monthEn}: ${valueEn} vs the month's historical average. See the city-by-city data.`,
-    url: `/en`,
+    body: `${monthEn}: ${valueEn} vs the 1961–1990 normal.${rankEn} See the full bulletin.`,
+    url: `/en/mese`,
   };
   const result = await notifyAll({ it: eventIt, en: eventEn });
   if (redis) {

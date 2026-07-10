@@ -52,6 +52,17 @@ export type MonthlyClim = {
   min: number;
 };
 
+// Media di un singolo mese di un singolo anno (non la climatologia sull'intera
+// serie di MonthlyClim): serve a rispondere a "questo giugno è stato il più
+// caldo mai registrato?", che richiede il valore anno per anno, non solo la
+// media storica del mese.
+export type MonthlySeriesPoint = {
+  year: number;
+  month: number; // 1-12
+  mean: number;
+  count: number; // giorni validi nel mese (< giorni_nel_mese se il mese è in corso o ha buchi)
+};
+
 export type Extreme = { date: string; value: number };
 
 export type AnomalyPoint = { year: number; anomaly: number };
@@ -68,6 +79,9 @@ export type CityArchive = {
   anomalies: AnomalyPoint[]; // scarto della media annua dalla normale 1961-1990
   decades: DecadePoint[];
   monthly: MonthlyClim[];
+  // Opzionale: assente negli snapshot precalcolati con versioni precedenti
+  // dello script, finché fetch-history.mjs non ha ribackfillato quella città.
+  monthlySeries?: MonthlySeriesPoint[];
   recent: DailyPoint[]; // ultimi ~400 giorni
   records: {
     hottest: Extreme;
@@ -384,6 +398,10 @@ async function computeArchive(city: City): Promise<CityArchive> {
     number,
     { sm: number; sMax: number; sMin: number; n: number }
   >();
+  // Come monthAgg, ma per singolo anno-mese (non l'intera serie): serve a
+  // confrontare "questo giugno" con tutti i giugni passati, non solo con la
+  // media storica di giugno.
+  const monthYearAgg = new Map<string, { sm: number; n: number; year: number; month: number }>();
   // baseline 1961-1990 (normale climatica WMO) e normale recente 1991-2020
   let baseSum = 0;
   let baseN = 0;
@@ -419,6 +437,12 @@ async function computeArchive(city: City): Promise<CityArchive> {
       ma.sMin += mn ?? m;
       ma.n += 1;
       monthAgg.set(month, ma);
+
+      const myKey = `${year}-${month}`;
+      const mya = monthYearAgg.get(myKey) ?? { sm: 0, n: 0, year, month };
+      mya.sm += m;
+      mya.n += 1;
+      monthYearAgg.set(myKey, mya);
 
       if (year >= 1961 && year <= 1990) {
         baseSum += m;
@@ -459,6 +483,10 @@ async function computeArchive(city: City): Promise<CityArchive> {
       min: a.sMin / a.n,
     }))
     .sort((a, b) => a.month - b.month);
+
+  const monthlySeries: MonthlySeriesPoint[] = [...monthYearAgg.values()]
+    .map((a) => ({ year: a.year, month: a.month, mean: a.sm / a.n, count: a.n }))
+    .sort((a, b) => a.year - b.year || a.month - b.month);
 
   // Solo anni completi (>= 360 giorni) per record annuali e trend
   const fullYears = yearly.filter((y) => y.count >= 360);
@@ -509,6 +537,7 @@ async function computeArchive(city: City): Promise<CityArchive> {
     anomalies,
     decades,
     monthly,
+    monthlySeries,
     recent,
     records: { hottest, coldest, warmestYear, coolestYear },
     trend: {

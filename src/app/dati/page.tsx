@@ -94,6 +94,7 @@ const STR = {
       { href: "/feed.xml", label: "feed.xml — RSS di record, ondate di calore e recap mensile" },
       { href: "/citta", label: "Elenco città con pagina dedicata" },
       { href: "/classifiche", label: "Classifiche e graduatorie" },
+      { href: "/mese", label: "Bollettino del mese appena concluso" },
     ],
   },
   en: {

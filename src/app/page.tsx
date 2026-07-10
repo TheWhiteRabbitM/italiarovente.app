@@ -12,6 +12,8 @@ import { ItalyMap } from "@/components/ItalyMap";
 import { getItalyMap } from "@/lib/italymap";
 import { LifetimeWarming } from "@/components/LifetimeWarming";
 import { YearExtremes } from "@/components/YearExtremes";
+import { MonthlyHighlight } from "@/components/MonthlyHighlight";
+import { nationalMonthlyHighlight } from "@/lib/monthlyCompare";
 import { getLifetimeData } from "@/lib/lifetime";
 import { buildHeroFacts } from "@/lib/herofacts";
 import { SeaTemps } from "@/components/SeaTemps";
@@ -259,6 +261,9 @@ export default async function Home() {
       <section className="mb-12">
         <LifetimeWarming data={lifetimeData} />
       </section>
+
+      {/* IL MESE A CONFRONTO (nazionale) */}
+      <MonthlyHighlight highlight={nationalMonthlyHighlight()} lang="it" scope="in Italia" />
 
       {/* GLI ANNI PIÙ ESTREMI (caldi/freddi in assoluto) */}
       <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang="it" />

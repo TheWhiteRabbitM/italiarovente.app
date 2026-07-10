@@ -142,6 +142,24 @@ test("aggregate: media decennale = media aritmetica delle medie annue del decenn
   assert.ok(Math.abs(d1960.mean - 10.4) < EPS, `media decade 1960 attesa 10.4, ottenuta ${d1960.mean}`);
 });
 
+test("aggregate: monthlySeries -> media di un singolo anno-mese, non la climatologia sull'intera serie", () => {
+  const r = aggregate(buildFixture());
+  // Nella fixture ogni giorno dell'anno ha lo stesso valore -> la media di
+  // QUALSIASI mese di quell'anno deve coincidere esattamente con la media
+  // annua, e il conteggio giorni deve rispettare l'anno bisestile.
+  const junio1961 = r.monthlySeries.find((m) => m.year === 1961 && m.month === 6);
+  assert.ok(junio1961, "giugno 1961 mancante da monthlySeries");
+  assert.ok(Math.abs(junio1961.mean - 10) < EPS, `media giugno 1961 attesa 10, ottenuta ${junio1961.mean}`);
+  assert.equal(junio1961.count, 30);
+  // Febbraio: 1961 non bisestile (28), 1964 bisestile (29).
+  const feb1961 = r.monthlySeries.find((m) => m.year === 1961 && m.month === 2);
+  const feb1964 = r.monthlySeries.find((m) => m.year === 1964 && m.month === 2);
+  assert.equal(feb1961.count, 28);
+  assert.equal(feb1964.count, 29);
+  // monthlySeries deve contenere 60 anni * 12 mesi = 720 punti, non uno in meno/più.
+  assert.equal(r.monthlySeries.length, 60 * 12);
+});
+
 test("aggregate: record di caldo/freddo coerenti con i massimi/minimi sintetici", () => {
   const r = aggregate(buildFixture());
   // tmax = mean + 5, mean cresce monotonicamente col tempo -> il record di
@@ -289,4 +307,21 @@ test("aggregate: dataset golden (Roma 2015-2019, dati reali) -> nessuna deriva s
   assert.equal(r.records.hottest.date, "2017-08-02");
   assert.equal(r.records.coldest.value, -10.2);
   assert.equal(r.records.coldest.date, "2018-02-28");
+
+  // monthlySeries su dati reali: 5 anni × 12 mesi, e i giugni congelati ai
+  // valori ricalcolati a mano dal fixture. Il giugno 2017 (24.67) è il più
+  // caldo dei cinque, coerente con l'estate 2017 già certificata dal record
+  // assoluto qui sopra: la serie mensile e i record raccontano lo stesso anno.
+  assert.equal(r.monthlySeries.length, 60);
+  const giugni = r.monthlySeries.filter((m) => m.month === 6);
+  assert.deepEqual(
+    giugni.map((m) => [m.year, m.mean, m.count]),
+    [
+      [2015, 22.82, 30],
+      [2016, 21.45, 30],
+      [2017, 24.67, 30],
+      [2018, 22.29, 30],
+      [2019, 24.45, 30],
+    ],
+  );
 });

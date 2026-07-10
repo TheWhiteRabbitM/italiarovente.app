@@ -11,8 +11,8 @@ import { LangToggle } from "./LangToggle";
 import { SITE_TAGLINE, SITE_TAGLINE_EN } from "@/lib/site";
 
 const STR = {
-  it: { citta: "Città", regioni: "Regioni", confronto: "Confronto", clima: "Clima", classifiche: "Classifiche", tagline: SITE_TAGLINE },
-  en: { citta: "Cities", regioni: "Regions", confronto: "Compare", clima: "Climate", classifiche: "Rankings", tagline: SITE_TAGLINE_EN },
+  it: { citta: "Città", regioni: "Regioni", confronto: "Confronto", clima: "Clima", classifiche: "Classifiche", mese: "Il mese", tagline: SITE_TAGLINE },
+  en: { citta: "Cities", regioni: "Regions", confronto: "Compare", clima: "Climate", classifiche: "Rankings", mese: "The month", tagline: SITE_TAGLINE_EN },
 } as const;
 
 export function Header() {
@@ -79,6 +79,14 @@ export function Header() {
               className="m3-chip bg-surface-container-high text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors"
             >
               {t.classifiche}
+            </Link>
+          </span>
+          <span className="hidden md:inline-flex">
+            <Link
+              href={p("/mese")}
+              className="m3-chip bg-surface-container-high text-on-surface hover:bg-tertiary-container hover:text-on-tertiary-container transition-colors"
+            >
+              {t.mese}
             </Link>
           </span>
           </nav>

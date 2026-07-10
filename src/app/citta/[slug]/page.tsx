@@ -21,6 +21,8 @@ import { WarmingStripes } from "@/components/WarmingStripes";
 import { Verdict } from "@/components/Verdict";
 import { EobsCrossCheck } from "@/components/EobsCrossCheck";
 import { getEobsComparison } from "@/lib/eobs";
+import { MonthlyHighlight } from "@/components/MonthlyHighlight";
+import { cityMonthlyHighlight } from "@/lib/monthlyCompare";
 import { Methodology } from "@/components/Methodology";
 import { EmbedButton } from "@/components/EmbedButton";
 import { DayLookup } from "@/components/DayLookup";
@@ -662,6 +664,7 @@ export async function renderCityPage(slug: string, lang: Lang) {
   const air = airR.status === "fulfilled" ? airR.value : null;
   // Cross-check E-OBS: null per le città fuori dalle 12 principali coperte.
   const eobsComparison = getEobsComparison(city.slug);
+  const monthlyHighlight = cityMonthlyHighlight(archive?.monthlySeries);
 
   const cur = forecast.current;
   const w = lang === "en" ? weatherDescEn(cur.code) : weatherDesc(cur.code);
@@ -1002,6 +1005,14 @@ export async function renderCityPage(slug: string, lang: Lang) {
             baseline={archive.trend.baselineMean}
             recentNormal={archive.trend.recentNormal}
             lang={lang}
+          />
+
+          {/* MESE A CONFRONTO (per città) */}
+          <MonthlyHighlight
+            highlight={monthlyHighlight}
+            lang={lang}
+            variant="city"
+            scope={lang === "en" ? `in ${name}` : `a ${name}`}
           />
 
           {/* CROSS-CHECK E-OBS (solo 12 città principali) */}
