@@ -1,0 +1,17 @@
+[
+  { "dw": 375, "dh": 667, "dpr": 2, "name": "iPhone SE/8" },
+  { "dw": 414, "dh": 896, "dpr": 2, "name": "iPhone 11/XR" },
+  { "dw": 375, "dh": 812, "dpr": 3, "name": "iPhone X/XS/11 Pro" },
+  { "dw": 414, "dh": 896, "dpr": 3, "name": "iPhone XS Max/11 Pro Max" },
+  { "dw": 360, "dh": 780, "dpr": 3, "name": "iPhone 12/13 mini" },
+  { "dw": 390, "dh": 844, "dpr": 3, "name": "iPhone 12/13/14" },
+  { "dw": 393, "dh": 852, "dpr": 3, "name": "iPhone 14 Pro/15/16" },
+  { "dw": 428, "dh": 926, "dpr": 3, "name": "iPhone 12/13 Pro Max/14 Plus" },
+  { "dw": 430, "dh": 932, "dpr": 3, "name": "iPhone 14 Pro Max/15 Plus/16 Plus" },
+  { "dw": 402, "dh": 874, "dpr": 3, "name": "iPhone 16 Pro" },
+  { "dw": 440, "dh": 956, "dpr": 3, "name": "iPhone 16 Pro Max" },
+  { "dw": 768, "dh": 1024, "dpr": 2, "name": "iPad 9.7/10.2" },
+  { "dw": 820, "dh": 1180, "dpr": 2, "name": "iPad Air 10.9" },
+  { "dw": 834, "dh": 1194, "dpr": 2, "name": "iPad Pro 11" },
+  { "dw": 1024, "dh": 1366, "dpr": 2, "name": "iPad Pro 12.9" }
+]

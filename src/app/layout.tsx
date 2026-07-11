@@ -14,6 +14,7 @@ import { UnitProvider } from "@/components/UnitProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import iosSplash from "@/data/ios-splash.json";
 
 const sans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -137,6 +138,28 @@ export default function RootLayout({
             __html: `(function(){try{var p=localStorage.getItem('theme');var d=p==='dark'||(p!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`,
           }}
         />
+        {/* Schermate di avvio iOS: iOS ignora il manifest per lo splash, servono
+            queste immagini (una per risoluzione, chiara e scura). Il dark viene
+            DOPO il light per lo stesso device: iOS applica l'ultimo match. */}
+        {iosSplash.flatMap((d) => {
+          const w = d.dw * d.dpr;
+          const h = d.dh * d.dpr;
+          const base = `(device-width: ${d.dw}px) and (device-height: ${d.dh}px) and (-webkit-device-pixel-ratio: ${d.dpr}) and (orientation: portrait)`;
+          return [
+            <link
+              key={`${w}x${h}`}
+              rel="apple-touch-startup-image"
+              media={base}
+              href={`/splash/splash-${w}x${h}.png`}
+            />,
+            <link
+              key={`${w}x${h}-dark`}
+              rel="apple-touch-startup-image"
+              media={`${base} and (prefers-color-scheme: dark)`}
+              href={`/splash/splash-${w}x${h}-dark.png`}
+            />,
+          ];
+        })}
       </head>
       <body className="min-h-full flex flex-col">
         <script

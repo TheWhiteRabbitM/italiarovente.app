@@ -440,6 +440,43 @@ route dynamic and lose build-time static generation.
 When adding a public endpoint, add it to `PUBLIC_API` in `src/app/robots.ts`, to the OpenAPI spec,
 and to `/dati/api`. A spec that lies is worse than no spec.
 
+### iOS splash screens
+
+Android generates its launch screen from the manifest (icon + colors). **iOS
+ignores the manifest for this** — without `apple-touch-startup-image` links an
+installed PWA shows a blank screen on launch. `scripts/gen-splash.mjs`
+(`npm run gen-splash`) renders one branded splash per common iPhone/iPad
+resolution, light and dark, into `public/splash/`; the device list lives in
+`src/data/ios-splash.json` and the layout emits the `<link>` tags from that
+same list, so images and media queries can't drift apart. The dark variant is
+listed after the light one for each device because iOS applies the last match.
+
+### Android app (TWA) — what's prepared, what's yours to do
+
+The manifest is already TWA-ready, and `/.well-known/assetlinks.json` is served
+by a route that reads the signing-key fingerprint from an env var — so the
+site side is done and the file populates itself once you have a key, with no
+code change:
+
+1. `npm i -g @bubblewrap/cli` (Bubblewrap can install the JDK + Android SDK it
+   needs), then `bubblewrap init --manifest https://italiarovente.app/manifest.webmanifest`
+   using package name `app.italiarovente.twa`. Or use [PWABuilder](https://www.pwabuilder.com/).
+2. `bubblewrap build` produces a signed AAB and prints the key's **SHA-256
+   fingerprint**.
+3. Set that fingerprint on Vercel as `ANDROID_CERT_FINGERPRINT` (comma-separate
+   several; also `ANDROID_APP_PACKAGE` if you changed the package) and redeploy.
+   `/.well-known/assetlinks.json` goes from `[]` to the real link — verify with
+   Google's [statement-list tester](https://developers.google.com/digital-asset-links/tools/generator).
+   Only then does the TWA open full-screen without Chrome's address bar.
+4. Upload the AAB to the Play Console (needs a Google Play Developer account,
+   a one-time $25).
+
+This repo can't do steps 1–4: they need the Android SDK, a keystore, and a Play
+account, none of which live here. **Home-screen widgets are a separate matter
+entirely** — they require native Android code (`AppWidgetProvider`), not
+reachable from a PWA or a plain TWA; the manifest `widgets` field targets only
+Windows 11's widget board, not Android's home screen.
+
 ### Shipping to the PWA, not just to the web
 
 The site installs a service worker, so **a deploy is not live until installed users get it too.**
