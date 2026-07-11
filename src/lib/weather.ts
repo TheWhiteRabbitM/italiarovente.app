@@ -63,6 +63,17 @@ export type MonthlySeriesPoint = {
   count: number; // giorni validi nel mese (< giorni_nel_mese se il mese è in corso o ha buchi)
 };
 
+// Afa estiva di un anno: media (giu-ago) della temperatura percepita massima e
+// della secca massima, per confrontarle. Solo per le città principali (fetch a
+// 4 variabili). La percepita include umidità, vento e radiazione: è un modello,
+// meno solido della secca.
+export type SummerApparentPoint = {
+  year: number;
+  feels: number; // percepita massima media estiva
+  dry: number; // secca massima media estiva (stesso campione)
+  count: number; // giorni estivi validi (>= 80)
+};
+
 export type Extreme = { date: string; value: number };
 
 export type AnomalyPoint = { year: number; anomaly: number };
@@ -82,6 +93,9 @@ export type CityArchive = {
   // Opzionale: assente negli snapshot precalcolati con versioni precedenti
   // dello script, finché fetch-history.mjs non ha ribackfillato quella città.
   monthlySeries?: MonthlySeriesPoint[];
+  // Afa estiva anno per anno. Solo città principali; assente per le altre e per
+  // gli snapshot precedenti all'aggiunta di questo campo.
+  summerApparent?: SummerApparentPoint[];
   recent: DailyPoint[]; // ultimi ~400 giorni
   records: {
     hottest: Extreme;

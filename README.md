@@ -154,6 +154,21 @@ Everything on `/mese` is built from it, with three deliberate constraints:
 Because the snapshot fills in city by city across builds (Open-Meteo rate limits), `/mese` prints
 how many cities actually back the national number rather than implying all 107.
 
+### Summer mugginess (apparent temperature), stated honestly
+
+Main-city snapshots also carry `summerApparent` — the Jun–Aug mean of the daily *apparent*
+maximum (Open-Meteo's model of felt temperature: humidity, wind, radiation) alongside the dry
+maximum, per year, available since 1940. The widget on main city pages compares the two 30-year
+normals, same method as everything else.
+
+The framing is deliberately restrained, because the data demands it. The felt summer has risen
+(+2.1 °C in Rome between the two periods), but **most of that is the dry heat itself** — the dry
+maximum rose +1.9 °C. Humidity adds only a little on top, and unevenly: the apparent-minus-dry gap
+grows by just 0.1–0.5 °C, more on the humid coasts (Naples, Genoa) than inland (Bologna). The
+component says all of this out loud rather than selling "mugginess is exploding", and repeats that
+apparent temperature is a model estimate, less solid than the measured value. Only main cities have
+it (the 4-variable fetch), so it is optional everywhere and simply absent on the rest.
+
 ### The sea archive (and why it has no trend)
 
 Sea surface temperature comes from a different source (Open-Meteo **Marine** API,

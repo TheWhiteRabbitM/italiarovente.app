@@ -93,6 +93,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     // Media di ogni singolo anno-mese: è la serie dietro /mese, e l'unica che
     // permette di rispondere a "questo giugno è stato il più caldo?".
     monthly_series: s.monthlySeries ?? null,
+    // Afa estiva anno per anno (percepita e secca massima media giu-ago). Solo
+    // città principali; null altrove. La percepita è un modello (umidità,
+    // vento, radiazione), meno solida della secca.
+    summer_apparent: s.summerApparent ?? null,
   };
 
   return Response.json(body, { headers: publicHeaders() });

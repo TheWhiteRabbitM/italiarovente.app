@@ -142,6 +142,31 @@ test("aggregate: media decennale = media aritmetica delle medie annue del decenn
   assert.ok(Math.abs(d1960.mean - 10.4) < EPS, `media decade 1960 attesa 10.4, ottenuta ${d1960.mean}`);
 });
 
+test("aggregate: afa estiva -> summerApparent presente solo con la percepita, media giu-ago corretta", () => {
+  // Senza apparent_temperature_max (fixture base): il campo NON deve esistere.
+  const base = aggregate(buildFixture());
+  assert.equal(base.summerApparent, undefined, "summerApparent non deve comparire senza la percepita");
+
+  // Con la percepita = secca + 2 costante: la media estiva della percepita deve
+  // essere sempre 2° sopra quella della secca, e la secca estiva di ogni anno
+  // deve coincidere con tmax dell'anno (tutti i giorni uguali nella fixture).
+  const f = buildFixture();
+  f.daily.apparent_temperature_max = f.daily.temperature_2m_max.map((v) => v + 2);
+  const r = aggregate(f);
+  assert.ok(Array.isArray(r.summerApparent), "summerApparent deve essere un array con la percepita");
+  assert.equal(r.summerApparent.length, 60, "un punto per anno, 1961-2020");
+
+  const y1961 = r.summerApparent.find((p) => p.year === 1961);
+  // 1961: m = 10, tmax = 15, percepita = 17. Estate giu-ago = 92 giorni (30+31+31).
+  assert.ok(Math.abs(y1961.dry - 15) < EPS, `secca estiva 1961 attesa 15, ottenuta ${y1961.dry}`);
+  assert.ok(Math.abs(y1961.feels - 17) < EPS, `percepita estiva 1961 attesa 17, ottenuta ${y1961.feels}`);
+  assert.equal(y1961.count, 92, "giu(30)+lug(31)+ago(31) = 92 giorni estivi");
+  // Lo scarto percepita-secca è costante (2°) per costruzione, ogni anno.
+  for (const p of r.summerApparent) {
+    assert.ok(Math.abs((p.feels - p.dry) - 2) < EPS, `scarto atteso 2° nel ${p.year}, ottenuto ${p.feels - p.dry}`);
+  }
+});
+
 test("aggregate: monthlySeries -> media di un singolo anno-mese, non la climatologia sull'intera serie", () => {
   const r = aggregate(buildFixture());
   // Nella fixture ogni giorno dell'anno ha lo stesso valore -> la media di

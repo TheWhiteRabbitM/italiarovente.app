@@ -23,6 +23,8 @@ import { EobsCrossCheck } from "@/components/EobsCrossCheck";
 import { getEobsComparison } from "@/lib/eobs";
 import { MonthlyHighlight } from "@/components/MonthlyHighlight";
 import { cityMonthlyHighlight } from "@/lib/monthlyCompare";
+import { SummerFeels } from "@/components/SummerFeels";
+import { getSummerFeels } from "@/lib/summerfeels";
 import { Methodology } from "@/components/Methodology";
 import { EmbedButton } from "@/components/EmbedButton";
 import { DayLookup } from "@/components/DayLookup";
@@ -665,6 +667,8 @@ export async function renderCityPage(slug: string, lang: Lang) {
   // Cross-check E-OBS: null per le città fuori dalle 12 principali coperte.
   const eobsComparison = getEobsComparison(city.slug);
   const monthlyHighlight = cityMonthlyHighlight(archive?.monthlySeries);
+  // Afa estiva: null per le città non principali (senza percepita).
+  const summerFeels = getSummerFeels(archive?.summerApparent);
 
   const cur = forecast.current;
   const w = lang === "en" ? weatherDescEn(cur.code) : weatherDesc(cur.code);
@@ -1023,6 +1027,9 @@ export async function renderCityPage(slug: string, lang: Lang) {
               lang={lang}
             />
           )}
+
+          {/* AFA D'ESTATE (solo città principali con temperatura percepita) */}
+          {summerFeels && <SummerFeels data={summerFeels} scope={name} lang={lang} />}
 
           {/* SMART INSIGHT */}
           {insight && (

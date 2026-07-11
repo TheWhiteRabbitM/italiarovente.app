@@ -103,10 +103,13 @@ export function linreg(pts) {
 }
 
 async function fetchDaily(city, end) {
-  // Città principali: media+max+min (record precisi). Altre: solo media
-  // (1/3 del peso API -> molte più città entro il rate limit).
+  // Città principali: media+max+min (record precisi) + temperatura percepita
+  // massima (afa estiva). Altre: solo media (1/3 del peso API -> molte più
+  // città entro il rate limit). apparent_temperature include umidità, vento e
+  // radiazione: è un modello, meno solido della secca, ma disponibile dal 1940
+  // e utile per raccontare l'afa (vedi src/lib/summerfeels.ts).
   const daily = city.main
-    ? "temperature_2m_mean,temperature_2m_max,temperature_2m_min"
+    ? "temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_max"
     : "temperature_2m_mean";
   const params = new URLSearchParams({
     latitude: String(city.lat),
@@ -139,12 +142,20 @@ export function aggregate(j) {
   const mean = j.daily.temperature_2m_mean;
   const tmax = j.daily.temperature_2m_max ?? [];
   const tmin = j.daily.temperature_2m_min ?? [];
+  // Temperatura percepita massima (afa). Presente solo per le città principali;
+  // assente (array vuoto) per tutte le altre e per il golden fixture.
+  const tapp = j.daily.apparent_temperature_max ?? [];
+  const hasApparent = Array.isArray(j.daily.apparent_temperature_max);
   // precise = abbiamo davvero max/min (città principali, fetch a 3 variabili)
   const precise = Array.isArray(j.daily.temperature_2m_max);
 
   const yearAgg = new Map();
   const monthAgg = new Map();
   const monthYearAgg = new Map(); // media per singolo anno-mese (non l'intera serie)
+  // Afa estiva: per anno, somma di percepita-max e secca-max nei soli mesi
+  // estivi (giu-ago), con conteggio giorni. Il confronto secca vs percepita
+  // mostra quanto l'umidità aggiunge sopra il caldo.
+  const summerAgg = new Map();
   const monthEarly = new Map(); // media mensile 1961-1990
   const monthRecent = new Map(); // media mensile 1991-2020
   let baseSum = 0, baseN = 0, recSum = 0, recN = 0;
@@ -211,6 +222,13 @@ export function aggregate(j) {
       const mya = monthYearAgg.get(myKey) ?? { sm: 0, n: 0, year: y, month: mo };
       mya.sm += m; mya.n++;
       monthYearAgg.set(myKey, mya);
+      // Afa estiva: mesi 6-8, solo se abbiamo sia la percepita che la secca del
+      // giorno (per confrontarle a parità di campione).
+      if (hasApparent && mo >= 6 && mo <= 8 && tapp[i] != null && mx != null) {
+        const sa = summerAgg.get(y) ?? { feels: 0, dry: 0, n: 0 };
+        sa.feels += tapp[i]; sa.dry += mx; sa.n++;
+        summerAgg.set(y, sa);
+      }
       if (y >= 1961 && y <= 1990) {
         baseSum += m; baseN++;
         const e = monthEarly.get(mo) ?? { s: 0, n: 0 }; e.s += m; e.n++; monthEarly.set(mo, e);
@@ -248,6 +266,14 @@ export function aggregate(j) {
   const monthlySeries = [...monthYearAgg.values()]
     .map((a) => ({ year: a.year, month: a.month, mean: round(a.sm / a.n), count: a.n }))
     .sort((a, b) => a.year - b.year || a.month - b.month);
+  // Afa estiva per anno: solo anni con estate ragionevolmente completa
+  // (>= 80 dei 92 giorni giu-ago). undefined per le città senza percepita.
+  const summerApparent = hasApparent
+    ? [...summerAgg.entries()]
+        .filter(([, a]) => a.n >= 80)
+        .map(([year, a]) => ({ year, feels: round(a.feels / a.n), dry: round(a.dry / a.n), count: a.n }))
+        .sort((a, b) => a.year - b.year)
+    : undefined;
 
   const baselineMean = baseN ? baseSum / baseN : NaN;
   const recentNormal = recN ? recSum / recN : NaN;
@@ -283,6 +309,7 @@ export function aggregate(j) {
     decades,
     monthly,
     monthlySeries,
+    ...(summerApparent ? { summerApparent } : {}),
     records: {
       hottest: { date: hottest.date, value: round(hottest.value, 1) },
       coldest: { date: coldest.date, value: round(coldest.value, 1) },
@@ -350,7 +377,10 @@ async function main() {
     const hasColdStreak = cached?.records?.longestColdSnap !== undefined;
     const hasCi = cached?.trend?.perDecadeCi95 !== undefined;
     const hasMonthlySeries = cached?.monthlySeries !== undefined;
-    const needsHeat = city.main && (!hasHeat || !hasStreak || !hasColdStreak);
+    // Afa: solo le principali la scaricano (fetch a 4 variabili). Manca ->
+    // vanno ri-scaricate finché non ce l'hanno.
+    const hasFeels = !city.main || cached?.summerApparent !== undefined;
+    const needsHeat = city.main && (!hasHeat || !hasStreak || !hasColdStreak || !hasFeels);
     if (!refreshAll && cached?.yearly?.length && !needsHeat && hasCi && hasMonthlySeries) {
       skipped++;
       continue;
