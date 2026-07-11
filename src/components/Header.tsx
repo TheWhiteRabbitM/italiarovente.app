@@ -8,6 +8,7 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UnitToggle } from "./UnitToggle";
 import { LangToggle } from "./LangToggle";
+import { openAppMenu } from "./AppMenu";
 import { SITE_TAGLINE, SITE_TAGLINE_EN } from "@/lib/site";
 
 const STR = {
@@ -43,6 +44,20 @@ export function Header() {
           <UnitToggle lang={lang} />
           <ThemeToggle lang={lang} />
           <nav className="app-hide-standalone flex items-center gap-1 sm:gap-2 text-sm font-semibold">
+            {/* Hamburger: solo su mobile browser, dove le voci testuali qui
+                sotto sono nascoste (md:inline-flex). Apre il menu completo. */}
+            <button
+              type="button"
+              onClick={openAppMenu}
+              aria-label={lang === "en" ? "Open menu" : "Apri menu"}
+              className="md:hidden m3-chip bg-surface-container-high text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors w-9 h-9 !p-0 flex items-center justify-center"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </svg>
+            </button>
             <InstallButton lang={lang} />
           <span className="hidden sm:inline-flex">
             <VisitCounter compact lang={lang} />

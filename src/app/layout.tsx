@@ -7,6 +7,7 @@ import { VotePopup } from "@/components/VotePopup";
 import { PWARegister } from "@/components/PWARegister";
 import { LangAttr } from "@/components/LangAttr";
 import { BottomNav } from "@/components/BottomNav";
+import { AppMenu } from "@/components/AppMenu";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { ChromeGate } from "@/components/ChromeGate";
 import { UnitProvider } from "@/components/UnitProvider";
@@ -158,6 +159,7 @@ export default function RootLayout({
             <BottomNav />
             <InstallPrompt />
           </ChromeGate>
+          <AppMenu />
         </UnitProvider>
         <LangAttr />
         <PWARegister />

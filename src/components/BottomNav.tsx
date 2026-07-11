@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { openAppMenu } from "./AppMenu";
 
 // Icone line (stile Lucide), ereditano il colore dal tab (currentColor).
 const ICONS: Record<string, React.ReactNode> = {
   oggi: <path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0z" />,
+  menu: (
+    <>
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </>
+  ),
   citta: (
     <>
       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
@@ -83,6 +91,30 @@ export function BottomNav() {
           </Link>
         );
       })}
+      {/* Menu completo: dà accesso alle pagine che non stanno nei 5 tab
+          (Classifiche, Mese, Europa, Quiz, Dati...), altrimenti irraggiungibili
+          in PWA dove header-nav e footer sono nascosti. */}
+      <button
+        type="button"
+        onClick={openAppMenu}
+        className="bottom-nav-item appearance-none bg-transparent border-0 cursor-pointer"
+        aria-label={lang === "en" ? "Open menu" : "Apri menu"}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="bottom-nav-icon"
+        >
+          {ICONS.menu}
+        </svg>
+        <span className="bottom-nav-label">Menu</span>
+      </button>
     </nav>
   );
 }
