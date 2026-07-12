@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackEvent } from "@/lib/track";
 
 const STR = {
   it: { share: "Condividi", copied: "Copiato!" },
@@ -26,6 +27,7 @@ export function QuickShare({
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title: "Italia Rovente", text, url });
+        trackEvent("share", { where: "curiosity" });
       } catch {
         /* annullato dall'utente */
       }
@@ -35,6 +37,7 @@ export function QuickShare({
       await navigator.clipboard.writeText(`${text} ${url}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      trackEvent("share", { where: "curiosity" });
     } catch {
       /* ignora */
     }

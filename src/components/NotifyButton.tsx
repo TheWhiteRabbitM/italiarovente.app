@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/track";
 import { useEffect, useState } from "react";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -68,6 +69,7 @@ export function NotifyButton({ lang = "it" }: { lang?: "it" | "en" }) {
         body: JSON.stringify({ ...sub.toJSON(), lang }),
       });
       setState("subscribed");
+      trackEvent("push_subscribe");
     } catch {
       setState("idle");
     }

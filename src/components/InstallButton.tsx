@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/track";
 import { useEffect, useState } from "react";
 
 type BIPEvent = Event & {
@@ -23,7 +24,10 @@ export function InstallButton({ lang = "it" }: { lang?: "it" | "en" }) {
       e.preventDefault();
       setDeferred(e as BIPEvent);
     };
-    const onInstalled = () => setDeferred(null);
+    const onInstalled = () => {
+      setDeferred(null);
+      trackEvent("pwa_install");
+    };
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
     return () => {

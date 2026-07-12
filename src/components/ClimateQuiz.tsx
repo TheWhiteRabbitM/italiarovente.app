@@ -6,6 +6,7 @@
 // temperatura viaggiano come numeri (°C) e vengono formattate al volo
 // nell'unità scelta dall'utente (toggle C/F) — mai stringhe pre-formattate.
 
+import { trackEvent } from "@/lib/track";
 import { useState } from "react";
 import { useUnit } from "@/components/UnitProvider";
 import { fmtAnomaly } from "@/lib/format";
@@ -361,7 +362,14 @@ export function ClimateQuiz({
           </p>
           <button
             type="button"
-            onClick={() => (idx + 1 < n ? setIdx(idx + 1) : setFinished(true))}
+            onClick={() => {
+              if (idx + 1 < n) {
+                setIdx(idx + 1);
+              } else {
+                setFinished(true);
+                trackEvent("quiz_complete", { score });
+              }
+            }}
             className="m3-chip bg-primary text-on-primary text-base px-6 py-3 mt-4 hover:scale-105 transition-transform cursor-pointer"
           >
             {idx + 1 < n ? t.next : t.seeResult}

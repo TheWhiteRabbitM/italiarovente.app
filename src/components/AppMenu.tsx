@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { trackEvent } from "@/lib/track";
 
 // Evento globale per aprire il menu: BottomNav (tab "Menu") e Header (hamburger
 // su mobile) lo lanciano, questo componente — montato una volta sola in
@@ -179,8 +180,10 @@ export function AppMenu() {
     try {
       if (navigator.share) {
         await navigator.share({ title: "Italia Rovente", text: t.shareText, url });
+        trackEvent("share", { where: "app" });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
+        trackEvent("share", { where: "app" });
       }
     } catch {
       /* l'utente ha annullato: nessun errore da mostrare */

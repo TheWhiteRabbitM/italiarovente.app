@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackEvent } from "@/lib/track";
 
 type Counter = { confirm: number; deny: number; hot: number; cold: number };
 type VoteKind = keyof Counter;
@@ -92,6 +93,7 @@ export function VoteWidget({
       if (src) setC({ confirm: 0, deny: 0, hot: 0, cold: 0, ...src });
       localStorage.setItem(guardKey(group), kind);
       setVoted((v) => ({ ...v, [group]: true }));
+      trackEvent("vote", { kind });
     } catch {
       setC((p) => ({ ...p, [kind]: Math.max(0, p[kind] - 1) }));
     } finally {
