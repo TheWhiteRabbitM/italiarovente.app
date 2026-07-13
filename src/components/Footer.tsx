@@ -16,6 +16,7 @@ const STR = {
     disclaimer: "Disclaimer e metodo",
     license: "Licenza open source (MIT)",
     openData: "Dati aperti (CSV)",
+    privacy: "Privacy policy",
     updates: (
       <>
         I dati si aggiornano <strong>ogni giorno</strong> automaticamente.
@@ -40,6 +41,7 @@ const STR = {
     disclaimer: "Disclaimer and methodology",
     license: "Open source license (MIT)",
     openData: "Open data (CSV)",
+    privacy: "Privacy policy",
     updates: (
       <>
         Data updates <strong>every day</strong> automatically.
@@ -104,6 +106,11 @@ export function Footer() {
             <li>
               <Link href={p("/dati")} className="hover:underline font-semibold">
                 {t.openData}
+              </Link>
+            </li>
+            <li>
+              <Link href={p("/privacy")} className="hover:underline font-semibold">
+                {t.privacy}
               </Link>
             </li>
             <li>{t.updates}</li>
