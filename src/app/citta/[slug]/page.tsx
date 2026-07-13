@@ -231,6 +231,8 @@ const STR = {
     ),
     warmingLabel: "Ultimo anno",
     warmingSub: "vs normale 1961–1990",
+    faqEyebrow: "❓ Q&A",
+    faqTitle: (n: string) => `Domande frequenti su ${n}`,
     trendLabel: "Tendenza",
     trendSub: "per decennio (regressione)",
     hottestRecordLabel: "🔥 Record di caldo",
@@ -465,6 +467,8 @@ const STR = {
     ),
     warmingLabel: "Last year",
     warmingSub: "vs 1961–1990 normal",
+    faqEyebrow: "❓ Q&A",
+    faqTitle: (n: string) => `Frequently asked about ${n}`,
     trendLabel: "Trend",
     trendSub: "per decade (regression)",
     hottestRecordLabel: "🔥 Hottest record",
@@ -783,6 +787,24 @@ export async function renderCityPage(slug: string, lang: Lang) {
       | "record-durata"
       | "record-durata-freddo",
   ) => `${SITE_URL}${lang === "en" ? "/en" : ""}/condividi/curiosita/${city.slug}/${kind}`;
+  // Risposta canonica alla domanda "di quanto si è scaldata X dal 1940": il
+  // riscaldamento a due trentenni (normale 1991–2020 vs 1961–1990), coerente
+  // col metodo del sito e col Dataset qui sotto — non l'"ultimo anno" (più
+  // rumoroso) mostrato nella card omonima.
+  const twoNormalWarming = trend ? trend.recentNormal - trend.baselineMean : 0;
+  const faq =
+    archive && trend
+      ? buildCityFaq(lang, {
+          name,
+          startYear: archive.startYear,
+          warming: twoNormalWarming,
+          perDecade: trend.perDecade,
+          precise: archive.precise !== false,
+          hottest: archive.precise !== false ? archive.records.hottest : undefined,
+          warmestYear: archive.records.warmestYear,
+        })
+      : [];
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -793,6 +815,21 @@ export async function renderCityPage(slug: string, lang: Lang) {
           { "@type": "ListItem", position: 2, name, item: url },
         ],
       },
+      // FAQPage: mappa domanda→risposta in forma machine-readable. È la forma
+      // che i motori di risposta (Google, LLM) usano più direttamente, e i
+      // testi combaciano con la sezione "Domande e risposte" visibile in pagina.
+      ...(faq.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: faq.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ]
+        : []),
       {
         "@type": "Dataset",
         name: `Temperature storiche di ${city.name} dal ${archive?.startYear ?? 1940}`,
@@ -949,6 +986,18 @@ export async function renderCityPage(slug: string, lang: Lang) {
           </div>
         </div>
       </section>
+
+      {/* RISPOSTA SECCA — la risposta canonica ("di quanto si è scaldata X
+          dal 1940") in una frase estraibile, subito sotto la hero: dati, non
+          racconto. Stesso testo del primo elemento del FAQPage JSON-LD. */}
+      {faq.length > 0 && (
+        <section
+          className="m3-card rise p-4 sm:p-5 mb-4 border-l-4"
+          style={{ borderColor: color }}
+        >
+          <p className="text-base sm:text-lg font-semibold leading-snug">{faq[0].a}</p>
+        </section>
+      )}
 
       {/* NUMERI CHIAVE — i fatti principali subito sotto la hero, prima dei
           grafici: 2×2 su mobile, 4 in fila su desktop. */}
@@ -1518,6 +1567,33 @@ export async function renderCityPage(slug: string, lang: Lang) {
           </div>
         </>
       )}
+
+      {/* DOMANDE E RISPOSTE — top-level (fuori dal ternario storico/fallback):
+          stessi testi del FAQPage JSON-LD, visibili in pagina (requisito per i
+          rich result e leggibili dalle AI). Compare solo se faq è popolata, cioè
+          quando la città ha lo storico. <details> nativo: nessun JS, il testo
+          resta nel DOM anche collassato. */}
+      {faq.length > 0 && (
+        <>
+          <SectionHeader eyebrow={t.faqEyebrow} title={t.faqTitle(name)} />
+          <section className="space-y-3 mb-6">
+            {faq.map((f) => (
+              <details key={f.q} className="m3-card rise p-4 sm:p-5 group">
+                <summary className="font-bold cursor-pointer list-none flex items-center justify-between gap-3">
+                  <span>{f.q}</span>
+                  <span
+                    className="text-on-surface-variant transition-transform group-open:rotate-180"
+                    aria-hidden
+                  >
+                    ⌄
+                  </span>
+                </summary>
+                <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -1578,6 +1654,84 @@ function ordinalSuffix(n: number): string {
   if (j === 2 && k !== 12) return "nd";
   if (j === 3 && k !== 13) return "rd";
   return "th";
+}
+
+// --- FAQ / AEO -------------------------------------------------------------
+// Risposte secche e machine-readable alle domande fattuali sul riscaldamento
+// di una città, usate in TRE punti coerenti: la frase-risposta in cima alla
+// scheda, la sezione "Domande e risposte" visibile, e il FAQPage JSON-LD. Un
+// motore di risposta (Google, un LLM) trova qui la risposta esatta, in °C, col
+// metodo dichiarato — non un racconto. Numeri sempre in °C (unità scientifica
+// canonica), indipendenti dal toggle °F, per una risposta stabile e citabile.
+function fmtSigned(n: number, lang: "it" | "en"): string {
+  const s = (n >= 0 ? "+" : "") + n.toFixed(1);
+  return lang === "it" ? s.replace(".", ",") : s;
+}
+function fmtSigned2(n: number, lang: "it" | "en"): string {
+  const s = (n >= 0 ? "+" : "") + n.toFixed(2);
+  return lang === "it" ? s.replace(".", ",") : s;
+}
+function fmtPlain1(n: number, lang: "it" | "en"): string {
+  const s = n.toFixed(1);
+  return lang === "it" ? s.replace(".", ",") : s;
+}
+
+type CityFaqCtx = {
+  name: string;
+  startYear: number;
+  warming: number; // due trentenni: normale 1991-2020 vs 1961-1990
+  perDecade: number;
+  precise: boolean;
+  hottest?: { value: number; date: string };
+  warmestYear?: { year: number; mean: number };
+};
+
+function buildCityFaq(lang: "it" | "en", c: CityFaqCtx): { q: string; a: string }[] {
+  const faq: { q: string; a: string }[] = [];
+  if (lang === "en") {
+    faq.push({
+      q: `How much has ${c.name} warmed since 1940?`,
+      a: `${c.name} has warmed by ${fmtSigned(c.warming, "en")}°C: its 1991–2020 climate normal is ${fmtSigned(c.warming, "en")}°C higher than the 1961–1990 one. The long-term trend is ${fmtSigned2(c.perDecade, "en")}°C per decade. Source: ERA5 reanalysis (ECMWF/Copernicus), series since ${c.startYear}.`,
+    });
+    faq.push({
+      q: `Is ${c.name} getting warmer?`,
+      a: `Yes. Between the 1961–1990 and 1991–2020 climate normals, the mean temperature of ${c.name} rose by ${fmtSigned(c.warming, "en")}°C, at ${fmtSigned2(c.perDecade, "en")}°C per decade.`,
+    });
+    if (c.precise && c.hottest) {
+      faq.push({
+        q: `What is the all-time heat record in ${c.name}?`,
+        a: `The highest value ever recorded is ${fmtPlain1(c.hottest.value, "en")}°C, on ${fmtDate(c.hottest.date, "en")}.`,
+      });
+    }
+    if (c.warmestYear) {
+      faq.push({
+        q: `What was the warmest year in ${c.name}?`,
+        a: `${c.warmestYear.year}, with a mean temperature of ${fmtPlain1(c.warmestYear.mean, "en")}°C.`,
+      });
+    }
+    return faq;
+  }
+  faq.push({
+    q: `Di quanto si è scaldata ${c.name} dal 1940?`,
+    a: `${c.name} si è scaldata di ${fmtSigned(c.warming, "it")}°C: la normale climatica 1991–2020 è più alta di ${fmtSigned(c.warming, "it")}°C rispetto a quella 1961–1990. La tendenza di fondo è di ${fmtSigned2(c.perDecade, "it")}°C per decennio. Fonte: rianalisi ERA5 (ECMWF/Copernicus), serie dal ${c.startYear}.`,
+  });
+  faq.push({
+    q: `${c.name} si sta scaldando?`,
+    a: `Sì. Tra le normali climatiche 1961–1990 e 1991–2020 la temperatura media di ${c.name} è aumentata di ${fmtSigned(c.warming, "it")}°C, con un ritmo di ${fmtSigned2(c.perDecade, "it")}°C per decennio.`,
+  });
+  if (c.precise && c.hottest) {
+    faq.push({
+      q: `Qual è il record di caldo di ${c.name}?`,
+      a: `Il valore più alto mai registrato è ${fmtPlain1(c.hottest.value, "it")}°C, il ${fmtDate(c.hottest.date, "it")}.`,
+    });
+  }
+  if (c.warmestYear) {
+    faq.push({
+      q: `Qual è l'anno più caldo di ${c.name}?`,
+      a: `Il ${c.warmestYear.year}, con una temperatura media di ${fmtPlain1(c.warmestYear.mean, "it")}°C.`,
+    });
+  }
+  return faq;
 }
 
 // Intestazione di sezione riutilizzata in tutta la pagina: chip "eyebrow"
