@@ -25,6 +25,8 @@ import { MonthlyHighlight } from "@/components/MonthlyHighlight";
 import { cityMonthlyHighlight } from "@/lib/monthlyCompare";
 import { SummerFeels } from "@/components/SummerFeels";
 import { getSummerFeels } from "@/lib/summerfeels";
+import { CityContext } from "@/components/CityContext";
+import { getCityRanking } from "@/lib/ranking";
 import { Methodology } from "@/components/Methodology";
 import { EmbedButton } from "@/components/EmbedButton";
 import { DayLookup } from "@/components/DayLookup";
@@ -541,8 +543,8 @@ function buildMetadata(slug: string, lang: Lang): Metadata {
   if (lang === "en") {
     const title =
       warming != null
-        ? `${name}: ${fmtAnomaly(warming, 1)} since 1961–1990 · temperatures since 1940`
-        : `${name}: temperatures since 1940`;
+        ? `${name} climate since 1940: ${fmtAnomaly(warming, 1)}, historical data & anomalies`
+        : `${name} climate since 1940: historical data & anomalies`;
     const description =
       warming != null && perDecade != null
         ? `${name} (${city.region}) has warmed by ${fmtAnomaly(warming, 1)} vs the 1961–1990 normal, at a pace of ${fmtAnomaly(perDecade, 2)} per decade. Current temperature, history since 1940, anomalies, records and warming stripes. ERA5/ECMWF data.`
@@ -577,8 +579,8 @@ function buildMetadata(slug: string, lang: Lang): Metadata {
 
   const title =
     warming != null
-      ? `${name}: ${fmtAnomaly(warming, 1, "c", { locale: "it" })} dal 1961–1990 · temperature dal 1940`
-      : `${name}: temperature dal 1940`;
+      ? `Clima di ${name} dal 1940: ${fmtAnomaly(warming, 1, "c", { locale: "it" })}, dati storici e anomalie`
+      : `Clima di ${name} dal 1940: dati storici e anomalie`;
   const description =
     warming != null && perDecade != null
       ? `A ${name} (${city.region}) la temperatura è salita di ${fmtAnomaly(warming, 1, "c", { locale: "it" })} rispetto alla normale 1961–1990, a un ritmo di ${fmtAnomaly(perDecade, 2, "c", { locale: "it" })} per decennio. Temperatura attuale, storico dal 1940, anomalie, record e warming stripes. Dati ERA5/ECMWF.`
@@ -669,6 +671,9 @@ export async function renderCityPage(slug: string, lang: Lang) {
   const monthlyHighlight = cityMonthlyHighlight(archive?.monthlySeries);
   // Afa estiva: null per le città non principali (senza percepita).
   const summerFeels = getSummerFeels(archive?.summerApparent);
+  // Posizione nella classifica nazionale del riscaldamento (per il box
+  // "contesto di classifica" e i link interni alle città vicine).
+  const ranking = getCityRanking(city.slug);
 
   const cur = forecast.current;
   const w = lang === "en" ? weatherDescEn(cur.code) : weatherDesc(cur.code);
@@ -805,7 +810,48 @@ export async function renderCityPage(slug: string, lang: Lang) {
         ...(trend
           ? {
               temporalCoverage: `${trend.firstYear}/${trend.lastYear}`,
-              variableMeasured: `Tendenza ${trend.perDecade >= 0 ? "+" : ""}${trend.perDecade.toFixed(2)} °C/decennio`,
+              // Array di PropertyValue: valori strutturati e non ambigui per
+              // gli LLM e Google Dataset Search (riscaldamento tra le due
+              // normali, ritmo per decennio, R², record assoluti). Non produce
+              // rich result nella ricerca web normale — Dataset è scoped a
+              // Dataset Search — ma è la forma più leggibile a macchina.
+              variableMeasured: [
+                {
+                  "@type": "PropertyValue",
+                  name: "Riscaldamento (normale 1991–2020 vs 1961–1990)",
+                  value: Number((trend.recentNormal - trend.baselineMean).toFixed(2)),
+                  unitText: "°C",
+                },
+                {
+                  "@type": "PropertyValue",
+                  name: "Tendenza per decennio",
+                  value: Number(trend.perDecade.toFixed(2)),
+                  unitText: "°C/decade",
+                },
+                {
+                  "@type": "PropertyValue",
+                  name: "R² della tendenza lineare",
+                  value: Number(trend.r2.toFixed(3)),
+                },
+                ...(archive?.records?.hottest
+                  ? [{
+                      "@type": "PropertyValue",
+                      name: "Record di caldo assoluto",
+                      value: archive.records.hottest.value,
+                      unitText: "°C",
+                      valueReference: archive.records.hottest.date,
+                    }]
+                  : []),
+                ...(archive?.records?.coldest
+                  ? [{
+                      "@type": "PropertyValue",
+                      name: "Record di freddo assoluto",
+                      value: archive.records.coldest.value,
+                      unitText: "°C",
+                      valueReference: archive.records.coldest.date,
+                    }]
+                  : []),
+              ],
             }
           : {}),
       },
@@ -1010,6 +1056,11 @@ export async function renderCityPage(slug: string, lang: Lang) {
             recentNormal={archive.trend.recentNormal}
             lang={lang}
           />
+
+          {/* CONTESTO DI CLASSIFICA (internal linking verso città vicine + regione) */}
+          {ranking && (
+            <CityContext ranking={ranking} name={name} region={city.region} lang={lang} />
+          )}
 
           {/* MESE A CONFRONTO (per città) */}
           <MonthlyHighlight
