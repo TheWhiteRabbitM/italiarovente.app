@@ -1,0 +1,40 @@
+{
+  "packageId": "app.italiarovente.twa",
+  "host": "italiarovente.app",
+  "name": "Italia Rovente",
+  "launcherName": "Italia Rovente",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#d23a22",
+  "themeColorDark": "#29241f",
+  "navigationColor": "#29241f",
+  "navigationColorDark": "#29241f",
+  "navigationDividerColor": "#29241f",
+  "navigationDividerColorDark": "#29241f",
+  "backgroundColor": "#29241f",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://italiarovente.app/icon-512.png",
+  "maskableIconUrl": "https://italiarovente.app/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    { "name": "Tutte le città", "shortName": "Città", "url": "/citta", "chosenIconUrl": "https://italiarovente.app/icon-192.png" },
+    { "name": "Il mese appena concluso", "shortName": "Il mese", "url": "/mese", "chosenIconUrl": "https://italiarovente.app/icon-192.png" },
+    { "name": "Classifiche del clima", "shortName": "Classifiche", "url": "/classifiche", "chosenIconUrl": "https://italiarovente.app/icon-192.png" },
+    { "name": "Confronto città", "shortName": "Confronto", "url": "/confronto", "chosenIconUrl": "https://italiarovente.app/icon-192.png" }
+  ],
+  "webManifestUrl": "https://italiarovente.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://italiarovente.app/",
+  "minSdkVersion": 23,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "italiarovente"
+  }
+}

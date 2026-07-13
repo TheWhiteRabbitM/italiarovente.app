@@ -3,6 +3,7 @@ import { CITIES, cityName, cityDisplayName, type City } from "@/lib/cities";
 import { getArchiveStats } from "@/lib/weather";
 import { anomalyColor, readableTextOn, tempColor, fmtDate } from "@/lib/format";
 import { Temp } from "@/components/Temp";
+import { ExpandableList } from "@/components/ExpandableList";
 import { YearExtremes } from "@/components/YearExtremes";
 import { gradiGiorno, ggZone } from "@/lib/degreedays";
 import { getSummerFeelsRanking } from "@/lib/summerfeels";
@@ -97,6 +98,26 @@ const STR = {
       "Quanto l'afa (umidità e assenza di vento) aggiunge oggi in media alla temperatura reale d'estate. Le coste tendono a stare sopra l'entroterra.",
     feelsDeltaTitle: "📈 Dove l'afa estiva è cresciuta di più",
     feelsDeltaSub: "Aumento della percepita estiva media tra le normali 1961–1990 e 1991–2020.",
+    jumpTo: "Salta a:",
+    navReheat: "Riscaldamento",
+    navRecords: "Record",
+    navFelt: "Caldo percepito",
+    navWinter: "Inverno",
+    navYears: "Anni estremi",
+    famReheat: "🔥 Quanto, e quanto in fretta",
+    famReheatSub:
+      "Di quanto sono salite le temperature e con che ritmo — e quanto è netto il segnale.",
+    famRecords: "🌡️ Record e durate",
+    famRecordsSub:
+      "Gli estremi assoluti mai registrati e le sequenze più lunghe di caldo e di gelo.",
+    famFelt: "🥵 Il caldo che si sente",
+    famFeltSub:
+      "Non solo i gradi: giorni roventi, notti tropicali e la percepita con l'umidità.",
+    famWinter: "❄️ Inverno ed escursione",
+    famWinterSub: "Fabbisogno di riscaldamento invernale e divario tra giorno e notte.",
+    famYears: "🏆 Gli anni più estremi",
+    showAll: (n: number) => `Mostra tutte le ${n} →`,
+    showLess: "Riduci ↑",
   },
   en: {
     backLink: "← All cities",
@@ -160,6 +181,26 @@ const STR = {
       "How much mugginess (humidity and lack of wind) adds on average to the actual summer temperature today. Coasts tend to sit above the inland cities.",
     feelsDeltaTitle: "📈 Where summer mugginess grew most",
     feelsDeltaSub: "Rise in the mean summer apparent temperature between the 1961–1990 and 1991–2020 normals.",
+    jumpTo: "Jump to:",
+    navReheat: "Warming",
+    navRecords: "Records",
+    navFelt: "Felt heat",
+    navWinter: "Winter",
+    navYears: "Extreme years",
+    famReheat: "🔥 How much, and how fast",
+    famReheatSub:
+      "How far temperatures have risen and at what pace — and how clear the signal is.",
+    famRecords: "🌡️ Records & streaks",
+    famRecordsSub:
+      "The all-time extremes ever recorded and the longest heat and frost streaks.",
+    famFelt: "🥵 The heat you feel",
+    famFeltSub:
+      "Not just degrees: scorching days, tropical nights and humidity-driven apparent heat.",
+    famWinter: "❄️ Winter & day/night swing",
+    famWinterSub: "Winter heating demand and the gap between day and night.",
+    famYears: "🏆 The most extreme years",
+    showAll: (n: number) => `Show all ${n} →`,
+    showLess: "Show less ↑",
   },
 } as const;
 
@@ -207,10 +248,36 @@ function RankRow({
   );
 }
 
+// Intestazione di famiglia (livello alto, h2): raggruppa più classifiche affini
+// sotto un unico titolo, e fa da bersaglio per l'indice a chip in cima. `first`
+// evita il doppio filo (l'indice ha già un bordo inferiore) sulla prima famiglia.
+function FamilyHeader({
+  id,
+  title,
+  sub,
+  first = false,
+}: {
+  id: string;
+  title: string;
+  sub: string;
+  first?: boolean;
+}) {
+  return (
+    <div
+      id={id}
+      className={`scroll-mt-32 mb-6 ${first ? "pt-2" : "border-t border-[var(--outline-variant)] pt-8"}`}
+    >
+      <h2 className="text-3xl font-extrabold tracking-tight">{title}</h2>
+      <p className="text-sm text-on-surface-variant mt-1.5 max-w-2xl leading-relaxed">{sub}</p>
+    </div>
+  );
+}
+
+// Intestazione della singola classifica (livello sotto la famiglia, h3).
 function SectionHeader({ title, sub }: { title: string; sub: string }) {
   return (
     <div className="mb-3">
-      <h2 className="text-2xl font-extrabold tracking-tight">{title}</h2>
+      <h3 className="text-xl font-extrabold tracking-tight">{title}</h3>
       <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">{sub}</p>
     </div>
   );
@@ -391,6 +458,14 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
     ],
   };
 
+  const navItems = [
+    ["fam-reheat", t.navReheat],
+    ["fam-records", t.navRecords],
+    ["fam-felt", t.navFelt],
+    ["fam-winter", t.navWinter],
+    ["fam-years", t.navYears],
+  ] as const;
+
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10">
       <script
@@ -403,17 +478,35 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
       >
         {t.backLink}
       </Link>
-      <header className="rise mb-10">
+      <header className="rise mb-6">
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">{t.heading}</h1>
         <p className="text-on-surface-variant mt-2 max-w-2xl leading-relaxed">
           {t.subtitle(stats.length)}
         </p>
       </header>
 
-      {/* 🔥 Riscaldamento maggiore */}
+      {/* Indice a chip: salta alla famiglia. Sticky sotto l'header del sito (h-16). */}
+      <nav className="sticky top-16 z-40 -mx-4 sm:-mx-6 mb-8 border-b border-[var(--outline-variant)] bg-[var(--surface)]/85 px-4 py-3 backdrop-blur-xl sm:px-6">
+        <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="shrink-0 text-xs font-semibold text-on-surface-variant">{t.jumpTo}</span>
+          {navItems.map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="m3-chip shrink-0 whitespace-nowrap bg-surface-container-high text-sm text-on-surface transition-colors hover:bg-surface-container-highest"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {/* ══════════ FAMIGLIA 1 · Riscaldamento ══════════ */}
+      <FamilyHeader id="fam-reheat" title={t.famReheat} sub={t.famReheatSub} first />
+
       <section className="mb-12">
         <SectionHeader title={t.warmingTitle} sub={t.warmingSub} />
-        <div className="space-y-2.5">
+        <ExpandableList moreLabel={t.showAll(topWarming.length)} lessLabel={t.showLess}>
           {topWarming.map((r, i) => {
             const col = anomalyColor(r.warming, 1.5);
             return (
@@ -434,10 +527,9 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
               />
             );
           })}
-        </div>
+        </ExpandableList>
       </section>
 
-      {/* 🧊 Le più contenute */}
       <section className="mb-12">
         <SectionHeader title={t.coolTitle} sub={t.coolSub} />
         <div className="space-y-2.5">
@@ -464,10 +556,9 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
         </div>
       </section>
 
-      {/* ⏱️ Ritmo per decennio */}
       <section className="mb-12">
         <SectionHeader title={t.paceTitle} sub={t.paceSub} />
-        <div className="space-y-2.5">
+        <ExpandableList moreLabel={t.showAll(pace.length)} lessLabel={t.showLess}>
           {pace.map((r, i) => {
             const col = anomalyColor(r.perDecade, 0.5);
             return (
@@ -488,18 +579,59 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
               />
             );
           })}
+        </ExpandableList>
+      </section>
+
+      <section className="mb-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
+          <div>
+            <SectionHeader title={t.reliabilityTitle} sub={t.reliabilitySub} />
+            <ExpandableList moreLabel={t.showAll(topReliability.length)} lessLabel={t.showLess}>
+              {topReliability.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.r2.toFixed(2)}
+                  badgeBg="var(--primary-container)"
+                  badgeText="var(--on-primary-container)"
+                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
+                />
+              ))}
+            </ExpandableList>
+          </div>
+          <div>
+            <SectionHeader title={t.noisyTitle} sub={t.noisySub} />
+            <div className="space-y-2.5">
+              {noisiest.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.r2.toFixed(2)}
+                  badgeBg="var(--surface-container-high)"
+                  badgeText="var(--on-surface)"
+                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 🌡️ Record assoluti */}
+      {/* ══════════ FAMIGLIA 2 · Record e durate ══════════ */}
+      <FamilyHeader id="fam-records" title={t.famRecords} sub={t.famRecordsSub} />
+
       <section className="mb-12">
         <SectionHeader title={t.recordsTitle} sub={t.recordsSub} />
         <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
           <div>
-            <h3 className="text-sm font-extrabold text-on-surface-variant uppercase tracking-wide mb-2.5">
+            <h4 className="text-sm font-extrabold text-on-surface-variant uppercase tracking-wide mb-2.5">
               {t.recordsHot}
-            </h3>
-            <div className="space-y-2.5">
+            </h4>
+            <ExpandableList moreLabel={t.showAll(hottestRecords.length)} lessLabel={t.showLess}>
               {hottestRecords.map(({ city, s }, i) => {
                 const col = tempColor(s.records.hottest.value);
                 return (
@@ -515,12 +647,12 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
                   />
                 );
               })}
-            </div>
+            </ExpandableList>
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-on-surface-variant uppercase tracking-wide mb-2.5">
+            <h4 className="text-sm font-extrabold text-on-surface-variant uppercase tracking-wide mb-2.5">
               {t.recordsCold}
-            </h3>
+            </h4>
             <div className="space-y-2.5">
               {coldestRecords.map(({ city, s }, i) => {
                 const col = tempColor(s.records.coldest.value);
@@ -542,11 +674,69 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
         </div>
       </section>
 
-      {/* 🥵 Giorni roventi (caldo africano) */}
+      {heatwaveRanking.length > 0 && (
+        <section className="mb-12">
+          <SectionHeader title={t.heatwaveTitle} sub={t.heatwaveSub} />
+          <ExpandableList moreLabel={t.showAll(heatwaveRanking.length)} lessLabel={t.showLess}>
+            {heatwaveRanking.map(({ city, s }, i) => {
+              const rec = s.records.longestHeatwave!;
+              return (
+                <RankRow
+                  key={city.slug}
+                  href={cityHref(city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(city, lang)}
+                  badge={rec.days}
+                  badgeBg="#ff8a5c"
+                  badgeText={readableTextOn("#ff8a5c")}
+                  sub={
+                    <>
+                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
+                      <Temp value={rec.peak} digits={1} />
+                    </>
+                  }
+                />
+              );
+            })}
+          </ExpandableList>
+        </section>
+      )}
+
+      {coldSnapRanking.length > 0 && (
+        <section className="mb-12">
+          <SectionHeader title={t.coldSnapTitle} sub={t.coldSnapSub} />
+          <ExpandableList moreLabel={t.showAll(coldSnapRanking.length)} lessLabel={t.showLess}>
+            {coldSnapRanking.map(({ city, s }, i) => {
+              const rec = s.records.longestColdSnap!;
+              return (
+                <RankRow
+                  key={city.slug}
+                  href={cityHref(city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(city, lang)}
+                  badge={rec.days}
+                  badgeBg="#7fb3ff"
+                  badgeText={readableTextOn("#7fb3ff")}
+                  sub={
+                    <>
+                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
+                      <Temp value={rec.low} digits={1} />
+                    </>
+                  }
+                />
+              );
+            })}
+          </ExpandableList>
+        </section>
+      )}
+
+      {/* ══════════ FAMIGLIA 3 · Il caldo che si sente ══════════ */}
+      <FamilyHeader id="fam-felt" title={t.famFelt} sub={t.famFeltSub} />
+
       <section className="mb-12">
         <SectionHeader title={t.hdTitle} sub={t.hdSub} />
-        <div className="space-y-2.5">
-          {/* Conteggi di giorni, non temperature: nessuna conversione C/F. */}
+        {/* Conteggi di giorni, non temperature: nessuna conversione C/F. */}
+        <ExpandableList moreLabel={t.showAll(hotDays.length)} lessLabel={t.showLess}>
           {hotDays.map((r, i) => (
             <RankRow
               key={r.city.slug}
@@ -570,14 +760,13 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
               }
             />
           ))}
-        </div>
+        </ExpandableList>
       </section>
 
-      {/* 🌙 Notti tropicali */}
       <section className="mb-12">
         <SectionHeader title={t.tnTitle} sub={t.tnSub} />
-        <div className="space-y-2.5">
-          {/* Conteggi di notti, non temperature: nessuna conversione C/F. */}
+        {/* Conteggi di notti, non temperature: nessuna conversione C/F. */}
+        <ExpandableList moreLabel={t.showAll(tropical.length)} lessLabel={t.showLess}>
           {tropical.map((r, i) => (
             <RankRow
               key={r.city.slug}
@@ -601,182 +790,9 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
               }
             />
           ))}
-        </div>
+        </ExpandableList>
       </section>
 
-      {/* ↕️ Escursione termica */}
-      <section className="mb-4">
-        <SectionHeader title={t.swingTitle} sub={t.swingSub} />
-        <div className="space-y-2.5 mb-8">
-          {topSwing.map((r, i) => (
-            <RankRow
-              key={r.city.slug}
-              href={cityHref(r.city.slug, lang)}
-              rank={i + 1}
-              name={cityName(r.city, lang)}
-              badge={<Temp value={r.avg} digits={1} delta showUnit={false} locale={lang} />}
-              badgeBg="var(--secondary-container)"
-              badgeText="var(--on-secondary-container)"
-              sub={<Temp value={r.avg} digits={1} delta locale={lang} />}
-            />
-          ))}
-        </div>
-        <SectionHeader title={t.swingLowTitle} sub={t.swingLowSub} />
-        <div className="space-y-2.5">
-          {lowSwing.map((r, i) => (
-            <RankRow
-              key={r.city.slug}
-              href={cityHref(r.city.slug, lang)}
-              rank={i + 1}
-              name={cityName(r.city, lang)}
-              badge={<Temp value={r.avg} digits={1} delta showUnit={false} locale={lang} />}
-              badgeBg="var(--secondary-container)"
-              badgeText="var(--on-secondary-container)"
-              sub={<Temp value={r.avg} digits={1} delta locale={lang} />}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 🔥📅 Ondata di calore più lunga di sempre */}
-      {heatwaveRanking.length > 0 && (
-        <section className="mb-12">
-          <SectionHeader title={t.heatwaveTitle} sub={t.heatwaveSub} />
-          <div className="space-y-2.5">
-            {heatwaveRanking.map(({ city, s }, i) => {
-              const rec = s.records.longestHeatwave!;
-              return (
-                <RankRow
-                  key={city.slug}
-                  href={cityHref(city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(city, lang)}
-                  badge={rec.days}
-                  badgeBg="#ff8a5c"
-                  badgeText={readableTextOn("#ff8a5c")}
-                  sub={
-                    <>
-                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
-                      <Temp value={rec.peak} digits={1} />
-                    </>
-                  }
-                />
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* 🥶📅 Sequenza di gelo più lunga di sempre */}
-      {coldSnapRanking.length > 0 && (
-        <section className="mb-12">
-          <SectionHeader title={t.coldSnapTitle} sub={t.coldSnapSub} />
-          <div className="space-y-2.5">
-            {coldSnapRanking.map(({ city, s }, i) => {
-              const rec = s.records.longestColdSnap!;
-              return (
-                <RankRow
-                  key={city.slug}
-                  href={cityHref(city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(city, lang)}
-                  badge={rec.days}
-                  badgeBg="#7fb3ff"
-                  badgeText={readableTextOn("#7fb3ff")}
-                  sub={
-                    <>
-                      {rec.days} {t.daysUnit} · {fmtDate(rec.start, lang)}–{fmtDate(rec.end, lang)} ·{" "}
-                      <Temp value={rec.low} digits={1} />
-                    </>
-                  }
-                />
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* 📊 Affidabilità del trend (R²) */}
-      <section className="mb-12">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
-          <div>
-            <SectionHeader title={t.reliabilityTitle} sub={t.reliabilitySub} />
-            <div className="space-y-2.5">
-              {topReliability.map((r, i) => (
-                <RankRow
-                  key={r.city.slug}
-                  href={cityHref(r.city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(r.city, lang)}
-                  badge={r.r2.toFixed(2)}
-                  badgeBg="var(--primary-container)"
-                  badgeText="var(--on-primary-container)"
-                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <SectionHeader title={t.noisyTitle} sub={t.noisySub} />
-            <div className="space-y-2.5">
-              {noisiest.map((r, i) => (
-                <RankRow
-                  key={r.city.slug}
-                  href={cityHref(r.city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(r.city, lang)}
-                  badge={r.r2.toFixed(2)}
-                  badgeBg="var(--surface-container-high)"
-                  badgeText="var(--on-surface)"
-                  sub={<Temp value={r.perDecade} digits={2} delta locale={lang} />}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 🏠 Gradi giorno (fabbisogno di riscaldamento invernale) */}
-      <section className="mb-12">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
-          <div>
-            <SectionHeader title={t.ggTitle} sub={t.ggSub} />
-            <div className="space-y-2.5">
-              {topDegreeDays.map((r, i) => (
-                <RankRow
-                  key={r.city.slug}
-                  href={cityHref(r.city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(r.city, lang)}
-                  badge={r.gg}
-                  badgeBg="var(--tertiary-container)"
-                  badgeText="var(--on-tertiary-container)"
-                  sub={ggZone(r.gg)}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <SectionHeader title={t.ggLowTitle} sub={t.ggLowSub} />
-            <div className="space-y-2.5">
-              {lowDegreeDays.map((r, i) => (
-                <RankRow
-                  key={r.city.slug}
-                  href={cityHref(r.city.slug, lang)}
-                  rank={i + 1}
-                  name={cityName(r.city, lang)}
-                  badge={r.gg}
-                  badgeBg="var(--tertiary-container)"
-                  badgeText="var(--on-tertiary-container)"
-                  sub={ggZone(r.gg)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 🥵 L'afa d'estate (solo città principali con percepita) */}
       {feelsCount > 0 && (
         <>
           <section className="mb-12">
@@ -856,8 +872,87 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
         </>
       )}
 
-      {/* 🏆 Gli anni più estremi in assoluto (media nazionale) */}
-      <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang={lang} count={10} />
+      {/* ══════════ FAMIGLIA 4 · Inverno ed escursione ══════════ */}
+      <FamilyHeader id="fam-winter" title={t.famWinter} sub={t.famWinterSub} />
+
+      <section className="mb-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-6 items-start">
+          <div>
+            <SectionHeader title={t.ggTitle} sub={t.ggSub} />
+            <ExpandableList moreLabel={t.showAll(topDegreeDays.length)} lessLabel={t.showLess}>
+              {topDegreeDays.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.gg}
+                  badgeBg="var(--tertiary-container)"
+                  badgeText="var(--on-tertiary-container)"
+                  sub={ggZone(r.gg)}
+                />
+              ))}
+            </ExpandableList>
+          </div>
+          <div>
+            <SectionHeader title={t.ggLowTitle} sub={t.ggLowSub} />
+            <div className="space-y-2.5">
+              {lowDegreeDays.map((r, i) => (
+                <RankRow
+                  key={r.city.slug}
+                  href={cityHref(r.city.slug, lang)}
+                  rank={i + 1}
+                  name={cityName(r.city, lang)}
+                  badge={r.gg}
+                  badgeBg="var(--tertiary-container)"
+                  badgeText="var(--on-tertiary-container)"
+                  sub={ggZone(r.gg)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <SectionHeader title={t.swingTitle} sub={t.swingSub} />
+        <div className="mb-8">
+          <ExpandableList moreLabel={t.showAll(topSwing.length)} lessLabel={t.showLess}>
+            {topSwing.map((r, i) => (
+              <RankRow
+                key={r.city.slug}
+                href={cityHref(r.city.slug, lang)}
+                rank={i + 1}
+                name={cityName(r.city, lang)}
+                badge={<Temp value={r.avg} digits={1} delta showUnit={false} locale={lang} />}
+                badgeBg="var(--secondary-container)"
+                badgeText="var(--on-secondary-container)"
+                sub={<Temp value={r.avg} digits={1} delta locale={lang} />}
+              />
+            ))}
+          </ExpandableList>
+        </div>
+        <SectionHeader title={t.swingLowTitle} sub={t.swingLowSub} />
+        <div className="space-y-2.5">
+          {lowSwing.map((r, i) => (
+            <RankRow
+              key={r.city.slug}
+              href={cityHref(r.city.slug, lang)}
+              rank={i + 1}
+              name={cityName(r.city, lang)}
+              badge={<Temp value={r.avg} digits={1} delta showUnit={false} locale={lang} />}
+              badgeBg="var(--secondary-container)"
+              badgeText="var(--on-secondary-container)"
+              sub={<Temp value={r.avg} digits={1} delta locale={lang} />}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ══════════ FAMIGLIA 5 · Gli anni più estremi ══════════ */}
+      <div id="fam-years" className="scroll-mt-32 border-t border-[var(--outline-variant)] pt-8">
+        <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang={lang} count={10} />
+      </div>
     </div>
   );
 }
