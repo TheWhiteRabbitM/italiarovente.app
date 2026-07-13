@@ -9,6 +9,8 @@ import { gradiGiorno, ggZone } from "@/lib/degreedays";
 import { getSummerFeelsRanking } from "@/lib/summerfeels";
 import { getLifetimeData } from "@/lib/lifetime";
 import { SITE_URL } from "@/lib/site";
+import { faqPageJsonLd, fmtSignedC, type Faq } from "@/lib/faq";
+import { FaqBlock } from "@/components/FaqBlock";
 
 export const metadata = {
   title: "Classifiche · Le città del riscaldamento",
@@ -414,6 +416,55 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
   // --- Anni più estremi in assoluto (media nazionale, riuso getLifetimeData) ---
   const lifetimeData = getLifetimeData();
 
+  // FAQ / AEO: le città che si scaldano di più (top 3), la media nazionale e
+  // il record di caldo tra le monitorate — come FAQPage + sezione visibile.
+  const top3 = topWarming.slice(0, 3);
+  const natAvg = warmingRanking.length
+    ? warmingRanking.reduce((s, r) => s + r.warming, 0) / warmingRanking.length
+    : null;
+  const rec0 = hottestRecords[0];
+  const rankFaq: Faq[] = [];
+  if (top3.length >= 3) {
+    rankFaq.push(
+      lang === "en"
+        ? {
+            q: "Which Italian cities are warming the most?",
+            a: `Leading the ranking: ${cityName(top3[0].city, "en")} (${fmtSignedC(top3[0].warming, "en")}°C), ${cityName(top3[1].city, "en")} (${fmtSignedC(top3[1].warming, "en")}°C) and ${cityName(top3[2].city, "en")} (${fmtSignedC(top3[2].warming, "en")}°C), difference between the 1991–2020 and 1961–1990 climate normals (ERA5/Copernicus).`,
+          }
+        : {
+            q: "Quali città italiane si scaldano di più?",
+            a: `In testa: ${cityName(top3[0].city, "it")} (${fmtSignedC(top3[0].warming, "it")}°C), ${cityName(top3[1].city, "it")} (${fmtSignedC(top3[1].warming, "it")}°C) e ${cityName(top3[2].city, "it")} (${fmtSignedC(top3[2].warming, "it")}°C), differenza tra le normali climatiche 1991–2020 e 1961–1990 (dati ERA5/Copernicus).`,
+          },
+    );
+  }
+  if (natAvg != null) {
+    rankFaq.push(
+      lang === "en"
+        ? {
+            q: "How much has Italy warmed on average since 1940?",
+            a: `Across the ${warmingRanking.length} monitored cities, ${fmtSignedC(natAvg, "en")}°C on average (1991–2020 vs 1961–1990 climate normal).`,
+          }
+        : {
+            q: "Di quanto si è scaldata l'Italia in media dal 1940?",
+            a: `Sulle ${warmingRanking.length} città monitorate, in media ${fmtSignedC(natAvg, "it")}°C (normale climatica 1991–2020 vs 1961–1990).`,
+          },
+    );
+  }
+  if (rec0 && Number.isFinite(rec0.s.records?.hottest?.value)) {
+    const v = rec0.s.records.hottest.value.toFixed(1).replace(".", lang === "it" ? "," : ".");
+    rankFaq.push(
+      lang === "en"
+        ? {
+            q: "What is the highest temperature ever recorded among the monitored cities?",
+            a: `${v}°C in ${cityName(rec0.city, "en")}, on ${fmtDate(rec0.s.records.hottest.date, "en")}.`,
+          }
+        : {
+            q: "Qual è la temperatura più alta mai registrata tra le città monitorate?",
+            a: `${v}°C a ${cityName(rec0.city, "it")}, il ${fmtDate(rec0.s.records.hottest.date, "it")}.`,
+          },
+    );
+  }
+
   // JSON-LD: BreadcrumbList (Home → Classifiche) + ItemList della classifica
   // principale (top 10 riscaldamento) — i motori di ricerca prediligono
   // ItemList per le pagine di graduatorie. Stesso pattern della pagina città.
@@ -455,6 +506,7 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
           url: `${SITE_URL}${cityHref(r.city.slug, lang)}`,
         })),
       },
+      ...(rankFaq.length ? [faqPageJsonLd(rankFaq)] : []),
     ],
   };
 
@@ -953,6 +1005,11 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
       <div id="fam-years" className="scroll-mt-32 border-t border-[var(--outline-variant)] pt-8">
         <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang={lang} count={10} />
       </div>
+
+      <FaqBlock
+        faq={rankFaq}
+        title={lang === "en" ? "Frequently asked about the rankings" : "Domande frequenti sulle classifiche"}
+      />
     </div>
   );
 }
