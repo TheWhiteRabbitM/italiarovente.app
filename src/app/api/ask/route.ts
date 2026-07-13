@@ -8,9 +8,10 @@ export const maxDuration = 30;
 
 // API diretta di Mistral (api.mistral.ai, chiave MISTRAL_API_KEY) — non passa
 // dal Vercel AI Gateway, quindi non richiede la carta di credito su Vercel.
-// Modello "large": segue le istruzioni di ancoraggio ai dati molto meglio del
-// "medium", che tendeva a inventare meteo/record inesistenti.
-const MODEL = mistral("mistral-large-latest");
+// "medium" per contenere i costi: l'ancoraggio ai dati è affidato soprattutto
+// al "contratto di verità" nel system prompt qui sotto (elenco esplicito dei
+// dati che NON esistono nei tool e non vanno mai inventati).
+const MODEL = mistral("mistral-medium-latest");
 const MAX_QUESTION_LEN = 300;
 
 const SYSTEM = `Sei l'assistente di Italia Rovente (italiarovente.app): un sito sul RISCALDAMENTO STORICO
