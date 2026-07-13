@@ -1,0 +1,6 @@
+Italia Rovente — dataset integrity manifest
+dataset_sha256: 988097c96627d12b57e6690db1fe5547c8f56356ee7fbc3eb81b010451cf2f6a
+generated_at: 2026-07-11
+commit: -
+source: Open-Meteo Archive API — ERA5 reanalysis (ECMWF/Copernicus C3S)
+method: two 30-year normals (1961-1990 vs 1991-2020); reproduce from Copernicus, see https://italiarovente.app/dati

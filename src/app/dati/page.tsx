@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CITIES } from "@/lib/cities";
 import { getHistoryMeta } from "@/lib/weather";
 import { SITE_URL } from "@/lib/site";
+import otsStamps from "@/data/ots-stamps.json";
 
 export const metadata = {
   title: "Dati aperti",
@@ -88,6 +89,36 @@ const STR = {
     ),
     provenanceUnavailable:
       "Data di generazione non disponibile per questo ambiente (normale in sviluppo locale).",
+    timestampTitle: "🔗 Marca temporale su Bitcoin (OpenTimestamps)",
+    timestampBody: (
+      <>
+        Il fingerprint qui sopra è <strong>ancorato alla blockchain di Bitcoin</strong> tramite{" "}
+        <a
+          href="https://opentimestamps.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-secondary font-semibold hover:underline"
+        >
+          OpenTimestamps
+        </a>
+        : una prova, verificabile da chiunque senza fidarsi di noi, che quell&apos;esatto dataset
+        esisteva a una certa data e non è più stato cambiato. Non mettiamo i dati sulla blockchain,
+        solo il loro hash. Gratis, senza monete.
+      </>
+    ),
+    timestampLatest: "Ultima marca ancorata",
+    timestampProofLabel: "prova .ots",
+    timestampManifestLabel: "manifesto",
+    timestampVerifyIntro: "Verificala da solo — scarica prova e manifesto, poi:",
+    timestampNote: (
+      <>
+        Il manifesto contiene lo stesso SHA-256, quindi verificarlo prova che <em>tutti</em> i numeri
+        esistevano già a quella data. La prova nasce attestata dai calendar server ed entra in un
+        blocco Bitcoin entro qualche ora. Ancora lo <em>snapshot committato nel repository</em>
+        {" "}(riproducibile da git a quel commit); i dati live si aggiornano di continuo, quindi il
+        fingerprint corrente qui sopra può differire da uno già ancorato.
+      </>
+    ),
     otherTitle: "Altri modi di consultare i dati",
     otherLinks: [
       { href: "/dati/api", label: "API pubblica — endpoint JSON/CSV, senza chiave, con specifica OpenAPI" },
@@ -162,6 +193,36 @@ const STR = {
       </>
     ),
     provenanceUnavailable: "Generation date not available in this environment (normal in local dev).",
+    timestampTitle: "🔗 Timestamped on Bitcoin (OpenTimestamps)",
+    timestampBody: (
+      <>
+        The fingerprint above is <strong>anchored to the Bitcoin blockchain</strong> via{" "}
+        <a
+          href="https://opentimestamps.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-secondary font-semibold hover:underline"
+        >
+          OpenTimestamps
+        </a>
+        : a proof — verifiable by anyone, without trusting us — that this exact dataset existed at a
+        given date and hasn&apos;t changed since. We don&apos;t put the data on-chain, only its hash.
+        Free, no coins.
+      </>
+    ),
+    timestampLatest: "Latest anchored stamp",
+    timestampProofLabel: ".ots proof",
+    timestampManifestLabel: "manifest",
+    timestampVerifyIntro: "Verify it yourself — download the proof and manifest, then:",
+    timestampNote: (
+      <>
+        The manifest contains the same SHA-256, so verifying it proves that <em>all</em> the numbers
+        already existed at that date. The proof starts calendar-attested and enters a Bitcoin block
+        within hours. It anchors the <em>snapshot committed to the repository</em> (reproducible from
+        git at that commit); the live data refreshes continuously, so the current fingerprint above
+        may differ from an already-anchored one.
+      </>
+    ),
     otherTitle: "Other ways to consult the data",
     otherLinks: [
       { href: "/en/dati/api", label: "Public API — JSON/CSV endpoints, no key, with an OpenAPI spec" },
@@ -286,6 +347,33 @@ export function DatiPageContent({ lang = "it" as Lang }: { lang?: Lang }) {
               : t.provenanceUnavailable}
           </p>
         </Card>
+
+        {otsStamps.length > 0 && (
+          <Card title={t.timestampTitle}>
+            <p>{t.timestampBody}</p>
+            <p className="mt-3">
+              <strong>{t.timestampLatest}:</strong> {otsStamps[0].date} ·{" "}
+              <code className="text-xs bg-surface-container-high px-1.5 py-0.5 rounded break-all">
+                {otsStamps[0].sha256.slice(0, 16)}…
+              </code>{" "}
+              <a href={otsStamps[0].ots} download className="text-secondary font-semibold hover:underline">
+                {t.timestampProofLabel}
+              </a>
+              {" · "}
+              <a href={otsStamps[0].manifest} download className="text-secondary font-semibold hover:underline">
+                {t.timestampManifestLabel}
+              </a>
+            </p>
+            <p className="mt-3">{t.timestampVerifyIntro}</p>
+            <pre className="mt-1 text-xs bg-surface-container-high rounded-lg p-3 overflow-x-auto">
+              <code>
+                pip install opentimestamps-client{"\n"}
+                ots verify -f {otsStamps[0].manifest.split("/").pop()} {otsStamps[0].ots.split("/").pop()}
+              </code>
+            </pre>
+            <p className="mt-3 text-sm text-on-surface-variant">{t.timestampNote}</p>
+          </Card>
+        )}
 
         <Card title={t.licenseTitle}>
           <p>{t.licenseBody}</p>
