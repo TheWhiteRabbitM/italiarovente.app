@@ -13,6 +13,8 @@
 // i due trentenni). Il widget lo dice, invece di gonfiare il numero.
 
 import type { SummerApparentPoint } from "./weather";
+import { CITIES, cityName } from "./cities";
+import { getArchiveStats } from "./weather";
 
 const BASE_FROM = 1961;
 const BASE_TO = 1990;
@@ -73,4 +75,37 @@ export function getSummerFeels(
     gapDelta: r2(gapRecent - gapBaseline),
     years: summerApparent.map((p) => ({ year: p.year, feels: p.feels })),
   };
+}
+
+export type SummerFeelsRow = {
+  slug: string;
+  name: string;
+  feelsRecent: number; // percepita estiva media 1991-2020
+  dryRecent: number; // secca estiva media 1991-2020
+  gapRecent: number; // afa-extra: quanto l'umidità aggiunge oggi
+  feelsDelta: number; // crescita della percepita fra i due trentenni
+};
+
+// Righe per le classifiche dell'afa. Solo le città con temperatura percepita
+// (le principali): l'elenco cresce build dopo build finché non sono tutte
+// coperte. Il chiamante dichiara sempre su quante città poggia.
+let rankingCache: SummerFeelsRow[] | undefined;
+export function getSummerFeelsRanking(): SummerFeelsRow[] {
+  if (rankingCache) return rankingCache;
+  const rows: SummerFeelsRow[] = [];
+  for (const c of CITIES) {
+    const snap = getArchiveStats(c);
+    const sf = getSummerFeels(snap?.summerApparent);
+    if (!sf) continue;
+    rows.push({
+      slug: c.slug,
+      name: cityName(c, "it"),
+      feelsRecent: sf.feelsRecent,
+      dryRecent: sf.dryRecent,
+      gapRecent: sf.gapRecent,
+      feelsDelta: sf.feelsDelta,
+    });
+  }
+  rankingCache = rows;
+  return rows;
 }

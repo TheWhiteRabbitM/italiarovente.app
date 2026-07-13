@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { CITIES, cityName, type City } from "@/lib/cities";
+import { CITIES, cityName, cityDisplayName, type City } from "@/lib/cities";
 import { getArchiveStats } from "@/lib/weather";
 import { anomalyColor, readableTextOn, tempColor, fmtDate } from "@/lib/format";
 import { Temp } from "@/components/Temp";
 import { YearExtremes } from "@/components/YearExtremes";
 import { gradiGiorno, ggZone } from "@/lib/degreedays";
+import { getSummerFeelsRanking } from "@/lib/summerfeels";
 import { getLifetimeData } from "@/lib/lifetime";
 import { SITE_URL } from "@/lib/site";
 
@@ -88,6 +89,14 @@ const STR = {
       "Gradi giorno (DPR 412/93, stima dalla climatologia mensile): più alto è il numero, più fabbisogno di riscaldamento ha un edificio in quella città. Tra parentesi la zona climatica (A–F).",
     ggLowTitle: "☀️ Dove si riscalda di meno in inverno",
     ggLowSub: "Le città con il fabbisogno di riscaldamento stimato più basso.",
+    feelsTitle: "🥵 L'estate più opprimente",
+    feelsSub: (n: number) =>
+      `Temperatura percepita media (giugno–agosto, normale 1991–2020) — quanto si sente davvero il caldo, con umidità e vento. Solo le ${n} città principali con la percepita disponibile; la percepita è una stima modellistica, meno solida della temperatura misurata.`,
+    gapTitle: "💧 Dove l'umidità pesa di più",
+    gapSub:
+      "Quanto l'afa (umidità e assenza di vento) aggiunge oggi in media alla temperatura reale d'estate. Le coste tendono a stare sopra l'entroterra.",
+    feelsDeltaTitle: "📈 Dove l'afa estiva è cresciuta di più",
+    feelsDeltaSub: "Aumento della percepita estiva media tra le normali 1961–1990 e 1991–2020.",
   },
   en: {
     backLink: "← All cities",
@@ -143,6 +152,14 @@ const STR = {
       "Heating degree days (DPR 412/93, estimated from monthly climatology): the higher the number, the more heating a building needs in that city. Climate zone (A–F) in parentheses.",
     ggLowTitle: "☀️ Where winter heating demand is lowest",
     ggLowSub: "The cities with the lowest estimated heating demand.",
+    feelsTitle: "🥵 The most oppressive summer",
+    feelsSub: (n: number) =>
+      `Mean apparent temperature (June–August, 1991–2020 normal) — how hot it really feels, with humidity and wind. Only the ${n} main cities with apparent temperature available; it's a model estimate, less solid than the measured temperature.`,
+    gapTitle: "💧 Where humidity weighs most",
+    gapSub:
+      "How much mugginess (humidity and lack of wind) adds on average to the actual summer temperature today. Coasts tend to sit above the inland cities.",
+    feelsDeltaTitle: "📈 Where summer mugginess grew most",
+    feelsDeltaSub: "Rise in the mean summer apparent temperature between the 1961–1990 and 1991–2020 normals.",
   },
 } as const;
 
@@ -319,6 +336,13 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
     .sort((a, b) => b.gg - a.gg);
   const topDegreeDays = degreeDaysRanking.slice(0, 10);
   const lowDegreeDays = degreeDaysRanking.slice(-5).reverse();
+
+  // --- Afa d'estate (solo città principali con temperatura percepita) ---
+  const feelsRows = getSummerFeelsRanking();
+  const feelsCount = feelsRows.length;
+  const feelsTop = [...feelsRows].sort((a, b) => b.feelsRecent - a.feelsRecent).slice(0, 10);
+  const gapTop = [...feelsRows].sort((a, b) => b.gapRecent - a.gapRecent).slice(0, 10);
+  const feelsDeltaTop = [...feelsRows].sort((a, b) => b.feelsDelta - a.feelsDelta).slice(0, 10);
 
   // --- Anni più estremi in assoluto (media nazionale, riuso getLifetimeData) ---
   const lifetimeData = getLifetimeData();
@@ -751,6 +775,86 @@ export function ClassifichePageContent({ lang = "it" }: { lang?: "it" | "en" }) 
           </div>
         </div>
       </section>
+
+      {/* 🥵 L'afa d'estate (solo città principali con percepita) */}
+      {feelsCount > 0 && (
+        <>
+          <section className="mb-12">
+            <SectionHeader title={t.feelsTitle} sub={t.feelsSub(feelsCount)} />
+            <div className="space-y-2.5">
+              {feelsTop.map((r, i) => {
+                const bg = tempColor(r.feelsRecent);
+                return (
+                  <RankRow
+                    key={r.slug}
+                    href={cityHref(r.slug, lang)}
+                    rank={i + 1}
+                    name={cityDisplayName(r.slug, r.name, lang)}
+                    badge={<Temp value={r.feelsRecent} digits={0} locale={lang} />}
+                    badgeBg={bg}
+                    badgeText={readableTextOn(bg)}
+                    sub={
+                      <>
+                        {lang === "en" ? "actual" : "reale"} <Temp value={r.dryRecent} digits={1} locale={lang} /> ·{" "}
+                        {lang === "en" ? "mugginess" : "afa"} <Temp value={r.gapRecent} digits={1} delta locale={lang} />
+                      </>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mb-12">
+            <SectionHeader title={t.gapTitle} sub={t.gapSub} />
+            <div className="space-y-2.5">
+              {gapTop.map((r, i) => (
+                <RankRow
+                  key={r.slug}
+                  href={cityHref(r.slug, lang)}
+                  rank={i + 1}
+                  name={cityDisplayName(r.slug, r.name, lang)}
+                  badge={<Temp value={r.gapRecent} digits={1} delta showUnit={false} locale={lang} />}
+                  badgeBg="#0891b2"
+                  badgeText={readableTextOn("#0891b2")}
+                  sub={
+                    <>
+                      {lang === "en" ? "felt" : "percepita"} <Temp value={r.feelsRecent} digits={1} locale={lang} /> ·{" "}
+                      {lang === "en" ? "actual" : "reale"} <Temp value={r.dryRecent} digits={1} locale={lang} />
+                    </>
+                  }
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="mb-12">
+            <SectionHeader title={t.feelsDeltaTitle} sub={t.feelsDeltaSub} />
+            <div className="space-y-2.5">
+              {feelsDeltaTop.map((r, i) => {
+                const bg = anomalyColor(r.feelsDelta, 2);
+                return (
+                  <RankRow
+                    key={r.slug}
+                    href={cityHref(r.slug, lang)}
+                    rank={i + 1}
+                    name={cityDisplayName(r.slug, r.name, lang)}
+                    badge={<Temp value={r.feelsDelta} digits={1} delta showUnit={false} locale={lang} />}
+                    badgeBg={bg}
+                    badgeText={readableTextOn(bg)}
+                    sub={
+                      <>
+                        {lang === "en" ? "summer felt temp today" : "percepita estiva oggi"}{" "}
+                        <Temp value={r.feelsRecent} digits={1} locale={lang} />
+                      </>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* 🏆 Gli anni più estremi in assoluto (media nazionale) */}
       <YearExtremes years={lifetimeData.cities[0].years} baseline={lifetimeData.cities[0].baseline} lang={lang} count={10} />
