@@ -58,5 +58,31 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/icon-192.png", sizes: "192x192" }],
       },
     ],
+    // Anteprime per la finestra d'installazione "ricca" di Chrome e per la
+    // scheda del Play Store (via TWA/PWABuilder). form_factor "narrow" = telefono.
+    // Generate da scripts/gen-screenshots.mjs con i dati reali del sito.
+    screenshots: [
+      {
+        src: "/screenshots/screenshot-1-hero.png",
+        sizes: "1080x1920",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "Quanto si è scaldata l'Italia dal 1940, con le warming stripes",
+      },
+      {
+        src: "/screenshots/screenshot-2-classifiche.png",
+        sizes: "1080x1920",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "Le città italiane che si scaldano di più",
+      },
+      {
+        src: "/screenshots/screenshot-3-citta.png",
+        sizes: "1080x1920",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "La scheda di una città: anomalia, ritmo e strisce del riscaldamento",
+      },
+    ],
   };
 }

@@ -8,6 +8,7 @@
     "fetch-sea": "node scripts/fetch-sea.mjs",
     "gen-icons": "node scripts/gen-icons.mjs",
     "gen-splash": "node scripts/gen-splash.mjs",
+    "gen-screenshots": "node scripts/gen-screenshots.mjs",
     "fetch-cds": "node scripts/fetch-cds.mjs",
     "generate-captions": "node scripts/generate-captions.mjs",
     "build": "node scripts/fetch-history.mjs && next build",
