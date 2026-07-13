@@ -21,6 +21,8 @@ import { getSeaTemps } from "@/lib/sea";
 import { AskClimate } from "@/components/AskClimate";
 import { DroughtBoard, type DroughtItem } from "@/components/DroughtBoard";
 import { Temp } from "@/components/Temp";
+import { nationalFaq, faqPageJsonLd } from "@/lib/faq";
+import { FaqBlock } from "@/components/FaqBlock";
 
 // Renderizzata a runtime (i dati sono in cache): il build non dipende dall'API.
 export const dynamic = "force-dynamic";
@@ -84,6 +86,26 @@ export default async function Home() {
   // (deterministico — niente selezione casuale a ogni caricamento).
   const hero = buildHeroFacts(lifetimeData);
 
+  // FAQ / AEO nazionale: riscaldamento medio (due trentenni) e città che si
+  // scalda più in fretta, come FAQPage JSON-LD + sezione visibile in fondo.
+  const italia =
+    lifetimeData.cities.find((c) => c.slug === "italia") ?? lifetimeData.cities[0];
+  const nationalWarming = italia ? italia.recentNormal - italia.baseline : null;
+  const fastestCity = CITIES.flatMap((c) => {
+    const s = getArchiveStats(c);
+    return s ? [{ name: c.name, warming: s.trend.recentNormal - s.trend.baselineMean }] : [];
+  }).sort((a, b) => b.warming - a.warming)[0];
+  const homeFaq =
+    nationalWarming != null && italia
+      ? nationalFaq("it", {
+          warming: nationalWarming,
+          startYear: italia.years[0]?.y ?? 1940,
+          citiesCount: CITIES.length,
+          fastestName: fastestCity?.name,
+          fastestWarming: fastestCity?.warming,
+        })
+      : [];
+
   // Sezione "in diretta": oggi vs norma del mese + classifica per temperatura attuale
   const todayStr = new Date().toISOString().slice(0, 10);
   const month = Number(todayStr.slice(5, 7));
@@ -122,6 +144,14 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {homeFaq.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [faqPageJsonLd(homeFaq)] }),
+          }}
+        />
+      )}
       {/* HERO */}
       <section className="rise text-center mb-12">
         <div className="m3-chip bg-tertiary-container text-on-tertiary-container mx-auto mb-5">
@@ -170,7 +200,7 @@ export default async function Home() {
             href="/clima"
             className="m3-chip bg-primary text-on-primary text-base px-6 py-3 hover:scale-105 transition-transform inline-flex"
           >
-            🔎 Guarda l'analisi completa →
+            🔎 Guarda l&apos;analisi completa →
           </Link>
           <VisitCounter />
         </div>
@@ -319,6 +349,8 @@ export default async function Home() {
       <section className="mt-12">
         <ZoneStats />
       </section>
+
+      <FaqBlock faq={homeFaq} title="Domande frequenti sul clima italiano" />
     </div>
   );
 }

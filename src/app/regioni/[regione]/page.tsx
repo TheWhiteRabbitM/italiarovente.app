@@ -5,6 +5,8 @@ import { getArchiveStats } from "@/lib/weather";
 import { anomalyColor, readableTextOn, fmtAnomaly } from "@/lib/format";
 import { Temp } from "@/components/Temp";
 import { SITE_URL } from "@/lib/site";
+import { regionFaq, faqPageJsonLd } from "@/lib/faq";
+import { FaqBlock } from "@/components/FaqBlock";
 import type { Metadata } from "next";
 
 const STR = {
@@ -121,25 +123,46 @@ export async function RegionePageContent({
     })
     .sort((a, b) => (b.warming ?? -99) - (a.warming ?? -99));
 
-  // BreadcrumbList (Home → Regioni → {Regione}), stesso pattern della pagina città.
+  // FAQ / AEO: riscaldamento medio della regione e città che si scalda di più.
+  const regWarmings = items.map((c) => c.warming).filter((w): w is number => w != null);
+  const regionAvg = regWarmings.length
+    ? regWarmings.reduce((s, w) => s + w, 0) / regWarmings.length
+    : null;
+  const fastestInRegion = items.find((c) => c.warming != null);
+  const faq =
+    regionAvg != null
+      ? regionFaq(lang, {
+          region: data.region,
+          warming: regionAvg,
+          fastestName: fastestInRegion?.name,
+          fastestWarming: fastestInRegion?.warming ?? undefined,
+        })
+      : [];
+
+  // BreadcrumbList (Home → Regioni → {Regione}) + FAQPage, in un unico @graph.
   const base = lang === "en" ? "/en" : "";
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: base ? `${SITE_URL}${base}` : SITE_URL },
+    "@graph": [
       {
-        "@type": "ListItem",
-        position: 2,
-        name: lang === "en" ? "Regions" : "Regioni",
-        item: `${SITE_URL}${base}/regioni`,
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: base ? `${SITE_URL}${base}` : SITE_URL },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: lang === "en" ? "Regions" : "Regioni",
+            item: `${SITE_URL}${base}/regioni`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: data.region,
+            item: `${SITE_URL}${base}/regioni/${regione}`,
+          },
+        ],
       },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: data.region,
-        item: `${SITE_URL}${base}/regioni/${regione}`,
-      },
+      ...(faq.length ? [faqPageJsonLd(faq)] : []),
     ],
   };
 
@@ -201,6 +224,11 @@ export async function RegionePageContent({
           );
         })}
       </div>
+
+      <FaqBlock
+        faq={faq}
+        title={lang === "en" ? `Frequently asked about ${data.region}` : `Domande frequenti su ${data.region}`}
+      />
     </div>
   );
 }

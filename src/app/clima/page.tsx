@@ -6,6 +6,8 @@ import { Verdict } from "@/components/Verdict";
 import { Methodology } from "@/components/Methodology";
 import type { AnomalyPoint, DecadePoint, YearlyPoint } from "@/lib/weather";
 import { SITE_URL } from "@/lib/site";
+import { nationalFaq, faqPageJsonLd } from "@/lib/faq";
+import { FaqBlock } from "@/components/FaqBlock";
 
 const STR = {
   it: {
@@ -189,22 +191,22 @@ export default async function ClimaPage({
 
   const base = lang === "en" ? "/en" : "";
   const pageUrl = `${SITE_URL}${base}/clima`;
+  const climaFaq = nationalFaq(lang, {
+    warming: normalsDelta,
+    startYear: firstYear,
+    citiesCount: CITIES.length,
+  });
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
+    "@graph": [
       {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: base ? `${SITE_URL}${base}` : SITE_URL,
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: base ? `${SITE_URL}${base}` : SITE_URL },
+          { "@type": "ListItem", position: 2, name: lang === "en" ? "Climate" : "Clima", item: pageUrl },
+        ],
       },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: lang === "en" ? "Climate" : "Clima",
-        item: pageUrl,
-      },
+      ...(climaFaq.length ? [faqPageJsonLd(climaFaq)] : []),
     ],
   };
 
@@ -274,6 +276,11 @@ export default async function ClimaPage({
       </section>
 
       <Methodology lang={lang} />
+
+      <FaqBlock
+        faq={climaFaq}
+        title={lang === "en" ? "Frequently asked about Italy's climate" : "Domande frequenti sul clima italiano"}
+      />
     </div>
   );
 }
