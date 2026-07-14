@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { setInstallOpen } from "@/lib/popups";
+import { PLAY_URL, PLAY_AVAILABLE } from "@/lib/site";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -37,7 +38,9 @@ const STR = {
     title: "Installa Italia Rovente",
     iosHint: "Tocca Condividi ⬆️ e poi «Aggiungi a Home»",
     androidHint: "Aprila al volo, anche offline — come un'app",
+    playHint: "Scaricala gratis dal Play Store",
     install: "Installa",
+    playCta: "Google Play",
     close: "Chiudi",
   },
   en: {
@@ -45,7 +48,9 @@ const STR = {
     title: "Install Italia Rovente",
     iosHint: "Tap Share ⬆️ then “Add to Home Screen”",
     androidHint: "Open it instantly, even offline — like an app",
+    playHint: "Get it free on Google Play",
     install: "Install",
+    playCta: "Google Play",
     close: "Close",
   },
 } as const;
@@ -59,20 +64,27 @@ export function InstallPrompt() {
   const lang = pathname.startsWith("/en") ? "en" : "it";
   const t = STR[lang];
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
-  const [ios, setIos] = useState(false);
+  const [ios] = useState(() => typeof navigator !== "undefined" && isIOS());
+  // Android con app pubblica sul Play: proponiamo il Play Store invece della
+  // PWA (non serve attendere beforeinstallprompt). Init lazy, SSR-safe.
+  const [androidPlay] = useState(
+    () =>
+      PLAY_AVAILABLE &&
+      typeof navigator !== "undefined" &&
+      !isIOS() &&
+      /Android/i.test(navigator.userAgent),
+  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (isStandalone() || !isMobile() || recentlyDismissed()) return;
 
-    const onIos = isIOS();
-    setIos(onIos);
     let captured: BIPEvent | null = null;
     let elapsed = false;
 
     const maybeOpen = () => {
-      if (elapsed && (captured || onIos) && !recentlyDismissed()) setOpen(true);
+      if (elapsed && (captured || ios || androidPlay) && !recentlyDismissed()) setOpen(true);
     };
     const onBIP = (e: Event) => {
       e.preventDefault();
@@ -94,7 +106,7 @@ export function InstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBIP);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, []);
+  }, [ios, androidPlay]);
 
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
@@ -127,17 +139,27 @@ export function InstallPrompt() {
         <div className="flex-1 min-w-0">
           <div className="font-extrabold leading-tight">{t.title}</div>
           <div className="text-xs text-on-surface-variant leading-snug">
-            {ios ? t.iosHint : t.androidHint}
+            {ios ? t.iosHint : androidPlay ? t.playHint : t.androidHint}
           </div>
         </div>
-        {!ios && (
+        {androidPlay ? (
+          <a
+            href={PLAY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={dismiss}
+            className="m3-chip bg-primary text-on-primary px-4 py-2.5 shrink-0 active:scale-95 transition-transform"
+          >
+            {t.playCta}
+          </a>
+        ) : !ios ? (
           <button
             onClick={install}
             className="m3-chip bg-primary text-on-primary px-4 py-2.5 shrink-0 active:scale-95 transition-transform"
           >
             {t.install}
           </button>
-        )}
+        ) : null}
         <button
           onClick={dismiss}
           aria-label={t.close}
