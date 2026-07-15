@@ -78,7 +78,10 @@ self.addEventListener("fetch", (e) => {
   );
 });
 
-// Notifiche push (es. record di caldo battuto oggi).
+// Notifiche push (record battuti, ondate di calore, recap mensile).
+// `tag` fa collassare gli aggiornamenti dello stesso evento in un'unica
+// notifica invece di accumularli; `cta` è l'etichetta del pulsante d'azione
+// (dove il sistema li supporta, es. Android).
 self.addEventListener("push", (e) => {
   let data = { title: "Italia Rovente", body: "" };
   try {
@@ -86,17 +89,19 @@ self.addEventListener("push", (e) => {
   } catch {
     /* payload non JSON: usa i default */
   }
-  e.waitUntil(
-    self.registration.showNotification(data.title || "Italia Rovente", {
-      body: data.body || "",
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
-      data: { url: data.url || "/" },
-    }),
-  );
+  const options = {
+    body: data.body || "",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    data: { url: data.url || "/" },
+  };
+  if (data.tag) options.tag = data.tag;
+  if (data.cta) options.actions = [{ action: "open", title: data.cta }];
+  e.waitUntil(self.registration.showNotification(data.title || "Italia Rovente", options));
 });
 
 self.addEventListener("notificationclick", (e) => {
+  // Sia il tocco sulla notifica sia il pulsante d'azione aprono l'URL.
   e.notification.close();
   const url = e.notification.data?.url || "/";
   e.waitUntil(

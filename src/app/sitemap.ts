@@ -55,6 +55,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Privacy policy (statica; richiesta anche dal Play Store)
   const privacy = pair("/privacy", "/en/privacy", now, "yearly", 0.3);
 
+  // Avvisi: registro pubblico degli eventi notificati (record, ondate, recap)
+  const avvisi = pair("/avvisi", "/en/avvisi", now, "daily", 0.5);
+
   // Dati aperti / CSV scaricabile (aggiornato quando i dati storici si aggiornano)
   const dati = pair("/dati", "/en/dati", now, "weekly", 0.5);
 
@@ -78,5 +81,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     pair(`/condividi/${c.slug}`, `/en/condividi/${c.slug}`, now, "weekly", 0.5),
   );
 
-  return [...home, ...hubs, ...quiz, ...europa, ...disclaimer, ...privacy, ...dati, ...api, ...cities, ...regions, ...share];
+  return [...home, ...hubs, ...quiz, ...europa, ...disclaimer, ...privacy, ...avvisi, ...dati, ...api, ...cities, ...regions, ...share];
 }

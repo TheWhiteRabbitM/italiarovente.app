@@ -120,6 +120,7 @@ const ITEMS: Item[] = [
   { key: "mese", href: "/mese", it: "Il mese", en: "The month" },
   { key: "europa", href: "/europa", it: "Italia vs Europa", en: "Italy vs Europe" },
   { key: "quiz", href: "/quiz", it: "Quiz", en: "Quiz" },
+  { key: "avvisi", href: "/avvisi", it: "Avvisi", en: "Alerts" },
   { key: "dati", href: "/dati", it: "Dati aperti", en: "Open data" },
   { key: "api", href: "/dati/api", it: "API pubblica", en: "Public API" },
   { key: "disclaimer", href: "/disclaimer", it: "Disclaimer", en: "Disclaimer" },

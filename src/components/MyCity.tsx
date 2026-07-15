@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CITIES } from "@/lib/cities";
 import { getMyCity, setMyCity, clearMyCity } from "@/lib/mycity";
+import { syncPushCity } from "@/lib/pushsync";
 import { Temp } from "./Temp";
 
 const STR = {
@@ -68,6 +69,9 @@ export function MyCity({ lang = "it" as "it" | "en" }: { lang?: "it" | "en" }) {
     setMyCity(citySlug);
     setSlug(citySlug);
     setQ("");
+    // Se l'utente è iscritto alle notifiche, d'ora in poi riceverà anche gli
+    // avvisi mirati su questa città (aggiornamento silenzioso, best effort).
+    void syncPushCity(lang);
   }
 
   function reset() {
@@ -75,6 +79,7 @@ export function MyCity({ lang = "it" as "it" | "en" }: { lang?: "it" | "en" }) {
     setSlug(null);
     setSnapshot(null);
     setStatus("idle");
+    void syncPushCity(lang);
   }
 
   const cityHref = slug ? `${lang === "en" ? "/en" : ""}/citta/${slug}` : "";

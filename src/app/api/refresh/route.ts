@@ -1,12 +1,18 @@
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { MAIN_CITIES, cityName } from "@/lib/cities";
+import { CITIES, MAIN_CITIES, cityName } from "@/lib/cities";
 import { getForecast, getArchive, getArchiveStats, type CityForecast } from "@/lib/weather";
-import { notifyAll, pushConfigured } from "@/lib/push";
+import { notifyGrouped, pushConfigured, type LocalizedPayloads } from "@/lib/push";
 import { redis } from "@/lib/redis";
 import { logEvent } from "@/lib/eventlog";
 import { logDailyStatsSnapshot } from "@/lib/statshistory";
-import { nationalMonthlyHighlight, monthNormal, ordinalIt, ordinalEn } from "@/lib/monthlyCompare";
+import {
+  nationalMonthlyHighlight,
+  cityMonthlyHighlight,
+  monthNormal,
+  ordinalIt,
+  ordinalEn,
+} from "@/lib/monthlyCompare";
 
 // Endpoint di revalidazione invocato dal Cron Vercel ogni giorno.
 // Rinfresca il meteo ATTUALE (tag "forecast", leggero). Lo storico aggregato
@@ -37,8 +43,21 @@ async function fetchForecasts(): Promise<Map<string, CityForecast>> {
   return forecasts;
 }
 
-type BrokenRecord = { city: string; cityEn: string; slug: string; value: number };
+// Da payload push (url facoltativa) a voce del registro eventi (url richiesta).
+function asEvent(p: { title: string; body: string; url?: string }) {
+  return { title: p.title, body: p.body, url: p.url ?? "/" };
+}
 
+type BrokenRecord = {
+  city: string;
+  cityEn: string;
+  slug: string;
+  value: number;
+  direction: "hot" | "cold";
+};
+
+// Record assoluti battuti oggi, di caldo E di freddo: il sito mostra entrambi
+// con lo stesso rispetto ("i dati, non le opinioni") e il push fa altrettanto.
 function checkRecords(forecasts: Map<string, CityForecast>, todayStr: string): BrokenRecord[] {
   const broken: BrokenRecord[] = [];
   for (const city of MAIN_CITIES) {
@@ -47,16 +66,50 @@ function checkRecords(forecasts: Map<string, CityForecast>, todayStr: string): B
     const forecast = forecasts.get(city.slug);
     if (!forecast) continue; // città non raggiungibile oggi: ignora
     const today = forecast.days.find((d) => d.date === todayStr);
+    const base = { city: city.name, cityEn: cityName(city, "en"), slug: city.slug };
     if (today?.max != null && today.max > archive.records.hottest.value) {
-      broken.push({
-        city: city.name,
-        cityEn: cityName(city, "en"),
-        slug: city.slug,
-        value: today.max,
-      });
+      broken.push({ ...base, value: today.max, direction: "hot" });
+    }
+    if (today?.min != null && today.min < archive.records.coldest.value) {
+      broken.push({ ...base, value: today.min, direction: "cold" });
     }
   }
   return broken;
+}
+
+// Payload localizzati per uno o più record battuti. `yours` marca la variante
+// mirata a chi segue proprio quella città.
+function recordPayloads(broken: BrokenRecord[], yours = false): LocalizedPayloads {
+  const first = broken[0];
+  const hot = first.direction === "hot";
+  const emoji = hot ? "🔥" : "🥶";
+  const kindIt = hot ? "caldo" : "freddo";
+  const kindEn = hot ? "heat" : "cold";
+  const single = broken.length === 1;
+  const mixed = broken.some((b) => b.direction !== first.direction);
+  const fmt = (v: number) => v.toFixed(1);
+
+  const title = single
+    ? `${emoji} Record di ${kindIt} a ${first.city}${yours ? " — la tua città" : "!"}`
+    : mixed
+      ? "🌡️ Record di temperatura in Italia!"
+      : `${emoji} Record di ${kindIt} in Italia!`;
+  const body = single
+    ? `${first.city} ha toccato ${fmt(first.value)}°, il valore più ${hot ? "alto" : "basso"} mai registrato dal 1940.`
+    : broken.map((b) => `${b.city} ${fmt(b.value)}°`).join(" · ") + " — nuovi record assoluti.";
+  const titleEn = single
+    ? `${emoji} New ${kindEn} record in ${first.cityEn}${yours ? " — your city" : "!"}`
+    : mixed
+      ? "🌡️ New temperature records in Italy!"
+      : `${emoji} New ${kindEn} records in Italy!`;
+  const bodyEn = single
+    ? `${first.cityEn} hit ${fmt(first.value)}°, the ${hot ? "highest" : "lowest"} value ever recorded since 1940.`
+    : broken.map((b) => `${b.cityEn} ${fmt(b.value)}°`).join(" · ") + " — new all-time records.";
+
+  return {
+    it: { title, body, url: `/citta/${first.slug}`, tag: "records", cta: "Vedi i dati" },
+    en: { title: titleEn, body: bodyEn, url: `/en/citta/${first.slug}`, tag: "records", cta: "See the data" },
+  };
 }
 
 // --- Ondate di calore ------------------------------------------------------
@@ -104,20 +157,54 @@ function findHeatwave(
 }
 
 type HeatwaveOutcome =
-  | { city: string; slug: string; days: number; peak: number; start: string; others: number; sent: number }
+  | { city: string; slug: string; days: number; peak: number; start: string; others: number; sent: number; groups: number }
   | { error: string }
   | null;
 
-// Al massimo UNA notifica di ondata di calore per esecuzione del cron: fra le
-// città candidate (non già notificate di recente, chiave Redis
-// "heatwave:<slug>" con TTL 5 giorni) vince quella con la sequenza più
-// lunga/calda; le altre vengono citate nel corpo ("e altre N città").
+type HeatwaveCandidate = { city: string; cityEn: string; slug: string } & HeatwaveRun;
+
+// Payload localizzati per un'ondata: la variante nazionale cita le altre città
+// coinvolte, quella mirata parla solo della città seguita.
+function heatwavePayloads(c: HeatwaveCandidate, others = 0): LocalizedPayloads {
+  const startDate = new Date(`${c.start}T12:00:00`);
+  const giorno = startDate.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
+  const dayEn = startDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
+  const body =
+    `${c.days} giorni consecutivi sopra i 35° previsti da ${giorno}. Picco: ${c.peak.toFixed(1)}°.` +
+    (others > 0 ? ` Coinvolte anche altre ${others} città.` : "");
+  const bodyEn =
+    `${c.days} consecutive days above 35° forecast from ${dayEn}. Peak: ${c.peak.toFixed(1)}°.` +
+    (others > 0 ? ` ${others} other cities affected too.` : "");
+  return {
+    it: {
+      title: `🌡️ Ondata di calore in arrivo a ${c.city}`,
+      body,
+      url: `/citta/${c.slug}`,
+      tag: `heatwave-${c.slug}`,
+      cta: "Vedi i dati",
+    },
+    en: {
+      title: `🌡️ Heatwave coming to ${c.cityEn}`,
+      body: bodyEn,
+      url: `/en/citta/${c.slug}`,
+      tag: `heatwave-${c.slug}`,
+      cta: "See the data",
+    },
+  };
+}
+
+// Ondate di calore, su due binari:
+// - MIRATO: chi segue una città riceve l'avviso della SUA città quando ha
+//   un'ondata in arrivo (dedup "heatwave:sub:<slug>", TTL 5 giorni) — prima
+//   veniva taciuta se un'altra città aveva la sequenza più lunga.
+// - NAZIONALE: chi non segue una città (e chi la segue ma la sua è tranquilla)
+//   riceve come oggi il top-pick fra le candidate (dedup "heatwave:<slug>").
 async function checkHeatwaves(forecasts: Map<string, CityForecast>, todayStr: string): Promise<HeatwaveOutcome> {
   const limit = new Date();
   limit.setUTCDate(limit.getUTCDate() + HEAT_START_WITHIN_DAYS);
   const limitStr = limit.toISOString().slice(0, 10);
 
-  const candidates: ({ city: string; cityEn: string; slug: string } & HeatwaveRun)[] = [];
+  const candidates: HeatwaveCandidate[] = [];
   for (const city of MAIN_CITIES) {
     const forecast = forecasts.get(city.slug);
     if (!forecast) continue;
@@ -126,49 +213,61 @@ async function checkHeatwaves(forecasts: Map<string, CityForecast>, todayStr: st
   }
   if (!candidates.length) return null;
 
-  // Dedup: salta le città già notificate negli ultimi 5 giorni.
+  // Dedup su due spazi chiave separati: il top-pick nazionale non consuma il
+  // diritto dei follower a essere avvisati sulla loro città, e viceversa.
   const kv = redis; // narrowing stabile dentro le closure
-  let fresh = candidates;
+  let freshNational = candidates;
+  let freshTargeted = candidates;
   if (kv) {
-    const seen = await Promise.all(candidates.map((c) => kv.exists(`heatwave:${c.slug}`)));
-    fresh = candidates.filter((_, i) => !seen[i]);
+    const [natSeen, subSeen] = await Promise.all([
+      Promise.all(candidates.map((c) => kv.exists(`heatwave:${c.slug}`))),
+      Promise.all(candidates.map((c) => kv.exists(`heatwave:sub:${c.slug}`))),
+    ]);
+    freshNational = candidates.filter((_, i) => !natSeen[i]);
+    freshTargeted = candidates.filter((_, i) => !subSeen[i]);
   }
-  if (!fresh.length) return null;
+  if (!freshNational.length && !freshTargeted.length) return null;
 
-  fresh.sort((a, b) => b.days - a.days || b.peak - a.peak);
-  const top = fresh[0];
-  const others = fresh.length - 1;
+  freshNational.sort((a, b) => b.days - a.days || b.peak - a.peak);
+  const top: HeatwaveCandidate | null = freshNational[0] ?? null;
+  const others = Math.max(0, freshNational.length - 1);
+  const targetedBySlug = new Map(freshTargeted.map((c) => [c.slug, c]));
 
-  const startDate = new Date(`${top.start}T12:00:00`);
-  const giorno = startDate.toLocaleDateString("it-IT", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
+  const result = await notifyGrouped((city) => {
+    if (city !== null) {
+      // Follower: prima l'ondata della SUA città; se è tranquilla, il nazionale.
+      const mine = targetedBySlug.get(city);
+      if (mine) return heatwavePayloads(mine);
+    }
+    return top ? heatwavePayloads(top, others) : null;
   });
-  const body =
-    `${top.days} giorni consecutivi sopra i 35° previsti da ${giorno}. Picco: ${top.peak.toFixed(1)}°.` +
-    (others > 0 ? ` Coinvolte anche altre ${others} città.` : "");
-  const dayEn = startDate.toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-  const bodyEn =
-    `${top.days} consecutive days above 35° forecast from ${dayEn}. Peak: ${top.peak.toFixed(1)}°.` +
-    (others > 0 ? ` ${others} other cities affected too.` : "");
 
-  const eventIt = { title: `🌡️ Ondata di calore in arrivo a ${top.city}`, body, url: `/citta/${top.slug}` };
-  const eventEn = {
-    title: `🌡️ Heatwave coming to ${top.cityEn}`,
-    body: bodyEn,
-    url: `/en/citta/${top.slug}`,
+  if (kv) {
+    const ops: Promise<unknown>[] = freshTargeted.map((c) =>
+      kv.set(`heatwave:sub:${c.slug}`, todayStr, { ex: HEAT_DEDUP_TTL }),
+    );
+    if (top) ops.push(kv.set(`heatwave:${top.slug}`, todayStr, { ex: HEAT_DEDUP_TTL }));
+    await Promise.all(ops);
+  }
+
+  const logged = top ?? freshTargeted[0];
+  const loggedPayloads = heatwavePayloads(logged, logged === top ? others : 0);
+  await logEvent({
+    date: new Date().toISOString(),
+    type: "heatwave",
+    it: asEvent(loggedPayloads.it),
+    en: asEvent(loggedPayloads.en),
+  });
+  return {
+    city: logged.city,
+    slug: logged.slug,
+    days: logged.days,
+    peak: logged.peak,
+    start: logged.start,
+    others,
+    sent: result.sent,
+    groups: result.groups,
   };
-  const result = await notifyAll({ it: eventIt, en: eventEn });
-  if (redis) {
-    await redis.set(`heatwave:${top.slug}`, todayStr, { ex: HEAT_DEDUP_TTL });
-  }
-  await logEvent({ date: new Date().toISOString(), type: "heatwave", it: eventIt, en: eventEn });
-  return { city: top.city, slug: top.slug, days: top.days, peak: top.peak, start: top.start, others, sent: result.sent };
 }
 
 // --- Recap mensile -----------------------------------------------------------
@@ -260,13 +359,57 @@ async function sendMonthlyRecap(now: Date): Promise<MonthlyRecapOutcome> {
     title: `📊 Il clima di ${mese} in Italia`,
     body: `${Mese}: ${value} rispetto alla normale 1961–1990.${rankIt} Vedi il bollettino completo.`,
     url: `/mese`,
+    tag: `monthly-${monthKey}`,
+    cta: "Vedi il bollettino",
   };
   const eventEn = {
     title: `📊 ${monthEn}'s climate in Italy`,
     body: `${monthEn}: ${valueEn} vs the 1961–1990 normal.${rankEn} See the full bulletin.`,
     url: `/en/mese`,
+    tag: `monthly-${monthKey}`,
+    cta: "See the bulletin",
   };
-  const result = await notifyAll({ it: eventIt, en: eventEn });
+  const national: LocalizedPayloads = { it: eventIt, en: eventEn };
+
+  // Recap personalizzato per chi segue una città: l'anomalia del mese della
+  // SUA città (stesso metodo del widget in pagina città), con il ranking se
+  // notevole. Usato solo se il dato copre proprio il mese appena concluso;
+  // altrimenti quel gruppo riceve il nazionale come tutti.
+  const cityRecap = (slug: string): LocalizedPayloads | null => {
+    const city = CITIES.find((c) => c.slug === slug);
+    if (!city) return null;
+    const snap = getArchiveStats(city);
+    const h = cityMonthlyHighlight(snap?.monthlySeries);
+    if (!h || h.year !== prevYear || h.month !== prevMonth) return null;
+    const v = `${h.anomaly >= 0 ? "+" : ""}${h.anomaly.toFixed(1).replace(".", ",")}°`;
+    const vEn = `${h.anomaly >= 0 ? "+" : ""}${h.anomaly.toFixed(1)}°`;
+    const cityRankIt =
+      h.rank <= 5
+        ? ` È il ${ordinalIt(h.rank)} ${mese} più ${h.direction === "hot" ? "caldo" : "freddo"} dal ${h.sinceYear}.`
+        : "";
+    const cityRankEn =
+      h.rank <= 5
+        ? ` It's the ${ordinalEn(h.rank)} ${h.direction === "hot" ? "hottest" : "coldest"} ${monthEn} since ${h.sinceYear}.`
+        : "";
+    return {
+      it: {
+        title: `📊 Il clima di ${mese} a ${city.name}`,
+        body: `${Mese} a ${city.name}: ${v} rispetto alla normale 1961–1990.${cityRankIt} Italia: ${value}.`,
+        url: `/citta/${slug}`,
+        tag: `monthly-${monthKey}`,
+        cta: "Vedi i dati",
+      },
+      en: {
+        title: `📊 ${monthEn}'s climate in ${cityName(city, "en")}`,
+        body: `${monthEn} in ${cityName(city, "en")}: ${vEn} vs the 1961–1990 normal.${cityRankEn} Italy: ${valueEn}.`,
+        url: `/en/citta/${slug}`,
+        tag: `monthly-${monthKey}`,
+        cta: "See the data",
+      },
+    };
+  };
+
+  const result = await notifyGrouped((city) => (city ? (cityRecap(city) ?? national) : national));
   if (redis) {
     await redis.set(`monthly-recap:${monthKey}`, now.toISOString().slice(0, 10), {
       ex: MONTHLY_DEDUP_TTL,
@@ -301,28 +444,20 @@ export async function GET(req: NextRequest) {
 
     const broken = checkRecords(forecasts, todayStr);
     if (broken.length) {
-      const first = broken[0];
-      const title = broken.length === 1 ? `🔥 Record di caldo a ${first.city}!` : "🔥 Record di caldo in Italia!";
-      const body =
-        broken.length === 1
-          ? `${first.city} ha toccato ${first.value.toFixed(1)}°, il valore più alto mai registrato dal 1940.`
-          : broken.map((b) => `${b.city} ${b.value.toFixed(1)}°`).join(" · ") + " — nuovi record assoluti.";
-      const titleEn =
-        broken.length === 1 ? `🔥 New heat record in ${first.cityEn}!` : "🔥 New heat records in Italy!";
-      const bodyEn =
-        broken.length === 1
-          ? `${first.cityEn} hit ${first.value.toFixed(1)}°, the highest value ever recorded since 1940.`
-          : broken.map((b) => `${b.cityEn} ${b.value.toFixed(1)}°`).join(" · ") + " — new all-time records.";
-      const result = await notifyAll({
-        it: { title, body, url: `/citta/${first.slug}` },
-        en: { title: titleEn, body: bodyEn, url: `/en/citta/${first.slug}` },
+      // Tutti ricevono il record (è la notizia del sito); chi segue una delle
+      // città col record battuto riceve la variante centrata sulla SUA città.
+      const generic = recordPayloads(broken);
+      const bySlug = new Map(broken.map((b) => [b.slug, b]));
+      const result = await notifyGrouped((city) => {
+        const mine = city ? bySlug.get(city) : undefined;
+        return mine ? recordPayloads([mine], true) : generic;
       });
-      notified = { ...result, records: broken.map((b) => b.city) };
+      notified = { sent: result.sent, removed: result.removed, records: broken.map((b) => b.city) };
       await logEvent({
         date: new Date().toISOString(),
         type: "record",
-        it: { title, body, url: `/citta/${first.slug}` },
-        en: { title: titleEn, body: bodyEn, url: `/en/citta/${first.slug}` },
+        it: asEvent(generic.it),
+        en: asEvent(generic.en),
       });
     }
 

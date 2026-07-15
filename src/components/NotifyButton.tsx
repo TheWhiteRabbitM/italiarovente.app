@@ -1,6 +1,7 @@
 "use client";
 
 import { trackEvent } from "@/lib/track";
+import { getMyCity } from "@/lib/mycity";
 import { useEffect, useState } from "react";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -66,7 +67,9 @@ export function NotifyButton({ lang = "it" }: { lang?: "it" | "en" }) {
       await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...sub.toJSON(), lang }),
+        // Se l'utente segue una città ("La tua città"), l'iscrizione la
+        // include: riceverà anche gli avvisi mirati su quella città.
+        body: JSON.stringify({ ...sub.toJSON(), lang, city: getMyCity() ?? undefined }),
       });
       setState("subscribed");
       trackEvent("push_subscribe");

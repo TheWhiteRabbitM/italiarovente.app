@@ -19,9 +19,10 @@ const SUB_PREFIX = "push/subs/";
 export type PushLang = "it" | "en";
 
 // Iscrizione come salvata su Redis/blob: la PushSubscription del browser più
-// la lingua scelta al momento dell'iscrizione. Le voci storiche (pre-lingua)
-// non hanno il campo `lang`: vengono trattate come "it".
-type StoredSubscription = webpush.PushSubscription & { lang?: PushLang };
+// la lingua scelta al momento dell'iscrizione e (facoltativa) la città
+// seguita, per le notifiche mirate. Le voci storiche non hanno `lang` (vale
+// "it") né `city` (valgono le sole notifiche nazionali).
+type StoredSubscription = webpush.PushSubscription & { lang?: PushLang; city?: string };
 
 export function pushConfigured(): boolean {
   return !!((redis || BLOB_TOKEN) && VAPID_PUBLIC && VAPID_PRIVATE);
@@ -34,12 +35,30 @@ function keyFor(endpoint: string): string {
   return `${SUB_PREFIX}${Math.abs(h)}.json`;
 }
 
+// Esiste già un'iscrizione per questo endpoint? Serve alla route di
+// iscrizione per distinguere una NUOVA iscrizione (→ notifica di benvenuto)
+// da un semplice aggiornamento (cambio lingua/città → silenzioso).
+export async function existsSubscription(endpoint: string): Promise<boolean> {
+  const key = keyFor(endpoint);
+  if (redis) {
+    return (await redis.hexists(SUB_HASH, key)) === 1;
+  }
+  if (!BLOB_TOKEN) return false;
+  try {
+    const res = await list({ prefix: key, limit: 1, token: BLOB_TOKEN });
+    return res.blobs.some((b) => b.pathname === key);
+  } catch {
+    return false;
+  }
+}
+
 export async function saveSubscription(
   sub: webpush.PushSubscription,
   lang: PushLang = "it",
+  city?: string,
 ): Promise<void> {
   const key = keyFor(sub.endpoint);
-  const stored: StoredSubscription = { ...sub, lang };
+  const stored: StoredSubscription = { ...sub, lang, ...(city ? { city } : {}) };
   if (redis) {
     await redis.hset(SUB_HASH, { [key]: JSON.stringify(stored) });
     return;
@@ -99,29 +118,21 @@ async function listSubscriptions(): Promise<StoredSubscription[]> {
   return subs;
 }
 
-export type PushPayload = { title: string; body: string; url?: string };
+// `tag` fa collassare le notifiche dello stesso evento invece di accumularle;
+// `cta` è l'etichetta del pulsante d'azione mostrato dal service worker.
+export type PushPayload = { title: string; body: string; url?: string; tag?: string; cta?: string };
 export type LocalizedPayloads = Record<PushLang, PushPayload>;
 
-// Invia la notifica a tutti gli iscritti. Accetta un payload singolo (stesso
-// testo per tutti, retro-compatibile) oppure un payload per lingua
-// ({ it, en }): ogni iscritto riceve quello della lingua salvata con la sua
-// iscrizione (fallback "it" per le voci storiche senza lingua). Rimuove
-// automaticamente le iscrizioni scadute/non più valide (410/404) trovate
-// lungo il percorso.
-export async function notifyAll(
-  payload: PushPayload | LocalizedPayloads,
+// Cuore dell'invio: consegna a un gruppo di iscritti il payload della loro
+// lingua, rimuovendo le iscrizioni scadute/non più valide (410/404).
+async function sendToSubs(
+  subs: StoredSubscription[],
+  byLang: LocalizedPayloads,
 ): Promise<{ sent: number; removed: number }> {
-  if (!pushConfigured()) return { sent: 0, removed: 0 };
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC!, VAPID_PRIVATE!);
-
-  const byLang: LocalizedPayloads =
-    "title" in payload ? { it: payload, en: payload } : payload;
   const serialized: Record<PushLang, string> = {
     it: JSON.stringify(byLang.it),
     en: JSON.stringify(byLang.en),
   };
-
-  const subs = await listSubscriptions();
   let sent = 0;
   let removed = 0;
   await Promise.allSettled(
@@ -139,4 +150,67 @@ export async function notifyAll(
     }),
   );
   return { sent, removed };
+}
+
+// Invia la notifica a tutti gli iscritti. Accetta un payload singolo (stesso
+// testo per tutti, retro-compatibile) oppure un payload per lingua
+// ({ it, en }): ogni iscritto riceve quello della lingua salvata con la sua
+// iscrizione (fallback "it" per le voci storiche senza lingua).
+export async function notifyAll(
+  payload: PushPayload | LocalizedPayloads,
+): Promise<{ sent: number; removed: number }> {
+  if (!pushConfigured()) return { sent: 0, removed: 0 };
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC!, VAPID_PRIVATE!);
+  const byLang: LocalizedPayloads =
+    "title" in payload ? { it: payload, en: payload } : payload;
+  return sendToSubs(await listSubscriptions(), byLang);
+}
+
+// Notifiche mirate: raggruppa gli iscritti per città seguita (null = nessuna
+// città, cioè solo notifiche nazionali) e chiede al chiamante il payload di
+// ciascun gruppo. `build` può restituire null per saltare un gruppo — così il
+// cron decide, dati alla mano, chi ha qualcosa di rilevante da ricevere.
+export async function notifyGrouped(
+  build: (city: string | null) => LocalizedPayloads | null | Promise<LocalizedPayloads | null>,
+): Promise<{ sent: number; removed: number; groups: number }> {
+  if (!pushConfigured()) return { sent: 0, removed: 0, groups: 0 };
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC!, VAPID_PRIVATE!);
+
+  const byCity = new Map<string | null, StoredSubscription[]>();
+  for (const sub of await listSubscriptions()) {
+    const key = sub.city ?? null;
+    const group = byCity.get(key);
+    if (group) group.push(sub);
+    else byCity.set(key, [sub]);
+  }
+
+  let sent = 0;
+  let removed = 0;
+  let groups = 0;
+  for (const [city, group] of byCity) {
+    const payloads = await build(city);
+    if (!payloads) continue;
+    groups++;
+    const r = await sendToSubs(group, payloads);
+    sent += r.sent;
+    removed += r.removed;
+  }
+  return { sent, removed, groups };
+}
+
+// Notifica di benvenuto a UN solo iscritto, subito dopo l'iscrizione: la
+// conferma immediata che il canale funziona (altrimenti il primo segno di
+// vita arriverebbe solo al prossimo evento, magari tra settimane).
+export async function sendWelcome(
+  sub: webpush.PushSubscription,
+  payload: PushPayload,
+): Promise<boolean> {
+  if (!pushConfigured()) return false;
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC!, VAPID_PRIVATE!);
+  try {
+    await webpush.sendNotification(sub, JSON.stringify(payload));
+    return true;
+  } catch {
+    return false;
+  }
 }
