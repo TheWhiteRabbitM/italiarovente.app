@@ -2,6 +2,7 @@
 
 import { trackEvent } from "@/lib/track";
 import { getMyCity } from "@/lib/mycity";
+import { syncPushCity } from "@/lib/pushsync";
 import { useEffect, useState } from "react";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -41,10 +42,17 @@ export function NotifyButton({ lang = "it" }: { lang?: "it" | "en" }) {
     if (Notification.permission === "denied") setState("denied");
     navigator.serviceWorker.ready.then((reg) =>
       reg.pushManager.getSubscription().then((sub) => {
-        if (sub) setState("subscribed");
+        if (sub) {
+          setState("subscribed");
+          // Migrazione dolce: riallinea l'iscrizione esistente con lingua e
+          // città correnti (aggiornamento lato server silenzioso). Così anche
+          // chi si era iscritto PRIMA delle notifiche per-città viene
+          // agganciato alla città che segue, senza dover rifare nulla.
+          void syncPushCity(lang);
+        }
       }),
     );
-  }, []);
+  }, [lang]);
 
   async function subscribe() {
     const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
