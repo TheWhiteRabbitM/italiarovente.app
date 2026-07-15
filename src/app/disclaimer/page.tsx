@@ -177,7 +177,7 @@ const STR = {
     ),
     botTitle: "🤖 Anche i robot ci leggono",
     botIntro:
-      "Oltre alle persone, il sito riceve richieste da crawler e assistenti AI (li abbiamo esplicitamente autorizzati, vedi /llms.txt). Anche questo è un conteggio anonimo per categoria — solo lo User-Agent della richiesta, nessun dato personale:",
+      "Non solo persone: ogni giorno anche i motori di ricerca e gli assistenti AI vengono a leggere questi dati — li abbiamo autorizzati apposta (vedi /llms.txt). Che OpenAI, Anthropic e Google passino a prenderli proprio qui dice l'essenziale: sono trattati come una fonte da consultare, non come un'opinione. Conteggio anonimo per categoria — solo lo User-Agent della richiesta, nessun dato personale:",
     botLabels: {
       gptbot: "ChatGPT / GPTBot",
       claudebot: "Claude",
@@ -387,7 +387,7 @@ const STR = {
     ),
     botTitle: "🤖 Robots read this site too",
     botIntro:
-      "Besides people, the site receives requests from crawlers and AI assistants (explicitly allowed, see /llms.txt). This is also an anonymous per-category count — only the request's User-Agent, no personal data:",
+      "Not just people: search engines and AI assistants come to read this data every day too — we allowed them on purpose (see /llms.txt). That OpenAI, Anthropic and Google come here to fetch it says the essential thing: the numbers are treated as a source to consult, not an opinion. An anonymous per-category count — only the request's User-Agent, no personal data:",
     botLabels: {
       gptbot: "ChatGPT / GPTBot",
       claudebot: "Claude",
