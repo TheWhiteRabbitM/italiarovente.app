@@ -89,7 +89,7 @@ const STR = {
       "Dove l'andamento anno per anno oscilla di più rispetto alla tendenza di fondo: un R² basso non significa che il riscaldamento non ci sia, solo che è meno regolare.",
     ggTitle: "🏠 Dove si riscalda di più in inverno",
     ggSub:
-      "Gradi giorno (DPR 412/93, stima dalla climatologia mensile): più alto è il numero, più fabbisogno di riscaldamento ha un edificio in quella città. Tra parentesi la zona climatica (A–F).",
+      "Gradi giorno (DPR 412/93, stima dalla climatologia mensile dell'intera serie 1940–oggi): più alto è il numero, più fabbisogno di riscaldamento ha un edificio in quella città. Tra parentesi la zona climatica (A–F). Stima indicativa: può differire dal valore ufficiale del comune.",
     ggLowTitle: "☀️ Dove si riscalda di meno in inverno",
     ggLowSub: "Le città con il fabbisogno di riscaldamento stimato più basso.",
     feelsTitle: "🥵 L'estate più opprimente",
@@ -172,7 +172,7 @@ const STR = {
       "Where year-to-year swings around the underlying trend are largest: a low R² doesn't mean the warming isn't real, just that it's less regular.",
     ggTitle: "🏠 Where winter heating demand is highest",
     ggSub:
-      "Heating degree days (DPR 412/93, estimated from monthly climatology): the higher the number, the more heating a building needs in that city. Climate zone (A–F) in parentheses.",
+      "Heating degree days (DPR 412/93, estimated from the monthly climatology of the whole 1940–today series): the higher the number, the more heating a building needs in that city. Climate zone (A–F) in parentheses. Indicative estimate: may differ from the municipality's official value.",
     ggLowTitle: "☀️ Where winter heating demand is lowest",
     ggLowSub: "The cities with the lowest estimated heating demand.",
     feelsTitle: "🥵 The most oppressive summer",

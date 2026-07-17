@@ -630,11 +630,31 @@ async function fetchRecentDaily(city: City): Promise<DailyPoint[]> {
   }));
 }
 
+// Igiene dello snapshot a valle: le `anomalies` devono coprire SOLO anni
+// completi (>= 360 giorni). Gli snapshot generati prima di questo vincolo
+// includono l'anno in corso — una media gen-oggi contro una baseline annua,
+// stagionalmente distorta — che finirebbe nelle warming stripes, nei grafici,
+// nei poster e nell'API. Filtrare qui protegge subito tutti i consumatori,
+// anche senza rigenerare lo snapshot (aggregate() applica lo stesso vincolo a
+// monte per i futuri). Memoizzato: gli snapshot sono immutabili nel processo.
+const SANITIZED = new Map<string, HistorySnap>();
+function sanitizeSnap(slug: string, snap: HistorySnap): HistorySnap {
+  const hit = SANITIZED.get(slug);
+  if (hit) return hit;
+  const full = new Set(snap.yearly.filter((y) => y.count >= 360).map((y) => y.year));
+  const out: HistorySnap = {
+    ...snap,
+    anomalies: snap.anomalies.filter((a) => full.has(a.year)),
+  };
+  SANITIZED.set(slug, out);
+  return out;
+}
+
 export const getArchive = cache(async (city: City): Promise<CityArchive> => {
   const snap = SNAPSHOT[city.slug];
   if (snap && snap.yearly?.length) {
     const recent = await fetchRecentDaily(city).catch(() => []);
-    return { ...snap, recent };
+    return { ...sanitizeSnap(city.slug, snap), recent };
   }
   // Fallback (build locale senza snapshot): calcolo live completo.
   return computeArchive(city);
@@ -644,7 +664,7 @@ export const getArchive = cache(async (city: City): Promise<CityArchive> => {
 // confrontano molte città (clima, confronto) -> lettura istantanea.
 export function getArchiveStats(city: City): HistorySnap | null {
   const snap = SNAPSHOT[city.slug];
-  return snap && snap.yearly?.length ? snap : null;
+  return snap && snap.yearly?.length ? sanitizeSnap(city.slug, snap) : null;
 }
 
 // Confronto massime vs minime tra le due normali climatiche (1961–1990 e

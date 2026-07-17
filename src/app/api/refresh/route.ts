@@ -120,21 +120,35 @@ const HEAT_DEDUP_TTL = 5 * 24 * 60 * 60; // 5 giorni, in secondi
 
 type HeatwaveRun = { days: number; peak: number; start: string };
 
-// Trova nella previsione (oggi + giorni futuri) la sequenza più lunga di
-// giorni consecutivi con massima >= 35° che inizi entro `limitStr`.
+// Trova la sequenza più lunga di giorni consecutivi con massima >= 35° che
+// sia rilevante OGGI: può iniziare entro `limitStr` (prossimi giorni) oppure
+// essere GIÀ INIZIATA nei giorni scorsi e ancora attiva oggi — in quel caso i
+// giorni passati contano nella durata (prima venivano ignorati: un'ondata al
+// 4° giorno con 2 residui non faceva scattare nulla pur essendo in pieno
+// svolgimento). Le sequenze già concluse prima di oggi restano escluse.
 // A parità di durata vince la più calda. Null se nessuna raggiunge 3 giorni.
+const HEAT_LOOKBACK_DAYS = 7;
+
 function findHeatwave(
   forecast: CityForecast,
   todayStr: string,
   limitStr: string,
 ): HeatwaveRun | null {
-  const days = forecast.days.filter((d) => d.isForecast || d.date === todayStr);
+  const lookback = new Date(`${todayStr}T12:00:00Z`);
+  lookback.setUTCDate(lookback.getUTCDate() - HEAT_LOOKBACK_DAYS);
+  const lookbackStr = lookback.toISOString().slice(0, 10);
+  const days = forecast.days.filter(
+    (d) => d.isForecast || (d.date >= lookbackStr && d.date <= todayStr),
+  );
   let best: HeatwaveRun | null = null;
   let run = 0;
   let peak = -Infinity;
   let start = "";
+  let end = "";
   const flush = () => {
-    if (run < HEAT_MIN_RUN || start > limitStr) return;
+    // Valida se: abbastanza lunga, inizia entro il limite, e non è già finita
+    // (l'ultimo giorno della sequenza è oggi o nel futuro).
+    if (run < HEAT_MIN_RUN || start > limitStr || end < todayStr) return;
     if (!best || run > best.days || (run === best.days && peak > best.peak)) {
       best = { days: run, peak, start };
     }
@@ -146,6 +160,7 @@ function findHeatwave(
         peak = -Infinity;
       }
       run++;
+      end = d.date;
       if (d.max > peak) peak = d.max;
     } else {
       flush();
@@ -169,22 +184,31 @@ function heatwavePayloads(c: HeatwaveCandidate, others = 0): LocalizedPayloads {
   const startDate = new Date(`${c.start}T12:00:00`);
   const giorno = startDate.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
   const dayEn = startDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
+  // Ondata già iniziata (start nel passato) vs in arrivo: cambia il verbo,
+  // non il metodo — la durata include in entrambi i casi l'intera sequenza.
+  const ongoing = c.start <= new Date().toISOString().slice(0, 10);
   const body =
-    `${c.days} giorni consecutivi sopra i 35° previsti da ${giorno}. Picco: ${c.peak.toFixed(1)}°.` +
+    (ongoing
+      ? `${c.days} giorni consecutivi sopra i 35°, iniziata ${giorno}. Picco: ${c.peak.toFixed(1)}°.`
+      : `${c.days} giorni consecutivi sopra i 35° previsti da ${giorno}. Picco: ${c.peak.toFixed(1)}°.`) +
     (others > 0 ? ` Coinvolte anche altre ${others} città.` : "");
   const bodyEn =
-    `${c.days} consecutive days above 35° forecast from ${dayEn}. Peak: ${c.peak.toFixed(1)}°.` +
+    (ongoing
+      ? `${c.days} consecutive days above 35°, started ${dayEn}. Peak: ${c.peak.toFixed(1)}°.`
+      : `${c.days} consecutive days above 35° forecast from ${dayEn}. Peak: ${c.peak.toFixed(1)}°.`) +
     (others > 0 ? ` ${others} other cities affected too.` : "");
   return {
     it: {
-      title: `🌡️ Ondata di calore in arrivo a ${c.city}`,
+      title: ongoing
+        ? `🌡️ Ondata di calore in corso a ${c.city}`
+        : `🌡️ Ondata di calore in arrivo a ${c.city}`,
       body,
       url: `/citta/${c.slug}`,
       tag: `heatwave-${c.slug}`,
       cta: "Vedi i dati",
     },
     en: {
-      title: `🌡️ Heatwave coming to ${c.cityEn}`,
+      title: ongoing ? `🌡️ Heatwave underway in ${c.cityEn}` : `🌡️ Heatwave coming to ${c.cityEn}`,
       body: bodyEn,
       url: `/en/citta/${c.slug}`,
       tag: `heatwave-${c.slug}`,

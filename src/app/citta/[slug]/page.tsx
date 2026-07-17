@@ -184,10 +184,15 @@ const STR = {
     ggTitle: "🏠 Gradi giorno (riscaldamento)",
     ggSubtitle: (zone: string) => (
       <>
-        <strong>Stima</strong> basata sulla climatologia mensile (non sul
-        calcolo ufficiale giorno per giorno del DPR 412/93): zona climatica
-        indicativa <strong>{zone}</strong>. Può differire dal valore ufficiale
-        del comune, specialmente nei mesi di transizione.
+        <strong>Stima</strong> basata sulla climatologia mensile{" "}
+        <strong>dell&apos;intera serie 1940–oggi</strong> (non sul calcolo
+        ufficiale giorno per giorno del DPR 412/93): zona climatica indicativa{" "}
+        <strong>{zone}</strong>. Due approssimazioni dichiarate: media di 85
+        anni (include il clima più freddo del passato, quindi tende a
+        sovrastimare rispetto al clima attuale) e passo mensile (un mese con
+        media sopra i 20° conta zero anche se ha giorni sotto soglia, quindi
+        sottostima nelle mezze stagioni). Può differire dal valore ufficiale
+        del comune.
       </>
     ),
     ggEli5: "Più alto = inverni più freddi/lunghi, più bisogno di riscaldare casa.",
@@ -422,10 +427,14 @@ const STR = {
     ggTitle: "🏠 Heating degree days",
     ggSubtitle: (zone: string) => (
       <>
-        <strong>Estimate</strong> based on monthly climatology (not the
-        official day-by-day DPR 412/93 calculation): indicative climate zone{" "}
-        <strong>{zone}</strong>. May differ from the municipality&apos;s
-        official value, especially in shoulder-season months.
+        <strong>Estimate</strong> based on the monthly climatology of the{" "}
+        <strong>whole 1940–today series</strong> (not the official day-by-day
+        DPR 412/93 calculation): indicative climate zone <strong>{zone}</strong>.
+        Two declared approximations: an 85-year average (includes the colder
+        past, so it tends to overstate vs today&apos;s climate) and monthly
+        resolution (a month averaging above 20° counts as zero even if it has
+        days below the threshold, understating shoulder seasons). May differ
+        from the municipality&apos;s official value.
       </>
     ),
     ggEli5: "Higher = colder/longer winters, more heating needed at home.",
@@ -1307,7 +1316,13 @@ export async function renderCityPage(slug: string, lang: Lang) {
               <Temp value={archive.records.coolestYear.mean} digits={2} />,
             )}
           >
-            <YearlyTrendChart data={archive.yearly} baseline={archive.trend.baselineMean} lang={lang} />
+            {/* Solo anni completi: la media parziale dell'anno in corso non è
+                confrontabile con le medie annue (bias stagionale). */}
+            <YearlyTrendChart
+              data={archive.yearly.filter((y) => y.count >= 360)}
+              baseline={archive.trend.baselineMean}
+              lang={lang}
+            />
           </ChartCard>
 
           {/* GRAFICO CLIMATOLOGIA MENSILE (solo città principali con max/min) */}
@@ -1370,7 +1385,10 @@ export async function renderCityPage(slug: string, lang: Lang) {
                   ? t.heatEli5More(Math.round((heat.nowHD - heat.oldHD) / 7))
                   : t.heatEli5Same}
               </p>
-              <HeatDaysChart data={archive.yearly} lang={lang} />
+              {/* Solo anni completi: il conteggio parziale dell'anno in corso
+                  sembrerebbe un crollo (il widget "quest'anno" qui sopra copre
+                  già il dato in corso, dichiarandolo). */}
+              <HeatDaysChart data={archive.yearly.filter((y) => y.count >= 360)} lang={lang} />
             </section>
           )}
 

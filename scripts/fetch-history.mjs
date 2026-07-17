@@ -210,13 +210,19 @@ export function aggregate(j) {
     prevDate = date;
 
     if (m != null) {
-      const ya = yearAgg.get(y) ?? { sm: 0, sMax: 0, sMin: 0, n: 0, hd: 0, ehd: 0, tn: 0 };
-      ya.sm += m; ya.sMax += mx ?? m; ya.sMin += mn ?? m; ya.n++;
-      if (mx != null) { if (mx >= 30) ya.hd++; if (mx >= 35) ya.ehd++; }
-      if (mn != null && mn >= 20) ya.tn++;
+      // Contatori separati per max/min: un giorno con la media ma senza la
+      // massima NON deve contaminare la media delle massime con la media
+      // (prima: `sMax += mx ?? m`). Se una serie non ha mai max/min (città
+      // non principali), il fallback alla media resta, ma dichiarato a valle.
+      const ya = yearAgg.get(y) ?? { sm: 0, n: 0, sMax: 0, nMax: 0, sMin: 0, nMin: 0, hd: 0, ehd: 0, tn: 0 };
+      ya.sm += m; ya.n++;
+      if (mx != null) { ya.sMax += mx; ya.nMax++; if (mx >= 30) ya.hd++; if (mx >= 35) ya.ehd++; }
+      if (mn != null) { ya.sMin += mn; ya.nMin++; if (mn >= 20) ya.tn++; }
       yearAgg.set(y, ya);
-      const ma = monthAgg.get(mo) ?? { sm: 0, sMax: 0, sMin: 0, n: 0 };
-      ma.sm += m; ma.sMax += mx ?? m; ma.sMin += mn ?? m; ma.n++;
+      const ma = monthAgg.get(mo) ?? { sm: 0, n: 0, sMax: 0, nMax: 0, sMin: 0, nMin: 0 };
+      ma.sm += m; ma.n++;
+      if (mx != null) { ma.sMax += mx; ma.nMax++; }
+      if (mn != null) { ma.sMin += mn; ma.nMin++; }
       monthAgg.set(mo, ma);
       const myKey = `${y}-${mo}`;
       const mya = monthYearAgg.get(myKey) ?? { sm: 0, n: 0, year: y, month: mo };
@@ -247,8 +253,10 @@ export function aggregate(j) {
     .map(([year, a]) => ({
       year,
       mean: round(a.sm / a.n),
-      max: round(a.sMax / a.n),
-      min: round(a.sMin / a.n),
+      // Senza max/min veri (città non principali) il fallback resta la media:
+      // stesso comportamento di prima, ma senza mescolare le due somme.
+      max: round(a.nMax ? a.sMax / a.nMax : a.sm / a.n),
+      min: round(a.nMin ? a.sMin / a.nMin : a.sm / a.n),
       count: a.n,
       hd: a.hd, // giorni con max >= 30
       ehd: a.ehd, // giorni con max >= 35
@@ -259,8 +267,8 @@ export function aggregate(j) {
     .map(([month, a]) => ({
       month,
       mean: round(a.sm / a.n),
-      max: round(a.sMax / a.n),
-      min: round(a.sMin / a.n),
+      max: round(a.nMax ? a.sMax / a.nMax : a.sm / a.n),
+      min: round(a.nMin ? a.sMin / a.nMin : a.sm / a.n),
     }))
     .sort((a, b) => a.month - b.month);
   const monthlySeries = [...monthYearAgg.values()]
@@ -281,7 +289,10 @@ export function aggregate(j) {
   const warmestYear = fullYears.reduce((acc, y) => (y.mean > acc.mean ? y : acc), fullYears[0]);
   const coolestYear = fullYears.reduce((acc, y) => (y.mean < acc.mean ? y : acc), fullYears[0]);
 
-  const anomalies = yearly.map((y) => ({ year: y.year, anomaly: round(y.mean - baselineMean) }));
+  // SOLO anni completi: l'anomalia dell'anno in corso (media gen-oggi contro
+  // una baseline ANNUA) è stagionalmente distorta e finirebbe dritta nelle
+  // warming stripes — l'ultima striscia, quella che tutti guardano.
+  const anomalies = fullYears.map((y) => ({ year: y.year, anomaly: round(y.mean - baselineMean) }));
 
   const decAgg = new Map();
   for (const y of fullYears) {
