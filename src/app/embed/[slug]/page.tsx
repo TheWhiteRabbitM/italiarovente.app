@@ -15,12 +15,14 @@ const STR = {
     metaFallback: "Warming stripes",
     dataUnavailable: (name: string) => `Dati non disponibili per ${name}.`,
     dataSince: (year: number) => `Dati: ERA5/ECMWF, dal ${year}`,
+    cta: (name: string) => `Tutti i dati di ${name} →`,
   },
   en: {
     metaTitle: (name: string) => `${name} · warming stripes`,
     metaFallback: "Warming stripes",
     dataUnavailable: (name: string) => `Data not available for ${name}.`,
     dataSince: (year: number) => `Data: ERA5/ECMWF, since ${year}`,
+    cta: (name: string) => `All the data for ${name} →`,
   },
 };
 
@@ -78,7 +80,12 @@ export async function renderEmbedPage(slug: string, lang: "it" | "en" = "it") {
 
   const warming = archive.trend.recentNormal - archive.trend.baselineMean;
   const color = anomalyColor(warming, 1.5);
-  const url = `${SITE_URL}${lang === "en" ? "/en" : ""}/citta/${city.slug}`;
+  // UTM: il widget vive dentro siti terzi, quindi il referrer che arriva è il
+  // loro. Con gli UTM sappiamo quanti lettori l'embed porta davvero sul sito
+  // (Vercel Analytics li mostra nella scheda "UTM Parameters").
+  const url =
+    `${SITE_URL}${lang === "en" ? "/en" : ""}/citta/${city.slug}` +
+    `?utm_source=embed&utm_medium=widget&utm_content=${city.slug}`;
 
   return (
     <div
@@ -104,18 +111,44 @@ export async function renderEmbedPage(slug: string, lang: "it" | "en" = "it") {
 
       <WarmingStripes data={archive.anomalies} height={54} showAxis={false} lang={lang} />
 
+      {/* Fonte a sinistra (discreta), invito a destra. Nessun a-capo: gli host
+          incorporano l'iframe con altezza fissa, una riga in più taglierebbe il
+          widget — su larghezze strette si accorcia la fonte, mai il CTA. */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "baseline",
+          flexWrap: "nowrap",
+          gap: 10,
           marginTop: 8,
           fontSize: 11,
-          opacity: 0.65,
         }}
       >
-        <span>{t.dataSince(archive.startYear)}</span>
-        <a href={url} target="_top" rel="noopener noreferrer" style={{ color: "inherit", fontWeight: 700 }}>
-          italiarovente.app →
+        <span
+          style={{
+            opacity: 0.65,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            minWidth: 0,
+          }}
+        >
+          {t.dataSince(archive.startYear)}
+        </span>
+        <a
+          href={url}
+          target="_top"
+          rel="noopener noreferrer"
+          style={{
+            color: "var(--secondary, #c2410c)",
+            fontWeight: 800,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          {t.cta(name)}
         </a>
       </div>
     </div>
