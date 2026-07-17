@@ -140,6 +140,7 @@ export default async function Home() {
     name: city.name,
     dryDays: forecast.drought.dryDays,
     rain30d: forecast.drought.rain30d,
+    capped: forecast.drought.capped,
   }));
 
   return (

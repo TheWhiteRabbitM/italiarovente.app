@@ -133,6 +133,7 @@ export default async function EnglishHome() {
     name: cityDisplayName(city.slug, city.name, "en"),
     dryDays: forecast.drought.dryDays,
     rain30d: forecast.drought.rain30d,
+    capped: forecast.drought.capped,
   }));
 
   return (

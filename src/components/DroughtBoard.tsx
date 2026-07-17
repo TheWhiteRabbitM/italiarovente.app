@@ -1,6 +1,14 @@
 import Link from "next/link";
 
-export type DroughtItem = { slug: string; name: string; dryDays: number; rain30d: number };
+// `capped`: la sequenza riempie tutta la finestra dati (92 giorni) — il numero
+// vero è "almeno dryDays", quindi si mostra "N+" invece del valore secco.
+export type DroughtItem = {
+  slug: string;
+  name: string;
+  dryDays: number;
+  rain30d: number;
+  capped?: boolean;
+};
 
 const STR = {
   it: {
@@ -80,7 +88,7 @@ export function DroughtBoard({
                   className="h-full rounded-full flex items-center justify-end px-2.5 text-xs font-extrabold text-white transition-all"
                   style={{ width: `${pct}%`, minWidth: "2.75rem", background: s.color }}
                 >
-                  {lang === "en" ? `${c.dryDays}d` : `${c.dryDays}g`}
+                  {`${c.dryDays}${c.capped ? "+" : ""}${lang === "en" ? "d" : "g"}`}
                 </div>
               </div>
               <span className="w-24 text-right text-xs text-on-surface-variant shrink-0 hidden sm:block">

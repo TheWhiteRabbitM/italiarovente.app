@@ -153,6 +153,10 @@ export type CityForecast = {
   drought: {
     dryDays: number; // giorni consecutivi senza pioggia significativa (fino a oggi)
     rain30d: number; // mm totali negli ultimi 30 giorni
+    // true se la sequenza riempie TUTTA la finestra dati disponibile: il
+    // numero vero è "almeno dryDays", non "esattamente dryDays" — il widget
+    // lo mostra come "N+" invece di spacciare il tetto per il dato reale.
+    capped: boolean;
   };
 };
 
@@ -222,7 +226,12 @@ export const getForecast = cache(async (city: City): Promise<CityForecast> => {
     daily:
       "temperature_2m_max,temperature_2m_min,temperature_2m_mean,weather_code,precipitation_sum,uv_index_max",
     timezone: "Europe/Rome",
-    past_days: "31",
+    // 92 è il massimo consentito dall'API forecast: serve al contatore di
+    // siccità, che con la vecchia finestra da 31 saturava a 32 giorni (quattro
+    // città ferme "a 32" durante la siccità estiva 2026 — era il tetto della
+    // finestra, non il dato). Gli altri consumer filtrano su oggi/futuro e
+    // ignorano i giorni passati in più.
+    past_days: "92",
     forecast_days: "7",
   });
 
@@ -254,9 +263,13 @@ export const getForecast = cache(async (city: City): Promise<CityForecast> => {
   // a ritroso da oggi; e piovosità totale negli ultimi 30 giorni.
   const pastDays = days.filter((d: { date: string }) => d.date <= today);
   let dryDays = 0;
+  let dryCapped = true; // resta true solo se il loop esaurisce la finestra senza trovare pioggia
   for (let i = pastDays.length - 1; i >= 0; i--) {
     const p = pastDays[i].precip;
-    if (p != null && p >= 1) break;
+    if (p != null && p >= 1) {
+      dryCapped = false;
+      break;
+    }
     dryDays++;
   }
   const rain30d = pastDays
@@ -279,7 +292,7 @@ export const getForecast = cache(async (city: City): Promise<CityForecast> => {
     },
     days,
     spark,
-    drought: { dryDays, rain30d: Math.round(rain30d * 10) / 10 },
+    drought: { dryDays, rain30d: Math.round(rain30d * 10) / 10, capped: dryCapped },
   };
 });
 
