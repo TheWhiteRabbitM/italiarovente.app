@@ -18,6 +18,8 @@ import {
 } from "@/components/charts";
 import type { Metadata } from "next";
 import { WarmingStripes } from "@/components/WarmingStripes";
+import { StripesDownload } from "@/components/StripesDownload";
+import { ClimateTimeline } from "@/components/ClimateTimeline";
 import { Verdict } from "@/components/Verdict";
 import { EobsCrossCheck } from "@/components/EobsCrossCheck";
 import { getEobsComparison } from "@/lib/eobs";
@@ -1290,11 +1292,22 @@ export async function renderCityPage(slug: string, lang: Lang) {
             <p className="text-sm text-on-surface-variant mb-4 mt-1 leading-relaxed">
               {t.stripesSubtitle(archive.startYear)}
             </p>
-            <WarmingStripes data={archive.anomalies} height={120} lang={lang} />
+            <StripesDownload filename={`warming-stripes-${city.slug}`} lang={lang}>
+              <WarmingStripes data={archive.anomalies} height={120} lang={lang} />
+            </StripesDownload>
             <div className="mt-4">
               <EmbedButton citySlug={city.slug} lang={lang} />
             </div>
           </section>
+
+          {/* LINEA DEL TEMPO: tappe reali e datate (record, anni estremi) */}
+          <ClimateTimeline
+            records={archive.records}
+            startYear={archive.startYear}
+            precise={archive.precise !== false}
+            name={name}
+            lang={lang}
+          />
 
           {/* ANOMALIE ANNUE */}
           <ChartCard title={t.anomalyChartTitle} subtitle={t.anomalyChartSubtitle}>
