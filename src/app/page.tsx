@@ -24,6 +24,13 @@ import { Temp } from "@/components/Temp";
 import { nationalFaq, faqPageJsonLd } from "@/lib/faq";
 import { FaqBlock } from "@/components/FaqBlock";
 
+// Canonical + hreflang della home. Stanno QUI e non nel layout: nel layout
+// verrebbero ereditati da ogni pagina priva di `alternates` propri, facendola
+// dichiarare duplicato della homepage (merge shallow dei metadata).
+export const metadata = {
+  alternates: { canonical: "/", languages: { en: "/en", "x-default": "/" } },
+};
+
 // Renderizzata a runtime (i dati sono in cache): il build non dipende dall'API.
 export const dynamic = "force-dynamic";
 

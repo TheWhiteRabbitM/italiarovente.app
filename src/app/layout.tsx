@@ -49,7 +49,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Italia Rovente" }],
   creator: "Italia Rovente",
-  alternates: { canonical: "/", languages: { en: "/en", "x-default": "/" } },
+  // NIENTE `alternates` qui: i metadata dei segmenti si fondono in modo
+  // shallow e le chiavi duplicate vengono sostituite, quindi un `canonical`
+  // nel layout viene EREDITATO da ogni pagina che non ne dichiara uno — che
+  // finirebbe per dichiararsi duplicato della homepage (è successo davvero
+  // sulle pagine curiosità). Il canonical della home sta in app/page.tsx.
   robots: {
     index: true,
     follow: true,

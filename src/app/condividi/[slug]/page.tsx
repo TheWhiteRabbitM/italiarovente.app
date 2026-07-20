@@ -72,14 +72,25 @@ function compute(slug: string) {
 }
 
 function buildMetadata(slug: string, lang: "it" | "en"): Metadata {
+  const path = lang === "en" ? `/en/condividi/${slug}` : `/condividi/${slug}`;
+  const itPath = `/condividi/${slug}`;
+  // Canonical esplicito anche nei rami degradati: senza, la pagina
+  // erediterebbe quello del layout e si dichiarerebbe duplicato della home.
+  const selfCanonical: Metadata = {
+    alternates: {
+      canonical: path,
+      languages: lang === "en" ? { it: itPath, "x-default": itPath } : { en: `/en${itPath}` },
+    },
+  };
+
   const data = compute(slug);
-  if (!data) return {};
+  if (!data) return selfCanonical;
   const { city, archive } = data;
   const t = STR[lang];
   const name = cityName(city, lang);
-  if (!archive) return { title: name };
+  // Città senza archivio: pagina vuota, niente da indicizzare.
+  if (!archive) return { ...selfCanonical, title: name, robots: { index: false, follow: true } };
 
-  const path = lang === "en" ? `/en/condividi/${slug}` : `/condividi/${slug}`;
   const url = `${SITE_URL}${path}`;
   const delta = archive.trend.recentNormal - archive.trend.baselineMean;
   const title = t.metaTitle(name, fmtAnomaly(delta, 1, "c", { locale: lang }));

@@ -39,41 +39,43 @@ function buildPath(slug: string, kind: string, lang: "it" | "en") {
 }
 
 async function buildMetadata(slug: string, kind: string, lang: "it" | "en"): Promise<Metadata> {
-  const data = compute(slug, kind, lang);
-  if (!data) return {};
-  const c = await getCuriosity(slug, data.kind, lang);
-  if (!c) return { title: cityName(data.city, lang) };
-
   const path = buildPath(slug, kind, lang);
   const url = `${SITE_URL}${path}`;
+  const itPath = `/condividi/curiosita/${slug}/${kind}`;
 
-  if (lang === "en") {
-    return {
-      title: c.metaTitle,
-      description: c.metaDescription,
-      alternates: {
-        canonical: path,
-        languages: {
-          it: `/condividi/curiosita/${slug}/${kind}`,
-          "x-default": `/condividi/curiosita/${slug}/${kind}`,
-        },
-      },
-      openGraph: { type: "article", url, title: c.metaTitle, description: c.metaDescription, siteName: "Italia Rovente", locale: "en_US" },
-      twitter: { card: "summary_large_image", title: c.metaTitle, description: c.metaDescription },
-      robots: { index: false, follow: true },
-    };
-  }
-
-  return {
-    title: c.metaTitle,
-    description: c.metaDescription,
+  // Base SEMPRE presente, anche quando il dato non c'è: queste pagine servono
+  // solo alla condivisione (noindex), e senza un `canonical` esplicito
+  // erediterebbero quello della home dichiarandosene duplicati — è ciò che
+  // Search Console segnalava come "Duplicate without user-selected canonical".
+  const base: Metadata = {
     alternates: {
       canonical: path,
-      languages: { en: `/en/condividi/curiosita/${slug}/${kind}` },
+      languages:
+        lang === "en"
+          ? { it: itPath, "x-default": itPath }
+          : { en: `/en${itPath}` },
     },
-    openGraph: { type: "article", url, title: c.metaTitle, description: c.metaDescription, siteName: "Italia Rovente", locale: "it_IT" },
-    twitter: { card: "summary_large_image", title: c.metaTitle, description: c.metaDescription },
     robots: { index: false, follow: true },
+  };
+
+  const data = compute(slug, kind, lang);
+  if (!data) return base;
+  const c = await getCuriosity(slug, data.kind, lang);
+  if (!c) return { ...base, title: cityName(data.city, lang) };
+
+  return {
+    ...base,
+    title: c.metaTitle,
+    description: c.metaDescription,
+    openGraph: {
+      type: "article",
+      url,
+      title: c.metaTitle,
+      description: c.metaDescription,
+      siteName: "Italia Rovente",
+      locale: lang === "en" ? "en_US" : "it_IT",
+    },
+    twitter: { card: "summary_large_image", title: c.metaTitle, description: c.metaDescription },
   };
 }
 
